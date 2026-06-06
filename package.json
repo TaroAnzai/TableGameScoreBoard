@@ -5,6 +5,7 @@
   "dependencies": {
     "@react-navigation/native": "^7.2.5",
     "@rn-primitives/portal": "^1.4.0",
+    "@rn-primitives/slot": "^1.4.0",
     "@tanstack/react-query": "^5.101.0",
     "axios": "^1.17.0",
     "class-variance-authority": "^0.7.1",
@@ -39,7 +40,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "orval": "orval --config orval.config.ts"
+    "orval": "orval --config orval.config.ts",
+    "emulator": "~/Android/Sdk/emulator/emulator -avd Pixel_9"
   },
   "private": true
 }

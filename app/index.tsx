@@ -1,18 +1,11 @@
 import { View, Text } from "react-native";
-
+import { Button } from "@/components/ui/button";
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "red",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ fontSize: 40, color: "white" }}>
-        INDEX PAGE
-      </Text>
+    <View>
+    <Button>
+      <Text>Button</Text>
+    </Button>
     </View>
   );
 }
