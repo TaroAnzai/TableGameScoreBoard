@@ -1,0 +1,192 @@
+{
+  "Common": {
+    "Confirm": "確認",
+    "Confirmed": "確定",
+    "Cancel": "キャンセル",
+    "chip": "チップ",
+    "Select": "選択してください",
+    "close": "閉じる",
+    "emptyMessage": "項目がありません"
+  },
+  "welcomPage": {
+    "pageTitle": "麻雀大会 集計",
+    "CreateGroup": "新しいグループを作成",
+    "RegisteredGroups": "登録グループ一覧",
+    "CreateNewGroup": "新しいグループを作成",
+    "EnterGroupName": "グループ名を入力してください",
+    "GroupName": "グループ名",
+    "Email": "メールアドレス"
+  },
+  "groupPage": {
+    "groupKeyNotFound": "グループキーが不明です",
+    "loading": "読み込み中...",
+
+    "buttonAddPlayer": "メンバー追加",
+    "buttonDeletePlayer": "メンバー削除",
+    "buttonCreateTournament": "大会新規作成",
+    "buttonSelectTournament": "大会選択",
+    "buttonSaveToBrowser": "ブラウザに登録",
+    "buttonRemoveFromBrowser": "ブラウザから削除",
+    "buttonStats": "成績",
+
+    "sectionMemberList": "メンバー一覧",
+
+    "dialogAddGroupTitle": "登録グループ追加",
+    "dialogAddGroupDescription": "登録グループに {{groupName}} を追加してよいですか？\n\nブラウザに登録されます。\n機種変更やブラウザ変更した場合は引き継がれません。引継ぎしたい場合はURLを保存してください。",
+
+    "dialogRemoveGroupTitle": "登録グループから削除",
+    "dialogRemoveGroupDescription": "登録グループから {{groupName}} を削除してよいですか？\n(グループデータ自体は削除されません。)",
+
+    "modalDeletePlayerTitle": "削除するメンバーを選択",
+
+    "modalSelectTournamentTitle": "大会を選択",
+    "modalSelectTournamentEmpty": "大会が存在しません。大会を作成してください。",
+
+    "modalCreatePlayerTitle": "グループメンバー追加",
+    "modalCreatePlayerDescription": "メンバー名を入力してください",
+
+    "modalCreateTournamentTitle": "大会新規作成",
+    "modalCreateTournamentDescription": "大会名を入力してください"
+  },
+  "tournamentPage": {
+    "tournamentKeyMissing": "大会キーが指定されていません",
+
+    "loading": "読み込み中...",
+
+    "rate": "レート",
+    "tableName": "卓{{index}}",
+
+    "buttonAddPlayer": "参加者を追加",
+    "buttonDeletePlayer": "参加者を削除",
+    "buttonCreateTable": "記録用紙を新規作成",
+    "buttonDeleteTournament": "大会を削除",
+
+    "sectionTournamentScore": "大会成績",
+    "chipNotZeroWarning": "チップの合計が０になっていません。",
+
+    "modalSelectPlayerTitle": "参加者を選択",
+    "modalDeletePlayerTitle": "削除する参加者を選択",
+
+    "alertNoPlayersToAdd": "追加可能な参加者がいません",
+    "alertNoPlayersToDelete": "削除対象の参加者がいません",
+
+    "alertDeletePlayerTitle": "Delete Player",
+    "alertDeletePlayerDescription": "{{playerName}} を削除してよいですか？",
+
+    "alertDeleteTournamentErrorTitle": "Error deleting tournament",
+    "alertDeleteTournamentErrorDescription": "記録表が存在するため、大会を削除できません。記録表を先に削除してください。",
+
+    "alertChipTableScoreTitle": "Delete Tournament",
+    "alertChipTableScoreDescription": "チップ記録表にスコアデータが存在します。大会を削除するとチップ記録表とそのスコアデータも削除されます。本当に削除してよいですか？",
+
+    "alertDeleteTournamentTitle": "Delete Tournament",
+    "alertDeleteTournamentDescription": "大会を削除してよいですか?"
+  },
+  "tablePage": {
+    "errorInvalidTableKey": "不正なアクセスです（卓キーが指定されていません）",
+    "errorTableNotFound": "卓が見つかりませんでした",
+
+    "buttonAddPlayer": "参加者を追加",
+    "buttonDeletePlayer": "参加者を削除",
+    "buttonDeleteGame": "対局データを削除",
+    "buttonDeleteTable": "記録表削除",
+
+    "modalAddPlayerTitle": "参加者を選択",
+    "modalDeletePlayerTitle": "削除する参加者を選択",
+    "modalDeleteGameTitle": "削除するゲームを選択",
+
+    "alertDeleteTableTitle": "記録表削除",
+    "alertDeleteTableDescription": "この記録表を削除してよいですか？",
+
+    "alertDeleteGameTitle": "ゲーム削除",
+    "alertDeleteGameDescription": "この対局を削除してよいですか？",
+
+    "gameLabel": "第{{index}}局"
+  },
+  "scoreBoard": {
+    "gameTitle": "局",
+    "gameLabel": "第{{index}}局",
+    "totalLabel": "合計"
+  },
+  "titleBar": {
+    "group": "グループ",
+    "tournament": "大会",
+    "table": "記録表",
+    "undefined": "未定義",
+    "noLink": "{{accessType}}リンクが存在しません",
+    "shareTitle": "{{typeName}}への招待",
+    "shareText": "このリンクから{{typeName}}にアクセスできます",
+    "shareError": "共有に失敗しました",
+    "shareSuccessTitle": "URLをコピーしました",
+    "shareSuccessDescription": "{{typeName}}のURLをクリップボードにコピーしました:\n{{url}}",
+    "shareErrorTitle": "コピーに失敗しました",
+    "shareErrorDescription": "URLをクリップボードにコピーに失敗しました。\n{{error}}",
+    "shareViewLink": "閲覧リンクを共有",
+    "shareEditLink": "編集リンクを共有"
+  },
+  "statsPage": {
+    "errorInvalidGroupKey": "不正なアクセスです（グループキーが指定されていません）",
+    "pageTitle": "グループメンバー成績",
+    "tableTitle": "プレイヤー統計",
+    "thName": "名前",
+    "thGamesPlayed": "参加回数",
+    "thTotalPoints": "合計得点",
+    "thBalance": "収支",
+    "statsNameMap": {
+      "tournament_count": "大会参加回数",
+      "game_count": "対局数",
+      "total_score": "得点合計（チップ・換算含まない）",
+      "total_balance": "収支（チップ・換算含む）",
+      "average_rank": "平均順位",
+      "rank1_rate": "1位率",
+      "rank1_count": "1位回数",
+      "rank2_count": "2位回数",
+      "rank3_count": "3位回数",
+      "rank4_or_lower_count": "4位以下回数"
+    },
+    "dialogTitle": "プレイヤー成績",
+    "dialogDescription": "{{playerName}}さんの成績"
+  },
+  "contactPage": {
+    "title": "お問い合わせ",
+    "name": "名前",
+    "email": "メールアドレス",
+    "subject": "件名",
+    "message": "メッセージ",
+    "send": "送信する",
+    "sending": "送信中...",
+    "success": "お問い合わせを受け付けました。通常24時間以内に返信いたします。",
+    "error": "送信に失敗しました。再度お試しください。"
+  },
+  "hooks": {
+    "groupRequest": {
+      "emailSentTitle": "グループ作成用メールを送信しました",
+      "emailSentDescription": "ご入力いただいたメールアドレス宛に、グループ作成用のリンクをお送りしました。",
+      "emailSentBodyLink": "メール内のリンクをクリックして、グループの登録を完了してください。",
+      "emailSentBodyExpire": "⚠️ このリンクは発行から30分間有効です。（{{expire_at}}まで）",
+      "emailSentBodyNote": "期限を過ぎると無効になりますので、お早めに手続きをお願いします。",
+      "createErrorTitle": "グループ作成時にエラーが発生しました",
+      "unknownError": "不明なエラー"
+    },
+    "group": {
+      "createSuccess": "グループを作成しました",
+      "updateSuccess": "グループを更新しました",
+      "createErrorTitle": "グループ作成時にエラーが発生しました",
+      "updateErrorTitle": "グループ更新時にエラーが発生しました",
+      "unknownError": "不明なエラー"
+    }
+  },
+  "scoreTable": {
+    "noScoreData": "成績データがありません",
+    "columnParticipant": "参加者",
+    "columnTotal": "合計",
+    "columnConvertedTotal": "換算点"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "path": "パス",
+    "query": "クエリ",
+    "toHome": "ホームに戻る",
+    "openExternal": "外部ブラウザで開く"
+  }
+}

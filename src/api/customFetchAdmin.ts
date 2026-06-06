@@ -1,5 +1,5 @@
 // src/api/customFetchAdmin.ts
-import { API_BASE_URL } from '@/api/loadEnv';
+import { API_BASE_URL } from '@/src/api/loadEnv';
 
 interface CustomFetchAdminConfig {
   url: string;
