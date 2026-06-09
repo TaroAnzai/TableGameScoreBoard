@@ -17,16 +17,16 @@ interface CustomFetchConfig {
  */
 export const customFetch = async <T>(
   config: CustomFetchConfig,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<T> => {
   // ✅ ベースURLを組み込む
   const fullUrl = `${API_BASE_URL}${config.url}`;
-
+  console.log(fullUrl);
   // クエリパラメータ処理
   let urlWithParams = fullUrl;
   if (config.params) {
     const query = new URLSearchParams(
-      Object.entries(config.params).map(([k, v]) => [k, String(v)])
+      Object.entries(config.params).map(([k, v]) => [k, String(v)]),
     );
     urlWithParams += `?${query}`;
   }

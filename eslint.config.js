@@ -1,4 +1,5 @@
 const expoConfig = require('eslint-config-expo/flat');
+const simpleImportSort = require('eslint-plugin-simple-import-sort');
 
 module.exports = [
   ...expoConfig,
@@ -8,6 +9,9 @@ module.exports = [
   },
 
   {
+    plugins: {
+      'simple-import-sort': simpleImportSort,
+    },
     rules: {
       // 未使用変数
       '@typescript-eslint/no-unused-vars': [
@@ -27,6 +31,8 @@ module.exports = [
       'sort-imports': 'off',
       'func-style': ['error', 'expression'],
       'prefer-arrow-callback': 'error',
+      'simple-import-sort/imports': 'warn',
+      'simple-import-sort/exports': 'warn',
     },
   },
 ];
