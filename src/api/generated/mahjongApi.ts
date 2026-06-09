@@ -4,10 +4,7 @@
  * Mahjong Score API (Dev)
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -20,7 +17,7 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
+  UseQueryResult,
 } from '@tanstack/react-query';
 
 import type {
@@ -57,3224 +54,4630 @@ import type {
   TournamentParticipantsCreate,
   TournamentScoreMap,
   TournamentUpdate,
-  UnprocessableEntityResponse
+  UnprocessableEntityResponse,
 } from './mahjongApi.schemas';
 
 import { customFetch } from '../customFetch';
 
-
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * @summary 大会詳細取得
  */
 export const getApiTournamentsTournamentKey = (
-    tournamentKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Tournament>(
-      {url: `/api/tournaments/${tournamentKey}`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Tournament>(
+    { url: `/api/tournaments/${tournamentKey}`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTournamentsTournamentKeyQueryKey = (tournamentKey?: string) => {
+  return [`/api/tournaments/${tournamentKey}`] as const;
+};
 
-
-export const getGetApiTournamentsTournamentKeyQueryKey = (tournamentKey?: string,) => {
-    return [
-    `/api/tournaments/${tournamentKey}`
-    ] as const;
-    }
-
-    
-export const getGetApiTournamentsTournamentKeyQueryOptions = <TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError = ErrorResponse | DefaultErrorResponse>(tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTournamentsTournamentKeyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyQueryKey(tournamentKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyQueryKey(tournamentKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>> = ({
+    signal,
+  }) => getApiTournamentsTournamentKey(tournamentKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tournamentKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>> = ({ signal }) => getApiTournamentsTournamentKey(tournamentKey, requestOptions, signal);
+export type GetApiTournamentsTournamentKeyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>
+>;
+export type GetApiTournamentsTournamentKeyQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tournamentKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTournamentsTournamentKeyQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>>
-export type GetApiTournamentsTournamentKeyQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTournamentsTournamentKey<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>> & Pick<
+export function useGetApiTournamentsTournamentKey<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKey<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKey<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKey<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKey<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 大会詳細取得
  */
 
-export function useGetApiTournamentsTournamentKey<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTournamentsTournamentKey<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTournamentsTournamentKeyQueryOptions(tournamentKey, options);
 
-  const queryOptions = getGetApiTournamentsTournamentKeyQueryOptions(tournamentKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 大会更新
  */
 export const putApiTournamentsTournamentKey = (
-    tournamentKey: string,
-    tournamentUpdate: TournamentUpdate,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Tournament>(
-      {url: `/api/tournaments/${tournamentKey}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: tournamentUpdate
+  tournamentKey: string,
+  tournamentUpdate: TournamentUpdate,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Tournament>(
+    {
+      url: `/api/tournaments/${tournamentKey}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: tournamentUpdate,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPutApiTournamentsTournamentKeyMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>,
+    TError,
+    { tournamentKey: string; data: TournamentUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>,
+  TError,
+  { tournamentKey: string; data: TournamentUpdate },
+  TContext
+> => {
+  const mutationKey = ['putApiTournamentsTournamentKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPutApiTournamentsTournamentKeyMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>, TError,{tournamentKey: string;data: TournamentUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>, TError,{tournamentKey: string;data: TournamentUpdate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>,
+    { tournamentKey: string; data: TournamentUpdate }
+  > = (props) => {
+    const { tournamentKey, data } = props ?? {};
 
-const mutationKey = ['putApiTournamentsTournamentKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return putApiTournamentsTournamentKey(tournamentKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PutApiTournamentsTournamentKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>
+>;
+export type PutApiTournamentsTournamentKeyMutationBody = TournamentUpdate;
+export type PutApiTournamentsTournamentKeyMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>, {tournamentKey: string;data: TournamentUpdate}> = (props) => {
-          const {tournamentKey,data} = props ?? {};
-
-          return  putApiTournamentsTournamentKey(tournamentKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutApiTournamentsTournamentKeyMutationResult = NonNullable<Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>>
-    export type PutApiTournamentsTournamentKeyMutationBody = TournamentUpdate
-    export type PutApiTournamentsTournamentKeyMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 大会更新
  */
-export const usePutApiTournamentsTournamentKey = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>, TError,{tournamentKey: string;data: TournamentUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>,
-        TError,
-        {tournamentKey: string;data: TournamentUpdate},
-        TContext
-      > => {
+export const usePutApiTournamentsTournamentKey = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>,
+      TError,
+      { tournamentKey: string; data: TournamentUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiTournamentsTournamentKey>>,
+  TError,
+  { tournamentKey: string; data: TournamentUpdate },
+  TContext
+> => {
+  const mutationOptions = getPutApiTournamentsTournamentKeyMutationOptions(options);
 
-      const mutationOptions = getPutApiTournamentsTournamentKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 大会削除
  */
 export const deleteApiTournamentsTournamentKey = (
-    tournamentKey: string,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/tournaments/${tournamentKey}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>(
+    { url: `/api/tournaments/${tournamentKey}`, method: 'DELETE' },
+    options,
+  );
+};
 
+export const getDeleteApiTournamentsTournamentKeyMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>,
+    TError,
+    { tournamentKey: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>,
+  TError,
+  { tournamentKey: string },
+  TContext
+> => {
+  const mutationKey = ['deleteApiTournamentsTournamentKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiTournamentsTournamentKeyMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>, TError,{tournamentKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>, TError,{tournamentKey: string}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>,
+    { tournamentKey: string }
+  > = (props) => {
+    const { tournamentKey } = props ?? {};
 
-const mutationKey = ['deleteApiTournamentsTournamentKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiTournamentsTournamentKey(tournamentKey, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiTournamentsTournamentKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>, {tournamentKey: string}> = (props) => {
-          const {tournamentKey} = props ?? {};
+export type DeleteApiTournamentsTournamentKeyMutationError = ErrorResponse | DefaultErrorResponse;
 
-          return  deleteApiTournamentsTournamentKey(tournamentKey,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiTournamentsTournamentKeyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>>
-    
-    export type DeleteApiTournamentsTournamentKeyMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 大会削除
  */
-export const useDeleteApiTournamentsTournamentKey = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>, TError,{tournamentKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>,
-        TError,
-        {tournamentKey: string},
-        TContext
-      > => {
+export const useDeleteApiTournamentsTournamentKey = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>,
+      TError,
+      { tournamentKey: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiTournamentsTournamentKey>>,
+  TError,
+  { tournamentKey: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiTournamentsTournamentKeyMutationOptions(options);
 
-      const mutationOptions = getDeleteApiTournamentsTournamentKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 大会内の卓一覧取得
  */
 export const getApiTournamentsTournamentKeyTables = (
-    tournamentKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Table[]>(
-      {url: `/api/tournaments/${tournamentKey}/tables`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Table[]>(
+    { url: `/api/tournaments/${tournamentKey}/tables`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTournamentsTournamentKeyTablesQueryKey = (tournamentKey?: string) => {
+  return [`/api/tournaments/${tournamentKey}/tables`] as const;
+};
 
-
-export const getGetApiTournamentsTournamentKeyTablesQueryKey = (tournamentKey?: string,) => {
-    return [
-    `/api/tournaments/${tournamentKey}/tables`
-    ] as const;
-    }
-
-    
-export const getGetApiTournamentsTournamentKeyTablesQueryOptions = <TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError = ErrorResponse | DefaultErrorResponse>(tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTournamentsTournamentKeyTablesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyTablesQueryKey(tournamentKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyTablesQueryKey(tournamentKey);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>
+  > = ({ signal }) => getApiTournamentsTournamentKeyTables(tournamentKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tournamentKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>> = ({ signal }) => getApiTournamentsTournamentKeyTables(tournamentKey, requestOptions, signal);
+export type GetApiTournamentsTournamentKeyTablesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>
+>;
+export type GetApiTournamentsTournamentKeyTablesQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tournamentKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTournamentsTournamentKeyTablesQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>>
-export type GetApiTournamentsTournamentKeyTablesQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTournamentsTournamentKeyTables<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError, TData>> & Pick<
+export function useGetApiTournamentsTournamentKeyTables<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyTables<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyTables<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyTables<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyTables<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 大会内の卓一覧取得
  */
 
-export function useGetApiTournamentsTournamentKeyTables<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTournamentsTournamentKeyTables<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyTables>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTournamentsTournamentKeyTablesQueryOptions(tournamentKey, options);
 
-  const queryOptions = getGetApiTournamentsTournamentKeyTablesQueryOptions(tournamentKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 大会共有キーから卓を作成
  */
 export const postApiTournamentsTournamentKeyTables = (
-    tournamentKey: string,
-    tableCreate: TableCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  tableCreate: TableCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Table>(
-      {url: `/api/tournaments/${tournamentKey}/tables`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: tableCreate, signal
+  return customFetch<Table>(
+    {
+      url: `/api/tournaments/${tournamentKey}/tables`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: tableCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiTournamentsTournamentKeyTablesMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>,
+    TError,
+    { tournamentKey: string; data: TableCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>,
+  TError,
+  { tournamentKey: string; data: TableCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiTournamentsTournamentKeyTables'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiTournamentsTournamentKeyTablesMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>, TError,{tournamentKey: string;data: TableCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>, TError,{tournamentKey: string;data: TableCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>,
+    { tournamentKey: string; data: TableCreate }
+  > = (props) => {
+    const { tournamentKey, data } = props ?? {};
 
-const mutationKey = ['postApiTournamentsTournamentKeyTables'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiTournamentsTournamentKeyTables(tournamentKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiTournamentsTournamentKeyTablesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>
+>;
+export type PostApiTournamentsTournamentKeyTablesMutationBody = TableCreate;
+export type PostApiTournamentsTournamentKeyTablesMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>, {tournamentKey: string;data: TableCreate}> = (props) => {
-          const {tournamentKey,data} = props ?? {};
-
-          return  postApiTournamentsTournamentKeyTables(tournamentKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiTournamentsTournamentKeyTablesMutationResult = NonNullable<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>>
-    export type PostApiTournamentsTournamentKeyTablesMutationBody = TableCreate
-    export type PostApiTournamentsTournamentKeyTablesMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 大会共有キーから卓を作成
  */
-export const usePostApiTournamentsTournamentKeyTables = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>, TError,{tournamentKey: string;data: TableCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>,
-        TError,
-        {tournamentKey: string;data: TableCreate},
-        TContext
-      > => {
+export const usePostApiTournamentsTournamentKeyTables = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>,
+      TError,
+      { tournamentKey: string; data: TableCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiTournamentsTournamentKeyTables>>,
+  TError,
+  { tournamentKey: string; data: TableCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiTournamentsTournamentKeyTablesMutationOptions(options);
 
-      const mutationOptions = getPostApiTournamentsTournamentKeyTablesMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary グループ新規作成
  */
 export const postApiGroups = (
-    groupCreate: GroupCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupCreate: GroupCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Group>(
-      {url: `/api/groups`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: groupCreate, signal
+  return customFetch<Group>(
+    {
+      url: `/api/groups`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: groupCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiGroupsMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiGroups>>,
+    TError,
+    { data: GroupCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiGroups>>,
+  TError,
+  { data: GroupCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiGroups'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiGroupsMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroups>>, TError,{data: GroupCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiGroups>>, TError,{data: GroupCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiGroups>>,
+    { data: GroupCreate }
+  > = (props) => {
+    const { data } = props ?? {};
 
-const mutationKey = ['postApiGroups'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiGroups(data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiGroupsMutationResult = NonNullable<Awaited<ReturnType<typeof postApiGroups>>>;
+export type PostApiGroupsMutationBody = GroupCreate;
+export type PostApiGroupsMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiGroups>>, {data: GroupCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postApiGroups(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiGroupsMutationResult = NonNullable<Awaited<ReturnType<typeof postApiGroups>>>
-    export type PostApiGroupsMutationBody = GroupCreate
-    export type PostApiGroupsMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary グループ新規作成
  */
-export const usePostApiGroups = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroups>>, TError,{data: GroupCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiGroups>>,
-        TError,
-        {data: GroupCreate},
-        TContext
-      > => {
+export const usePostApiGroups = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiGroups>>,
+      TError,
+      { data: GroupCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiGroups>>,
+  TError,
+  { data: GroupCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiGroupsMutationOptions(options);
 
-      const mutationOptions = getPostApiGroupsMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary グループ作成リンクをリクエストする
  */
 export const postApiGroupsRequestLink = (
-    groupRequest: GroupRequest,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupRequest: GroupRequest,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<GroupResponse>(
-      {url: `/api/groups/request-link`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: groupRequest, signal
+  return customFetch<GroupResponse>(
+    {
+      url: `/api/groups/request-link`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: groupRequest,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiGroupsRequestLinkMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiGroupsRequestLink>>,
+    TError,
+    { data: GroupRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiGroupsRequestLink>>,
+  TError,
+  { data: GroupRequest },
+  TContext
+> => {
+  const mutationKey = ['postApiGroupsRequestLink'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiGroupsRequestLinkMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsRequestLink>>, TError,{data: GroupRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsRequestLink>>, TError,{data: GroupRequest}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiGroupsRequestLink>>,
+    { data: GroupRequest }
+  > = (props) => {
+    const { data } = props ?? {};
 
-const mutationKey = ['postApiGroupsRequestLink'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiGroupsRequestLink(data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiGroupsRequestLinkMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiGroupsRequestLink>>
+>;
+export type PostApiGroupsRequestLinkMutationBody = GroupRequest;
+export type PostApiGroupsRequestLinkMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiGroupsRequestLink>>, {data: GroupRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postApiGroupsRequestLink(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiGroupsRequestLinkMutationResult = NonNullable<Awaited<ReturnType<typeof postApiGroupsRequestLink>>>
-    export type PostApiGroupsRequestLinkMutationBody = GroupRequest
-    export type PostApiGroupsRequestLinkMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary グループ作成リンクをリクエストする
  */
-export const usePostApiGroupsRequestLink = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsRequestLink>>, TError,{data: GroupRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiGroupsRequestLink>>,
-        TError,
-        {data: GroupRequest},
-        TContext
-      > => {
+export const usePostApiGroupsRequestLink = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiGroupsRequestLink>>,
+      TError,
+      { data: GroupRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiGroupsRequestLink>>,
+  TError,
+  { data: GroupRequest },
+  TContext
+> => {
+  const mutationOptions = getPostApiGroupsRequestLinkMutationOptions(options);
 
-      const mutationOptions = getPostApiGroupsRequestLinkMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary グループ詳細取得
  */
 export const getApiGroupsGroupKey = (
-    groupKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Group>(
-      {url: `/api/groups/${groupKey}`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Group>({ url: `/api/groups/${groupKey}`, method: 'GET', signal }, options);
+};
 
+export const getGetApiGroupsGroupKeyQueryKey = (groupKey?: string) => {
+  return [`/api/groups/${groupKey}`] as const;
+};
 
-
-export const getGetApiGroupsGroupKeyQueryKey = (groupKey?: string,) => {
-    return [
-    `/api/groups/${groupKey}`
-    ] as const;
-    }
-
-    
-export const getGetApiGroupsGroupKeyQueryOptions = <TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError = ErrorResponse | DefaultErrorResponse>(groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiGroupsGroupKeyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiGroupsGroupKeyQueryKey(groupKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiGroupsGroupKeyQueryKey(groupKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKey>>> = ({ signal }) =>
+    getApiGroupsGroupKey(groupKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!groupKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKey>>> = ({ signal }) => getApiGroupsGroupKey(groupKey, requestOptions, signal);
+export type GetApiGroupsGroupKeyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiGroupsGroupKey>>
+>;
+export type GetApiGroupsGroupKeyQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(groupKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiGroupsGroupKeyQueryResult = NonNullable<Awaited<ReturnType<typeof getApiGroupsGroupKey>>>
-export type GetApiGroupsGroupKeyQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiGroupsGroupKey<TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>> & Pick<
+export function useGetApiGroupsGroupKey<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKey>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKey<TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKey<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKey>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKey<TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKey<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary グループ詳細取得
  */
 
-export function useGetApiGroupsGroupKey<TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiGroupsGroupKey<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiGroupsGroupKeyQueryOptions(groupKey, options);
 
-  const queryOptions = getGetApiGroupsGroupKeyQueryOptions(groupKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary グループ更新
  */
 export const putApiGroupsGroupKey = (
-    groupKey: string,
-    groupUpdate: GroupUpdate,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Group>(
-      {url: `/api/groups/${groupKey}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: groupUpdate
+  groupKey: string,
+  groupUpdate: GroupUpdate,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Group>(
+    {
+      url: `/api/groups/${groupKey}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: groupUpdate,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPutApiGroupsGroupKeyMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiGroupsGroupKey>>,
+    TError,
+    { groupKey: string; data: GroupUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiGroupsGroupKey>>,
+  TError,
+  { groupKey: string; data: GroupUpdate },
+  TContext
+> => {
+  const mutationKey = ['putApiGroupsGroupKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPutApiGroupsGroupKeyMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiGroupsGroupKey>>, TError,{groupKey: string;data: GroupUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof putApiGroupsGroupKey>>, TError,{groupKey: string;data: GroupUpdate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiGroupsGroupKey>>,
+    { groupKey: string; data: GroupUpdate }
+  > = (props) => {
+    const { groupKey, data } = props ?? {};
 
-const mutationKey = ['putApiGroupsGroupKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return putApiGroupsGroupKey(groupKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PutApiGroupsGroupKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiGroupsGroupKey>>
+>;
+export type PutApiGroupsGroupKeyMutationBody = GroupUpdate;
+export type PutApiGroupsGroupKeyMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiGroupsGroupKey>>, {groupKey: string;data: GroupUpdate}> = (props) => {
-          const {groupKey,data} = props ?? {};
-
-          return  putApiGroupsGroupKey(groupKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutApiGroupsGroupKeyMutationResult = NonNullable<Awaited<ReturnType<typeof putApiGroupsGroupKey>>>
-    export type PutApiGroupsGroupKeyMutationBody = GroupUpdate
-    export type PutApiGroupsGroupKeyMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary グループ更新
  */
-export const usePutApiGroupsGroupKey = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiGroupsGroupKey>>, TError,{groupKey: string;data: GroupUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putApiGroupsGroupKey>>,
-        TError,
-        {groupKey: string;data: GroupUpdate},
-        TContext
-      > => {
+export const usePutApiGroupsGroupKey = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiGroupsGroupKey>>,
+      TError,
+      { groupKey: string; data: GroupUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiGroupsGroupKey>>,
+  TError,
+  { groupKey: string; data: GroupUpdate },
+  TContext
+> => {
+  const mutationOptions = getPutApiGroupsGroupKeyMutationOptions(options);
 
-      const mutationOptions = getPutApiGroupsGroupKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary グループ削除
  */
 export const deleteApiGroupsGroupKey = (
-    groupKey: string,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/groups/${groupKey}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>({ url: `/api/groups/${groupKey}`, method: 'DELETE' }, options);
+};
 
+export const getDeleteApiGroupsGroupKeyMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>,
+    TError,
+    { groupKey: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>,
+  TError,
+  { groupKey: string },
+  TContext
+> => {
+  const mutationKey = ['deleteApiGroupsGroupKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiGroupsGroupKeyMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>, TError,{groupKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>, TError,{groupKey: string}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>,
+    { groupKey: string }
+  > = (props) => {
+    const { groupKey } = props ?? {};
 
-const mutationKey = ['deleteApiGroupsGroupKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiGroupsGroupKey(groupKey, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiGroupsGroupKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>, {groupKey: string}> = (props) => {
-          const {groupKey} = props ?? {};
+export type DeleteApiGroupsGroupKeyMutationError = ErrorResponse | DefaultErrorResponse;
 
-          return  deleteApiGroupsGroupKey(groupKey,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiGroupsGroupKeyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>>
-    
-    export type DeleteApiGroupsGroupKeyMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary グループ削除
  */
-export const useDeleteApiGroupsGroupKey = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>, TError,{groupKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>,
-        TError,
-        {groupKey: string},
-        TContext
-      > => {
+export const useDeleteApiGroupsGroupKey = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>,
+      TError,
+      { groupKey: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiGroupsGroupKey>>,
+  TError,
+  { groupKey: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiGroupsGroupKeyMutationOptions(options);
 
-      const mutationOptions = getDeleteApiGroupsGroupKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary グループキーから大会一覧を取得
  */
 export const getApiGroupsGroupKeyTournaments = (
-    groupKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Tournament[]>(
-      {url: `/api/groups/${groupKey}/tournaments`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Tournament[]>(
+    { url: `/api/groups/${groupKey}/tournaments`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiGroupsGroupKeyTournamentsQueryKey = (groupKey?: string) => {
+  return [`/api/groups/${groupKey}/tournaments`] as const;
+};
 
-
-export const getGetApiGroupsGroupKeyTournamentsQueryKey = (groupKey?: string,) => {
-    return [
-    `/api/groups/${groupKey}/tournaments`
-    ] as const;
-    }
-
-    
-export const getGetApiGroupsGroupKeyTournamentsQueryOptions = <TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError = ErrorResponse | DefaultErrorResponse>(groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiGroupsGroupKeyTournamentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiGroupsGroupKeyTournamentsQueryKey(groupKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiGroupsGroupKeyTournamentsQueryKey(groupKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>> = ({
+    signal,
+  }) => getApiGroupsGroupKeyTournaments(groupKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!groupKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>> = ({ signal }) => getApiGroupsGroupKeyTournaments(groupKey, requestOptions, signal);
+export type GetApiGroupsGroupKeyTournamentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>
+>;
+export type GetApiGroupsGroupKeyTournamentsQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(groupKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiGroupsGroupKeyTournamentsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>>
-export type GetApiGroupsGroupKeyTournamentsQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiGroupsGroupKeyTournaments<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>> & Pick<
+export function useGetApiGroupsGroupKeyTournaments<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyTournaments<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyTournaments<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyTournaments<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyTournaments<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary グループキーから大会一覧を取得
  */
 
-export function useGetApiGroupsGroupKeyTournaments<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiGroupsGroupKeyTournaments<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyTournaments>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiGroupsGroupKeyTournamentsQueryOptions(groupKey, options);
 
-  const queryOptions = getGetApiGroupsGroupKeyTournamentsQueryOptions(groupKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary グループ共有キーから大会を作成
  */
 export const postApiGroupsGroupKeyTournaments = (
-    groupKey: string,
-    tournamentCreate: TournamentCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  tournamentCreate: TournamentCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Tournament>(
-      {url: `/api/groups/${groupKey}/tournaments`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: tournamentCreate, signal
+  return customFetch<Tournament>(
+    {
+      url: `/api/groups/${groupKey}/tournaments`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: tournamentCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiGroupsGroupKeyTournamentsMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>,
+    TError,
+    { groupKey: string; data: TournamentCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>,
+  TError,
+  { groupKey: string; data: TournamentCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiGroupsGroupKeyTournaments'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiGroupsGroupKeyTournamentsMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>, TError,{groupKey: string;data: TournamentCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>, TError,{groupKey: string;data: TournamentCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>,
+    { groupKey: string; data: TournamentCreate }
+  > = (props) => {
+    const { groupKey, data } = props ?? {};
 
-const mutationKey = ['postApiGroupsGroupKeyTournaments'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiGroupsGroupKeyTournaments(groupKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiGroupsGroupKeyTournamentsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>
+>;
+export type PostApiGroupsGroupKeyTournamentsMutationBody = TournamentCreate;
+export type PostApiGroupsGroupKeyTournamentsMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>, {groupKey: string;data: TournamentCreate}> = (props) => {
-          const {groupKey,data} = props ?? {};
-
-          return  postApiGroupsGroupKeyTournaments(groupKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiGroupsGroupKeyTournamentsMutationResult = NonNullable<Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>>
-    export type PostApiGroupsGroupKeyTournamentsMutationBody = TournamentCreate
-    export type PostApiGroupsGroupKeyTournamentsMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary グループ共有キーから大会を作成
  */
-export const usePostApiGroupsGroupKeyTournaments = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>, TError,{groupKey: string;data: TournamentCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>,
-        TError,
-        {groupKey: string;data: TournamentCreate},
-        TContext
-      > => {
+export const usePostApiGroupsGroupKeyTournaments = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>,
+      TError,
+      { groupKey: string; data: TournamentCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiGroupsGroupKeyTournaments>>,
+  TError,
+  { groupKey: string; data: TournamentCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiGroupsGroupKeyTournamentsMutationOptions(options);
 
-      const mutationOptions = getPostApiGroupsGroupKeyTournamentsMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary グループ共有キーからプレイヤー一覧を取得
  */
 export const getApiGroupsGroupKeyPlayers = (
-    groupKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Player[]>(
-      {url: `/api/groups/${groupKey}/players`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Player[]>(
+    { url: `/api/groups/${groupKey}/players`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiGroupsGroupKeyPlayersQueryKey = (groupKey?: string) => {
+  return [`/api/groups/${groupKey}/players`] as const;
+};
 
-
-export const getGetApiGroupsGroupKeyPlayersQueryKey = (groupKey?: string,) => {
-    return [
-    `/api/groups/${groupKey}/players`
-    ] as const;
-    }
-
-    
-export const getGetApiGroupsGroupKeyPlayersQueryOptions = <TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiGroupsGroupKeyPlayersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiGroupsGroupKeyPlayersQueryKey(groupKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiGroupsGroupKeyPlayersQueryKey(groupKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>> = ({
+    signal,
+  }) => getApiGroupsGroupKeyPlayers(groupKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!groupKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>> = ({ signal }) => getApiGroupsGroupKeyPlayers(groupKey, requestOptions, signal);
+export type GetApiGroupsGroupKeyPlayersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>
+>;
+export type GetApiGroupsGroupKeyPlayersQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(groupKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiGroupsGroupKeyPlayersQueryResult = NonNullable<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>>
-export type GetApiGroupsGroupKeyPlayersQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiGroupsGroupKeyPlayers<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>> & Pick<
+export function useGetApiGroupsGroupKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyPlayers<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyPlayers<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary グループ共有キーからプレイヤー一覧を取得
  */
 
-export function useGetApiGroupsGroupKeyPlayers<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiGroupsGroupKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiGroupsGroupKeyPlayersQueryOptions(groupKey, options);
 
-  const queryOptions = getGetApiGroupsGroupKeyPlayersQueryOptions(groupKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary グループ共有キーからプレイヤー作成
  */
 export const postApiGroupsGroupKeyPlayers = (
-    groupKey: string,
-    playerCreate: PlayerCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  playerCreate: PlayerCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Player>(
-      {url: `/api/groups/${groupKey}/players`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: playerCreate, signal
+  return customFetch<Player>(
+    {
+      url: `/api/groups/${groupKey}/players`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: playerCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiGroupsGroupKeyPlayersMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>,
+    TError,
+    { groupKey: string; data: PlayerCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>,
+  TError,
+  { groupKey: string; data: PlayerCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiGroupsGroupKeyPlayers'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiGroupsGroupKeyPlayersMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>, TError,{groupKey: string;data: PlayerCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>, TError,{groupKey: string;data: PlayerCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>,
+    { groupKey: string; data: PlayerCreate }
+  > = (props) => {
+    const { groupKey, data } = props ?? {};
 
-const mutationKey = ['postApiGroupsGroupKeyPlayers'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiGroupsGroupKeyPlayers(groupKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiGroupsGroupKeyPlayersMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>
+>;
+export type PostApiGroupsGroupKeyPlayersMutationBody = PlayerCreate;
+export type PostApiGroupsGroupKeyPlayersMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>, {groupKey: string;data: PlayerCreate}> = (props) => {
-          const {groupKey,data} = props ?? {};
-
-          return  postApiGroupsGroupKeyPlayers(groupKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiGroupsGroupKeyPlayersMutationResult = NonNullable<Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>>
-    export type PostApiGroupsGroupKeyPlayersMutationBody = PlayerCreate
-    export type PostApiGroupsGroupKeyPlayersMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary グループ共有キーからプレイヤー作成
  */
-export const usePostApiGroupsGroupKeyPlayers = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>, TError,{groupKey: string;data: PlayerCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>,
-        TError,
-        {groupKey: string;data: PlayerCreate},
-        TContext
-      > => {
+export const usePostApiGroupsGroupKeyPlayers = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>,
+      TError,
+      { groupKey: string; data: PlayerCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiGroupsGroupKeyPlayers>>,
+  TError,
+  { groupKey: string; data: PlayerCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiGroupsGroupKeyPlayersMutationOptions(options);
 
-      const mutationOptions = getPostApiGroupsGroupKeyPlayersMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary プレイヤー詳細取得
  */
 export const getApiGroupsGroupKeyPlayersPlayerId = (
-    groupKey: string,
-    playerId: number,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  playerId: number,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Player>(
-      {url: `/api/groups/${groupKey}/players/${playerId}`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Player>(
+    { url: `/api/groups/${groupKey}/players/${playerId}`, method: 'GET', signal },
+    options,
+  );
+};
 
-
-
-export const getGetApiGroupsGroupKeyPlayersPlayerIdQueryKey = (groupKey?: string,
-    playerId?: number,) => {
-    return [
-    `/api/groups/${groupKey}/players/${playerId}`
-    ] as const;
-    }
-
-    
-export const getGetApiGroupsGroupKeyPlayersPlayerIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError = ErrorResponse | DefaultErrorResponse>(groupKey: string,
-    playerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiGroupsGroupKeyPlayersPlayerIdQueryKey = (
+  groupKey?: string,
+  playerId?: number,
 ) => {
+  return [`/api/groups/${groupKey}/players/${playerId}`] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getGetApiGroupsGroupKeyPlayersPlayerIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  playerId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiGroupsGroupKeyPlayersPlayerIdQueryKey(groupKey,playerId);
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiGroupsGroupKeyPlayersPlayerIdQueryKey(groupKey, playerId);
 
-  
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>> = ({
+    signal,
+  }) => getApiGroupsGroupKeyPlayersPlayerId(groupKey, playerId, requestOptions, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>> = ({ signal }) => getApiGroupsGroupKeyPlayersPlayerId(groupKey,playerId, requestOptions, signal);
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(groupKey && playerId),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type GetApiGroupsGroupKeyPlayersPlayerIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>
+>;
+export type GetApiGroupsGroupKeyPlayersPlayerIdQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-   return  { queryKey, queryFn, enabled: !!(groupKey && playerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiGroupsGroupKeyPlayersPlayerIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>>
-export type GetApiGroupsGroupKeyPlayersPlayerIdQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiGroupsGroupKeyPlayersPlayerId<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string,
-    playerId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError, TData>> & Pick<
+export function useGetApiGroupsGroupKeyPlayersPlayerId<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  playerId: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyPlayersPlayerId<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string,
-    playerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyPlayersPlayerId<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  playerId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyPlayersPlayerId<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string,
-    playerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyPlayersPlayerId<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  playerId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary プレイヤー詳細取得
  */
 
-export function useGetApiGroupsGroupKeyPlayersPlayerId<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string,
-    playerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiGroupsGroupKeyPlayersPlayerId<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  playerId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayersPlayerId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiGroupsGroupKeyPlayersPlayerIdQueryOptions(
+    groupKey,
+    playerId,
+    options,
+  );
 
-  const queryOptions = getGetApiGroupsGroupKeyPlayersPlayerIdQueryOptions(groupKey,playerId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary プレイヤー更新
  */
 export const putApiGroupsGroupKeyPlayersPlayerId = (
-    groupKey: string,
-    playerId: number,
-    playerUpdate: PlayerUpdate,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Player>(
-      {url: `/api/groups/${groupKey}/players/${playerId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: playerUpdate
+  groupKey: string,
+  playerId: number,
+  playerUpdate: PlayerUpdate,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Player>(
+    {
+      url: `/api/groups/${groupKey}/players/${playerId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: playerUpdate,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPutApiGroupsGroupKeyPlayersPlayerIdMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>,
+    TError,
+    { groupKey: string; playerId: number; data: PlayerUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>,
+  TError,
+  { groupKey: string; playerId: number; data: PlayerUpdate },
+  TContext
+> => {
+  const mutationKey = ['putApiGroupsGroupKeyPlayersPlayerId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPutApiGroupsGroupKeyPlayersPlayerIdMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>, TError,{groupKey: string;playerId: number;data: PlayerUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>, TError,{groupKey: string;playerId: number;data: PlayerUpdate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>,
+    { groupKey: string; playerId: number; data: PlayerUpdate }
+  > = (props) => {
+    const { groupKey, playerId, data } = props ?? {};
 
-const mutationKey = ['putApiGroupsGroupKeyPlayersPlayerId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return putApiGroupsGroupKeyPlayersPlayerId(groupKey, playerId, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PutApiGroupsGroupKeyPlayersPlayerIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>
+>;
+export type PutApiGroupsGroupKeyPlayersPlayerIdMutationBody = PlayerUpdate;
+export type PutApiGroupsGroupKeyPlayersPlayerIdMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>, {groupKey: string;playerId: number;data: PlayerUpdate}> = (props) => {
-          const {groupKey,playerId,data} = props ?? {};
-
-          return  putApiGroupsGroupKeyPlayersPlayerId(groupKey,playerId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutApiGroupsGroupKeyPlayersPlayerIdMutationResult = NonNullable<Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>>
-    export type PutApiGroupsGroupKeyPlayersPlayerIdMutationBody = PlayerUpdate
-    export type PutApiGroupsGroupKeyPlayersPlayerIdMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary プレイヤー更新
  */
-export const usePutApiGroupsGroupKeyPlayersPlayerId = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>, TError,{groupKey: string;playerId: number;data: PlayerUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>,
-        TError,
-        {groupKey: string;playerId: number;data: PlayerUpdate},
-        TContext
-      > => {
+export const usePutApiGroupsGroupKeyPlayersPlayerId = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>,
+      TError,
+      { groupKey: string; playerId: number; data: PlayerUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiGroupsGroupKeyPlayersPlayerId>>,
+  TError,
+  { groupKey: string; playerId: number; data: PlayerUpdate },
+  TContext
+> => {
+  const mutationOptions = getPutApiGroupsGroupKeyPlayersPlayerIdMutationOptions(options);
 
-      const mutationOptions = getPutApiGroupsGroupKeyPlayersPlayerIdMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary プレイヤー削除
  */
 export const deleteApiGroupsGroupKeyPlayersPlayerId = (
-    groupKey: string,
-    playerId: number,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/groups/${groupKey}/players/${playerId}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  groupKey: string,
+  playerId: number,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>(
+    { url: `/api/groups/${groupKey}/players/${playerId}`, method: 'DELETE' },
+    options,
+  );
+};
 
+export const getDeleteApiGroupsGroupKeyPlayersPlayerIdMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>,
+    TError,
+    { groupKey: string; playerId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>,
+  TError,
+  { groupKey: string; playerId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteApiGroupsGroupKeyPlayersPlayerId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiGroupsGroupKeyPlayersPlayerIdMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>, TError,{groupKey: string;playerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>, TError,{groupKey: string;playerId: number}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>,
+    { groupKey: string; playerId: number }
+  > = (props) => {
+    const { groupKey, playerId } = props ?? {};
 
-const mutationKey = ['deleteApiGroupsGroupKeyPlayersPlayerId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiGroupsGroupKeyPlayersPlayerId(groupKey, playerId, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiGroupsGroupKeyPlayersPlayerIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>, {groupKey: string;playerId: number}> = (props) => {
-          const {groupKey,playerId} = props ?? {};
+export type DeleteApiGroupsGroupKeyPlayersPlayerIdMutationError =
+  | ErrorResponse
+  | DefaultErrorResponse;
 
-          return  deleteApiGroupsGroupKeyPlayersPlayerId(groupKey,playerId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiGroupsGroupKeyPlayersPlayerIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>>
-    
-    export type DeleteApiGroupsGroupKeyPlayersPlayerIdMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary プレイヤー削除
  */
-export const useDeleteApiGroupsGroupKeyPlayersPlayerId = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>, TError,{groupKey: string;playerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>,
-        TError,
-        {groupKey: string;playerId: number},
-        TContext
-      > => {
+export const useDeleteApiGroupsGroupKeyPlayersPlayerId = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>,
+      TError,
+      { groupKey: string; playerId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiGroupsGroupKeyPlayersPlayerId>>,
+  TError,
+  { groupKey: string; playerId: number },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiGroupsGroupKeyPlayersPlayerIdMutationOptions(options);
 
-      const mutationOptions = getDeleteApiGroupsGroupKeyPlayersPlayerIdMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 卓詳細取得
  */
 export const getApiTablesTableKey = (
-    tableKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tableKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Table>(
-      {url: `/api/tables/${tableKey}`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Table>({ url: `/api/tables/${tableKey}`, method: 'GET', signal }, options);
+};
 
+export const getGetApiTablesTableKeyQueryKey = (tableKey?: string) => {
+  return [`/api/tables/${tableKey}`] as const;
+};
 
-
-export const getGetApiTablesTableKeyQueryKey = (tableKey?: string,) => {
-    return [
-    `/api/tables/${tableKey}`
-    ] as const;
-    }
-
-    
-export const getGetApiTablesTableKeyQueryOptions = <TData = Awaited<ReturnType<typeof getApiTablesTableKey>>, TError = ErrorResponse | DefaultErrorResponse>(tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTablesTableKeyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTablesTableKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiTablesTableKeyQueryKey(tableKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTablesTableKeyQueryKey(tableKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKey>>> = ({ signal }) =>
+    getApiTablesTableKey(tableKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tableKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTablesTableKey>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKey>>> = ({ signal }) => getApiTablesTableKey(tableKey, requestOptions, signal);
+export type GetApiTablesTableKeyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTablesTableKey>>
+>;
+export type GetApiTablesTableKeyQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tableKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTablesTableKeyQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTablesTableKey>>>
-export type GetApiTablesTableKeyQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTablesTableKey<TData = Awaited<ReturnType<typeof getApiTablesTableKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>> & Pick<
+export function useGetApiTablesTableKey<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKey>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKey>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKey<TData = Awaited<ReturnType<typeof getApiTablesTableKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKey<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKey>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKey>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKey<TData = Awaited<ReturnType<typeof getApiTablesTableKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKey<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 卓詳細取得
  */
 
-export function useGetApiTablesTableKey<TData = Awaited<ReturnType<typeof getApiTablesTableKey>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTablesTableKey<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKey>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKey>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTablesTableKeyQueryOptions(tableKey, options);
 
-  const queryOptions = getGetApiTablesTableKeyQueryOptions(tableKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 卓更新
  */
 export const putApiTablesTableKey = (
-    tableKey: string,
-    tableUpdate: TableUpdate,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Table>(
-      {url: `/api/tables/${tableKey}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: tableUpdate
+  tableKey: string,
+  tableUpdate: TableUpdate,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Table>(
+    {
+      url: `/api/tables/${tableKey}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: tableUpdate,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPutApiTablesTableKeyMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiTablesTableKey>>,
+    TError,
+    { tableKey: string; data: TableUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiTablesTableKey>>,
+  TError,
+  { tableKey: string; data: TableUpdate },
+  TContext
+> => {
+  const mutationKey = ['putApiTablesTableKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPutApiTablesTableKeyMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTablesTableKey>>, TError,{tableKey: string;data: TableUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof putApiTablesTableKey>>, TError,{tableKey: string;data: TableUpdate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiTablesTableKey>>,
+    { tableKey: string; data: TableUpdate }
+  > = (props) => {
+    const { tableKey, data } = props ?? {};
 
-const mutationKey = ['putApiTablesTableKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return putApiTablesTableKey(tableKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PutApiTablesTableKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiTablesTableKey>>
+>;
+export type PutApiTablesTableKeyMutationBody = TableUpdate;
+export type PutApiTablesTableKeyMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiTablesTableKey>>, {tableKey: string;data: TableUpdate}> = (props) => {
-          const {tableKey,data} = props ?? {};
-
-          return  putApiTablesTableKey(tableKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutApiTablesTableKeyMutationResult = NonNullable<Awaited<ReturnType<typeof putApiTablesTableKey>>>
-    export type PutApiTablesTableKeyMutationBody = TableUpdate
-    export type PutApiTablesTableKeyMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 卓更新
  */
-export const usePutApiTablesTableKey = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTablesTableKey>>, TError,{tableKey: string;data: TableUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putApiTablesTableKey>>,
-        TError,
-        {tableKey: string;data: TableUpdate},
-        TContext
-      > => {
+export const usePutApiTablesTableKey = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiTablesTableKey>>,
+      TError,
+      { tableKey: string; data: TableUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiTablesTableKey>>,
+  TError,
+  { tableKey: string; data: TableUpdate },
+  TContext
+> => {
+  const mutationOptions = getPutApiTablesTableKeyMutationOptions(options);
 
-      const mutationOptions = getPutApiTablesTableKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 卓削除
  */
 export const deleteApiTablesTableKey = (
-    tableKey: string,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/tables/${tableKey}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  tableKey: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>({ url: `/api/tables/${tableKey}`, method: 'DELETE' }, options);
+};
 
+export const getDeleteApiTablesTableKeyMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiTablesTableKey>>,
+    TError,
+    { tableKey: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiTablesTableKey>>,
+  TError,
+  { tableKey: string },
+  TContext
+> => {
+  const mutationKey = ['deleteApiTablesTableKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiTablesTableKeyMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKey>>, TError,{tableKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKey>>, TError,{tableKey: string}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiTablesTableKey>>,
+    { tableKey: string }
+  > = (props) => {
+    const { tableKey } = props ?? {};
 
-const mutationKey = ['deleteApiTablesTableKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiTablesTableKey(tableKey, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiTablesTableKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiTablesTableKey>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiTablesTableKey>>, {tableKey: string}> = (props) => {
-          const {tableKey} = props ?? {};
+export type DeleteApiTablesTableKeyMutationError = ErrorResponse | DefaultErrorResponse;
 
-          return  deleteApiTablesTableKey(tableKey,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiTablesTableKeyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiTablesTableKey>>>
-    
-    export type DeleteApiTablesTableKeyMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 卓削除
  */
-export const useDeleteApiTablesTableKey = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKey>>, TError,{tableKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiTablesTableKey>>,
-        TError,
-        {tableKey: string},
-        TContext
-      > => {
+export const useDeleteApiTablesTableKey = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiTablesTableKey>>,
+      TError,
+      { tableKey: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiTablesTableKey>>,
+  TError,
+  { tableKey: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiTablesTableKeyMutationOptions(options);
 
-      const mutationOptions = getDeleteApiTablesTableKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 卓キーから対局一覧を取得
  */
 export const getApiTablesTableKeyGames = (
-    tableKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tableKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Game[]>(
-      {url: `/api/tables/${tableKey}/games`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Game[]>(
+    { url: `/api/tables/${tableKey}/games`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTablesTableKeyGamesQueryKey = (tableKey?: string) => {
+  return [`/api/tables/${tableKey}/games`] as const;
+};
 
-
-export const getGetApiTablesTableKeyGamesQueryKey = (tableKey?: string,) => {
-    return [
-    `/api/tables/${tableKey}/games`
-    ] as const;
-    }
-
-    
-export const getGetApiTablesTableKeyGamesQueryOptions = <TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError = ErrorResponse | DefaultErrorResponse>(tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTablesTableKeyGamesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiTablesTableKeyGamesQueryKey(tableKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTablesTableKeyGamesQueryKey(tableKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>> = ({
+    signal,
+  }) => getApiTablesTableKeyGames(tableKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tableKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>> = ({ signal }) => getApiTablesTableKeyGames(tableKey, requestOptions, signal);
+export type GetApiTablesTableKeyGamesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTablesTableKeyGames>>
+>;
+export type GetApiTablesTableKeyGamesQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tableKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTablesTableKeyGamesQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>>
-export type GetApiTablesTableKeyGamesQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTablesTableKeyGames<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>> & Pick<
+export function useGetApiTablesTableKeyGames<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKeyGames>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKeyGames<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKeyGames<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKeyGames>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKeyGames<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKeyGames<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 卓キーから対局一覧を取得
  */
 
-export function useGetApiTablesTableKeyGames<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTablesTableKeyGames<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGames>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGames>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTablesTableKeyGamesQueryOptions(tableKey, options);
 
-  const queryOptions = getGetApiTablesTableKeyGamesQueryOptions(tableKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 卓共有キーから対局を作成
  */
 export const postApiTablesTableKeyGames = (
-    tableKey: string,
-    gameCreate: GameCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tableKey: string,
+  gameCreate: GameCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Game>(
-      {url: `/api/tables/${tableKey}/games`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: gameCreate, signal
+  return customFetch<Game>(
+    {
+      url: `/api/tables/${tableKey}/games`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: gameCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiTablesTableKeyGamesMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiTablesTableKeyGames>>,
+    TError,
+    { tableKey: string; data: GameCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiTablesTableKeyGames>>,
+  TError,
+  { tableKey: string; data: GameCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiTablesTableKeyGames'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiTablesTableKeyGamesMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTablesTableKeyGames>>, TError,{tableKey: string;data: GameCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiTablesTableKeyGames>>, TError,{tableKey: string;data: GameCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiTablesTableKeyGames>>,
+    { tableKey: string; data: GameCreate }
+  > = (props) => {
+    const { tableKey, data } = props ?? {};
 
-const mutationKey = ['postApiTablesTableKeyGames'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiTablesTableKeyGames(tableKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiTablesTableKeyGamesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiTablesTableKeyGames>>
+>;
+export type PostApiTablesTableKeyGamesMutationBody = GameCreate;
+export type PostApiTablesTableKeyGamesMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiTablesTableKeyGames>>, {tableKey: string;data: GameCreate}> = (props) => {
-          const {tableKey,data} = props ?? {};
-
-          return  postApiTablesTableKeyGames(tableKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiTablesTableKeyGamesMutationResult = NonNullable<Awaited<ReturnType<typeof postApiTablesTableKeyGames>>>
-    export type PostApiTablesTableKeyGamesMutationBody = GameCreate
-    export type PostApiTablesTableKeyGamesMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 卓共有キーから対局を作成
  */
-export const usePostApiTablesTableKeyGames = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTablesTableKeyGames>>, TError,{tableKey: string;data: GameCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiTablesTableKeyGames>>,
-        TError,
-        {tableKey: string;data: GameCreate},
-        TContext
-      > => {
+export const usePostApiTablesTableKeyGames = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiTablesTableKeyGames>>,
+      TError,
+      { tableKey: string; data: GameCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiTablesTableKeyGames>>,
+  TError,
+  { tableKey: string; data: GameCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiTablesTableKeyGamesMutationOptions(options);
 
-      const mutationOptions = getPostApiTablesTableKeyGamesMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 対局詳細取得
  */
 export const getApiTablesTableKeyGamesGameId = (
-    tableKey: string,
-    gameId: number,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tableKey: string,
+  gameId: number,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Game>(
-      {url: `/api/tables/${tableKey}/games/${gameId}`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Game>(
+    { url: `/api/tables/${tableKey}/games/${gameId}`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTablesTableKeyGamesGameIdQueryKey = (tableKey?: string, gameId?: number) => {
+  return [`/api/tables/${tableKey}/games/${gameId}`] as const;
+};
 
-
-export const getGetApiTablesTableKeyGamesGameIdQueryKey = (tableKey?: string,
-    gameId?: number,) => {
-    return [
-    `/api/tables/${tableKey}/games/${gameId}`
-    ] as const;
-    }
-
-    
-export const getGetApiTablesTableKeyGamesGameIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError = ErrorResponse | DefaultErrorResponse>(tableKey: string,
-    gameId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTablesTableKeyGamesGameIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  gameId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiTablesTableKeyGamesGameIdQueryKey(tableKey, gameId);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTablesTableKeyGamesGameIdQueryKey(tableKey,gameId);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>> = ({
+    signal,
+  }) => getApiTablesTableKeyGamesGameId(tableKey, gameId, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!(tableKey && gameId), ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>> = ({ signal }) => getApiTablesTableKeyGamesGameId(tableKey,gameId, requestOptions, signal);
+export type GetApiTablesTableKeyGamesGameIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>
+>;
+export type GetApiTablesTableKeyGamesGameIdQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tableKey && gameId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTablesTableKeyGamesGameIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>>
-export type GetApiTablesTableKeyGamesGameIdQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTablesTableKeyGamesGameId<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string,
-    gameId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>> & Pick<
+export function useGetApiTablesTableKeyGamesGameId<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  gameId: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKeyGamesGameId<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string,
-    gameId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKeyGamesGameId<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  gameId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKeyGamesGameId<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string,
-    gameId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKeyGamesGameId<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  gameId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 対局詳細取得
  */
 
-export function useGetApiTablesTableKeyGamesGameId<TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string,
-    gameId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTablesTableKeyGamesGameId<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  gameId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyGamesGameId>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTablesTableKeyGamesGameIdQueryOptions(tableKey, gameId, options);
 
-  const queryOptions = getGetApiTablesTableKeyGamesGameIdQueryOptions(tableKey,gameId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 対局更新
  */
 export const putApiTablesTableKeyGamesGameId = (
-    tableKey: string,
-    gameId: number,
-    gameUpdate: GameUpdate,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Game>(
-      {url: `/api/tables/${tableKey}/games/${gameId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: gameUpdate
+  tableKey: string,
+  gameId: number,
+  gameUpdate: GameUpdate,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Game>(
+    {
+      url: `/api/tables/${tableKey}/games/${gameId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: gameUpdate,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPutApiTablesTableKeyGamesGameIdMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>,
+    TError,
+    { tableKey: string; gameId: number; data: GameUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>,
+  TError,
+  { tableKey: string; gameId: number; data: GameUpdate },
+  TContext
+> => {
+  const mutationKey = ['putApiTablesTableKeyGamesGameId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPutApiTablesTableKeyGamesGameIdMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>, TError,{tableKey: string;gameId: number;data: GameUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>, TError,{tableKey: string;gameId: number;data: GameUpdate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>,
+    { tableKey: string; gameId: number; data: GameUpdate }
+  > = (props) => {
+    const { tableKey, gameId, data } = props ?? {};
 
-const mutationKey = ['putApiTablesTableKeyGamesGameId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return putApiTablesTableKeyGamesGameId(tableKey, gameId, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PutApiTablesTableKeyGamesGameIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>
+>;
+export type PutApiTablesTableKeyGamesGameIdMutationBody = GameUpdate;
+export type PutApiTablesTableKeyGamesGameIdMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>, {tableKey: string;gameId: number;data: GameUpdate}> = (props) => {
-          const {tableKey,gameId,data} = props ?? {};
-
-          return  putApiTablesTableKeyGamesGameId(tableKey,gameId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutApiTablesTableKeyGamesGameIdMutationResult = NonNullable<Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>>
-    export type PutApiTablesTableKeyGamesGameIdMutationBody = GameUpdate
-    export type PutApiTablesTableKeyGamesGameIdMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 対局更新
  */
-export const usePutApiTablesTableKeyGamesGameId = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>, TError,{tableKey: string;gameId: number;data: GameUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>,
-        TError,
-        {tableKey: string;gameId: number;data: GameUpdate},
-        TContext
-      > => {
+export const usePutApiTablesTableKeyGamesGameId = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>,
+      TError,
+      { tableKey: string; gameId: number; data: GameUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiTablesTableKeyGamesGameId>>,
+  TError,
+  { tableKey: string; gameId: number; data: GameUpdate },
+  TContext
+> => {
+  const mutationOptions = getPutApiTablesTableKeyGamesGameIdMutationOptions(options);
 
-      const mutationOptions = getPutApiTablesTableKeyGamesGameIdMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 対局削除
  */
 export const deleteApiTablesTableKeyGamesGameId = (
-    tableKey: string,
-    gameId: number,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/tables/${tableKey}/games/${gameId}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  tableKey: string,
+  gameId: number,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>(
+    { url: `/api/tables/${tableKey}/games/${gameId}`, method: 'DELETE' },
+    options,
+  );
+};
 
+export const getDeleteApiTablesTableKeyGamesGameIdMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>,
+    TError,
+    { tableKey: string; gameId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>,
+  TError,
+  { tableKey: string; gameId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteApiTablesTableKeyGamesGameId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiTablesTableKeyGamesGameIdMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>, TError,{tableKey: string;gameId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>, TError,{tableKey: string;gameId: number}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>,
+    { tableKey: string; gameId: number }
+  > = (props) => {
+    const { tableKey, gameId } = props ?? {};
 
-const mutationKey = ['deleteApiTablesTableKeyGamesGameId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiTablesTableKeyGamesGameId(tableKey, gameId, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiTablesTableKeyGamesGameIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>, {tableKey: string;gameId: number}> = (props) => {
-          const {tableKey,gameId} = props ?? {};
+export type DeleteApiTablesTableKeyGamesGameIdMutationError = ErrorResponse | DefaultErrorResponse;
 
-          return  deleteApiTablesTableKeyGamesGameId(tableKey,gameId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiTablesTableKeyGamesGameIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>>
-    
-    export type DeleteApiTablesTableKeyGamesGameIdMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 対局削除
  */
-export const useDeleteApiTablesTableKeyGamesGameId = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>, TError,{tableKey: string;gameId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>,
-        TError,
-        {tableKey: string;gameId: number},
-        TContext
-      > => {
+export const useDeleteApiTablesTableKeyGamesGameId = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>,
+      TError,
+      { tableKey: string; gameId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiTablesTableKeyGamesGameId>>,
+  TError,
+  { tableKey: string; gameId: number },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiTablesTableKeyGamesGameIdMutationOptions(options);
 
-      const mutationOptions = getDeleteApiTablesTableKeyGamesGameIdMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 大会共有キーから参加者一覧を取得
  */
 export const getApiTournamentsTournamentKeyParticipants = (
-    tournamentKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<TournamentParticipants>(
-      {url: `/api/tournaments/${tournamentKey}/participants`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<TournamentParticipants>(
+    { url: `/api/tournaments/${tournamentKey}/participants`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTournamentsTournamentKeyParticipantsQueryKey = (tournamentKey?: string) => {
+  return [`/api/tournaments/${tournamentKey}/participants`] as const;
+};
 
-
-export const getGetApiTournamentsTournamentKeyParticipantsQueryKey = (tournamentKey?: string,) => {
-    return [
-    `/api/tournaments/${tournamentKey}/participants`
-    ] as const;
-    }
-
-    
-export const getGetApiTournamentsTournamentKeyParticipantsQueryOptions = <TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError = ErrorResponse | DefaultErrorResponse>(tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTournamentsTournamentKeyParticipantsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyParticipantsQueryKey(tournamentKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyParticipantsQueryKey(tournamentKey);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>
+  > = ({ signal }) =>
+    getApiTournamentsTournamentKeyParticipants(tournamentKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tournamentKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>> = ({ signal }) => getApiTournamentsTournamentKeyParticipants(tournamentKey, requestOptions, signal);
+export type GetApiTournamentsTournamentKeyParticipantsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>
+>;
+export type GetApiTournamentsTournamentKeyParticipantsQueryError =
+  | ErrorResponse
+  | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tournamentKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTournamentsTournamentKeyParticipantsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>>
-export type GetApiTournamentsTournamentKeyParticipantsQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTournamentsTournamentKeyParticipants<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError, TData>> & Pick<
+export function useGetApiTournamentsTournamentKeyParticipants<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyParticipants<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyParticipants<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyParticipants<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyParticipants<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 大会共有キーから参加者一覧を取得
  */
 
-export function useGetApiTournamentsTournamentKeyParticipants<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTournamentsTournamentKeyParticipants<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTournamentsTournamentKeyParticipantsQueryOptions(
+    tournamentKey,
+    options,
+  );
 
-  const queryOptions = getGetApiTournamentsTournamentKeyParticipantsQueryOptions(tournamentKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 大会共有キーからプレイヤーを登録
  */
 export const postApiTournamentsTournamentKeyParticipants = (
-    tournamentKey: string,
-    tournamentParticipantsCreate: TournamentParticipantsCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  tournamentParticipantsCreate: TournamentParticipantsCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<TournamentParticipants>(
-      {url: `/api/tournaments/${tournamentKey}/participants`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: tournamentParticipantsCreate, signal
+  return customFetch<TournamentParticipants>(
+    {
+      url: `/api/tournaments/${tournamentKey}/participants`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: tournamentParticipantsCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiTournamentsTournamentKeyParticipantsMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>,
+    TError,
+    { tournamentKey: string; data: TournamentParticipantsCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>,
+  TError,
+  { tournamentKey: string; data: TournamentParticipantsCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiTournamentsTournamentKeyParticipants'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiTournamentsTournamentKeyParticipantsMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>, TError,{tournamentKey: string;data: TournamentParticipantsCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>, TError,{tournamentKey: string;data: TournamentParticipantsCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>,
+    { tournamentKey: string; data: TournamentParticipantsCreate }
+  > = (props) => {
+    const { tournamentKey, data } = props ?? {};
 
-const mutationKey = ['postApiTournamentsTournamentKeyParticipants'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiTournamentsTournamentKeyParticipants(tournamentKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiTournamentsTournamentKeyParticipantsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>
+>;
+export type PostApiTournamentsTournamentKeyParticipantsMutationBody = TournamentParticipantsCreate;
+export type PostApiTournamentsTournamentKeyParticipantsMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>, {tournamentKey: string;data: TournamentParticipantsCreate}> = (props) => {
-          const {tournamentKey,data} = props ?? {};
-
-          return  postApiTournamentsTournamentKeyParticipants(tournamentKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiTournamentsTournamentKeyParticipantsMutationResult = NonNullable<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>>
-    export type PostApiTournamentsTournamentKeyParticipantsMutationBody = TournamentParticipantsCreate
-    export type PostApiTournamentsTournamentKeyParticipantsMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 大会共有キーからプレイヤーを登録
  */
-export const usePostApiTournamentsTournamentKeyParticipants = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>, TError,{tournamentKey: string;data: TournamentParticipantsCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>,
-        TError,
-        {tournamentKey: string;data: TournamentParticipantsCreate},
-        TContext
-      > => {
+export const usePostApiTournamentsTournamentKeyParticipants = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>,
+      TError,
+      { tournamentKey: string; data: TournamentParticipantsCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiTournamentsTournamentKeyParticipants>>,
+  TError,
+  { tournamentKey: string; data: TournamentParticipantsCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiTournamentsTournamentKeyParticipantsMutationOptions(options);
 
-      const mutationOptions = getPostApiTournamentsTournamentKeyParticipantsMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 参加者共有キーから削除
  */
 export const deleteApiTournamentsTournamentKeyParticipantsPlayerId = (
-    tournamentKey: string,
-    playerId: number,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/tournaments/${tournamentKey}/participants/${playerId}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  tournamentKey: string,
+  playerId: number,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>(
+    { url: `/api/tournaments/${tournamentKey}/participants/${playerId}`, method: 'DELETE' },
+    options,
+  );
+};
 
+export const getDeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>,
+    TError,
+    { tournamentKey: string; playerId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>,
+  TError,
+  { tournamentKey: string; playerId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteApiTournamentsTournamentKeyParticipantsPlayerId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>, TError,{tournamentKey: string;playerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>, TError,{tournamentKey: string;playerId: number}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>,
+    { tournamentKey: string; playerId: number }
+  > = (props) => {
+    const { tournamentKey, playerId } = props ?? {};
 
-const mutationKey = ['deleteApiTournamentsTournamentKeyParticipantsPlayerId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiTournamentsTournamentKeyParticipantsPlayerId(
+      tournamentKey,
+      playerId,
+      requestOptions,
+    );
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>, {tournamentKey: string;playerId: number}> = (props) => {
-          const {tournamentKey,playerId} = props ?? {};
+export type DeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationError =
+  | ErrorResponse
+  | DefaultErrorResponse;
 
-          return  deleteApiTournamentsTournamentKeyParticipantsPlayerId(tournamentKey,playerId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>>
-    
-    export type DeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 参加者共有キーから削除
  */
-export const useDeleteApiTournamentsTournamentKeyParticipantsPlayerId = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>, TError,{tournamentKey: string;playerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>,
-        TError,
-        {tournamentKey: string;playerId: number},
-        TContext
-      > => {
+export const useDeleteApiTournamentsTournamentKeyParticipantsPlayerId = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>,
+      TError,
+      { tournamentKey: string; playerId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiTournamentsTournamentKeyParticipantsPlayerId>>,
+  TError,
+  { tournamentKey: string; playerId: number },
+  TContext
+> => {
+  const mutationOptions =
+    getDeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationOptions(options);
 
-      const mutationOptions = getDeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 卓共有キーから参加者一覧を取得
  */
 export const getApiTablesTableKeyPlayers = (
-    tableKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tableKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<TablePlayers>(
-      {url: `/api/tables/${tableKey}/players`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<TablePlayers>(
+    { url: `/api/tables/${tableKey}/players`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTablesTableKeyPlayersQueryKey = (tableKey?: string) => {
+  return [`/api/tables/${tableKey}/players`] as const;
+};
 
-
-export const getGetApiTablesTableKeyPlayersQueryKey = (tableKey?: string,) => {
-    return [
-    `/api/tables/${tableKey}/players`
-    ] as const;
-    }
-
-    
-export const getGetApiTablesTableKeyPlayersQueryOptions = <TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTablesTableKeyPlayersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiTablesTableKeyPlayersQueryKey(tableKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTablesTableKeyPlayersQueryKey(tableKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>> = ({
+    signal,
+  }) => getApiTablesTableKeyPlayers(tableKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tableKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>> = ({ signal }) => getApiTablesTableKeyPlayers(tableKey, requestOptions, signal);
+export type GetApiTablesTableKeyPlayersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>
+>;
+export type GetApiTablesTableKeyPlayersQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tableKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTablesTableKeyPlayersQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>>
-export type GetApiTablesTableKeyPlayersQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTablesTableKeyPlayers<TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>> & Pick<
+export function useGetApiTablesTableKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKeyPlayers<TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
           TError,
           Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTablesTableKeyPlayers<TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTablesTableKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 卓共有キーから参加者一覧を取得
  */
 
-export function useGetApiTablesTableKeyPlayers<TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError = ErrorResponse | DefaultErrorResponse>(
- tableKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTablesTableKeyPlayers<
+  TData = Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiTablesTableKeyPlayers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTablesTableKeyPlayersQueryOptions(tableKey, options);
 
-  const queryOptions = getGetApiTablesTableKeyPlayersQueryOptions(tableKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 卓共有キーから大会参加者を登録
  */
 export const postApiTablesTableKeyPlayers = (
-    tableKey: string,
-    tablePlayerCreate: TablePlayerCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tableKey: string,
+  tablePlayerCreate: TablePlayerCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<TablePlayers>(
-      {url: `/api/tables/${tableKey}/players`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: tablePlayerCreate, signal
+  return customFetch<TablePlayers>(
+    {
+      url: `/api/tables/${tableKey}/players`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: tablePlayerCreate,
+      signal,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPostApiTablesTableKeyPlayersMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>,
+    TError,
+    { tableKey: string; data: TablePlayerCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>,
+  TError,
+  { tableKey: string; data: TablePlayerCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiTablesTableKeyPlayers'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiTablesTableKeyPlayersMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>, TError,{tableKey: string;data: TablePlayerCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>, TError,{tableKey: string;data: TablePlayerCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>,
+    { tableKey: string; data: TablePlayerCreate }
+  > = (props) => {
+    const { tableKey, data } = props ?? {};
 
-const mutationKey = ['postApiTablesTableKeyPlayers'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return postApiTablesTableKeyPlayers(tableKey, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiTablesTableKeyPlayersMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>
+>;
+export type PostApiTablesTableKeyPlayersMutationBody = TablePlayerCreate;
+export type PostApiTablesTableKeyPlayersMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>, {tableKey: string;data: TablePlayerCreate}> = (props) => {
-          const {tableKey,data} = props ?? {};
-
-          return  postApiTablesTableKeyPlayers(tableKey,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiTablesTableKeyPlayersMutationResult = NonNullable<Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>>
-    export type PostApiTablesTableKeyPlayersMutationBody = TablePlayerCreate
-    export type PostApiTablesTableKeyPlayersMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 卓共有キーから大会参加者を登録
  */
-export const usePostApiTablesTableKeyPlayers = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>, TError,{tableKey: string;data: TablePlayerCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>,
-        TError,
-        {tableKey: string;data: TablePlayerCreate},
-        TContext
-      > => {
+export const usePostApiTablesTableKeyPlayers = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>,
+      TError,
+      { tableKey: string; data: TablePlayerCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiTablesTableKeyPlayers>>,
+  TError,
+  { tableKey: string; data: TablePlayerCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiTablesTableKeyPlayersMutationOptions(options);
 
-      const mutationOptions = getPostApiTablesTableKeyPlayersMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 卓参加者共有キーから削除
  */
 export const deleteApiTablesTableKeyPlayersPlayerId = (
-    tableKey: string,
-    playerId: number,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Message>(
-      {url: `/api/tables/${tableKey}/players/${playerId}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  tableKey: string,
+  playerId: number,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<Message>(
+    { url: `/api/tables/${tableKey}/players/${playerId}`, method: 'DELETE' },
+    options,
+  );
+};
 
+export const getDeleteApiTablesTableKeyPlayersPlayerIdMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>,
+    TError,
+    { tableKey: string; playerId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>,
+  TError,
+  { tableKey: string; playerId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteApiTablesTableKeyPlayersPlayerId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiTablesTableKeyPlayersPlayerIdMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>, TError,{tableKey: string;playerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>, TError,{tableKey: string;playerId: number}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>,
+    { tableKey: string; playerId: number }
+  > = (props) => {
+    const { tableKey, playerId } = props ?? {};
 
-const mutationKey = ['deleteApiTablesTableKeyPlayersPlayerId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiTablesTableKeyPlayersPlayerId(tableKey, playerId, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiTablesTableKeyPlayersPlayerIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>, {tableKey: string;playerId: number}> = (props) => {
-          const {tableKey,playerId} = props ?? {};
+export type DeleteApiTablesTableKeyPlayersPlayerIdMutationError =
+  | ErrorResponse
+  | DefaultErrorResponse;
 
-          return  deleteApiTablesTableKeyPlayersPlayerId(tableKey,playerId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiTablesTableKeyPlayersPlayerIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>>
-    
-    export type DeleteApiTablesTableKeyPlayersPlayerIdMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 卓参加者共有キーから削除
  */
-export const useDeleteApiTablesTableKeyPlayersPlayerId = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>, TError,{tableKey: string;playerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>,
-        TError,
-        {tableKey: string;playerId: number},
-        TContext
-      > => {
+export const useDeleteApiTablesTableKeyPlayersPlayerId = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>,
+      TError,
+      { tableKey: string; playerId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiTablesTableKeyPlayersPlayerId>>,
+  TError,
+  { tableKey: string; playerId: number },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiTablesTableKeyPlayersPlayerIdMutationOptions(options);
 
-      const mutationOptions = getDeleteApiTablesTableKeyPlayersPlayerIdMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 /**
  * @summary 大会キーからスコア集計を取得
  */
 export const getApiTournamentsTournamentKeyExport = (
-    tournamentKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<TournamentExport>(
-      {url: `/api/tournaments/${tournamentKey}/export`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<TournamentExport>(
+    { url: `/api/tournaments/${tournamentKey}/export`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTournamentsTournamentKeyExportQueryKey = (tournamentKey?: string) => {
+  return [`/api/tournaments/${tournamentKey}/export`] as const;
+};
 
-
-export const getGetApiTournamentsTournamentKeyExportQueryKey = (tournamentKey?: string,) => {
-    return [
-    `/api/tournaments/${tournamentKey}/export`
-    ] as const;
-    }
-
-    
-export const getGetApiTournamentsTournamentKeyExportQueryOptions = <TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError = ErrorResponse | DefaultErrorResponse>(tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTournamentsTournamentKeyExportQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyExportQueryKey(tournamentKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyExportQueryKey(tournamentKey);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>
+  > = ({ signal }) => getApiTournamentsTournamentKeyExport(tournamentKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tournamentKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>> = ({ signal }) => getApiTournamentsTournamentKeyExport(tournamentKey, requestOptions, signal);
+export type GetApiTournamentsTournamentKeyExportQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>
+>;
+export type GetApiTournamentsTournamentKeyExportQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tournamentKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTournamentsTournamentKeyExportQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>>
-export type GetApiTournamentsTournamentKeyExportQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTournamentsTournamentKeyExport<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError, TData>> & Pick<
+export function useGetApiTournamentsTournamentKeyExport<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyExport<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyExport<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyExport<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyExport<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 大会キーからスコア集計を取得
  */
 
-export function useGetApiTournamentsTournamentKeyExport<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTournamentsTournamentKeyExport<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyExport>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTournamentsTournamentKeyExportQueryOptions(tournamentKey, options);
 
-  const queryOptions = getGetApiTournamentsTournamentKeyExportQueryOptions(tournamentKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary グループキーから大会サマリーを取得
  */
 export const getApiGroupsGroupKeySummary = (
-    groupKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<GroupSummary>(
-      {url: `/api/groups/${groupKey}/summary`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<GroupSummary>(
+    { url: `/api/groups/${groupKey}/summary`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiGroupsGroupKeySummaryQueryKey = (groupKey?: string) => {
+  return [`/api/groups/${groupKey}/summary`] as const;
+};
 
-
-export const getGetApiGroupsGroupKeySummaryQueryKey = (groupKey?: string,) => {
-    return [
-    `/api/groups/${groupKey}/summary`
-    ] as const;
-    }
-
-    
-export const getGetApiGroupsGroupKeySummaryQueryOptions = <TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError = ErrorResponse | DefaultErrorResponse>(groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiGroupsGroupKeySummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiGroupsGroupKeySummaryQueryKey(groupKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiGroupsGroupKeySummaryQueryKey(groupKey);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>> = ({
+    signal,
+  }) => getApiGroupsGroupKeySummary(groupKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!groupKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>> = ({ signal }) => getApiGroupsGroupKeySummary(groupKey, requestOptions, signal);
+export type GetApiGroupsGroupKeySummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>
+>;
+export type GetApiGroupsGroupKeySummaryQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(groupKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiGroupsGroupKeySummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>>
-export type GetApiGroupsGroupKeySummaryQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiGroupsGroupKeySummary<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>> & Pick<
+export function useGetApiGroupsGroupKeySummary<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeySummary<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeySummary<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeySummary<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeySummary<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary グループキーから大会サマリーを取得
  */
 
-export function useGetApiGroupsGroupKeySummary<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError = ErrorResponse | DefaultErrorResponse>(
- groupKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiGroupsGroupKeySummary<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiGroupsGroupKeySummaryQueryOptions(groupKey, options);
 
-  const queryOptions = getGetApiGroupsGroupKeySummaryQueryOptions(groupKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 大会キーから大会スコアマップを取得
  */
 export const getApiTournamentsTournamentKeyScoreMap = (
-    tournamentKey: string,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<TournamentScoreMap>(
-      {url: `/api/tournaments/${tournamentKey}/score_map`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<TournamentScoreMap>(
+    { url: `/api/tournaments/${tournamentKey}/score_map`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiTournamentsTournamentKeyScoreMapQueryKey = (tournamentKey?: string) => {
+  return [`/api/tournaments/${tournamentKey}/score_map`] as const;
+};
 
-
-export const getGetApiTournamentsTournamentKeyScoreMapQueryKey = (tournamentKey?: string,) => {
-    return [
-    `/api/tournaments/${tournamentKey}/score_map`
-    ] as const;
-    }
-
-    
-export const getGetApiTournamentsTournamentKeyScoreMapQueryOptions = <TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError = ErrorResponse | DefaultErrorResponse>(tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiTournamentsTournamentKeyScoreMapQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyScoreMapQueryKey(tournamentKey);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiTournamentsTournamentKeyScoreMapQueryKey(tournamentKey);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>
+  > = ({ signal }) => getApiTournamentsTournamentKeyScoreMap(tournamentKey, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!tournamentKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>> = ({ signal }) => getApiTournamentsTournamentKeyScoreMap(tournamentKey, requestOptions, signal);
+export type GetApiTournamentsTournamentKeyScoreMapQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>
+>;
+export type GetApiTournamentsTournamentKeyScoreMapQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(tournamentKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiTournamentsTournamentKeyScoreMapQueryResult = NonNullable<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>>
-export type GetApiTournamentsTournamentKeyScoreMapQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiTournamentsTournamentKeyScoreMap<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError, TData>> & Pick<
+export function useGetApiTournamentsTournamentKeyScoreMap<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyScoreMap<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyScoreMap<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
           TError,
           Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiTournamentsTournamentKeyScoreMap<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiTournamentsTournamentKeyScoreMap<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 大会キーから大会スコアマップを取得
  */
 
-export function useGetApiTournamentsTournamentKeyScoreMap<TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError = ErrorResponse | DefaultErrorResponse>(
- tournamentKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiTournamentsTournamentKeyScoreMap<
+  TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiTournamentsTournamentKeyScoreMap>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiTournamentsTournamentKeyScoreMapQueryOptions(
+    tournamentKey,
+    options,
+  );
 
-  const queryOptions = getGetApiTournamentsTournamentKeyScoreMapQueryOptions(tournamentKey,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 期間を指定してグループ内プレイヤー統計を取得（指定なしで全期間）
  */
 export const getApiGroupsGroupKeyPlayerStats = (
-    groupKey: string,
-    params?: GetApiGroupsGroupKeyPlayerStatsParams,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  groupKey: string,
+  params?: GetApiGroupsGroupKeyPlayerStatsParams,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<GroupPlayerStats>(
-      {url: `/api/groups/${groupKey}/player_stats`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-  
+  return customFetch<GroupPlayerStats>(
+    { url: `/api/groups/${groupKey}/player_stats`, method: 'GET', params, signal },
+    options,
+  );
+};
 
-
-
-export const getGetApiGroupsGroupKeyPlayerStatsQueryKey = (groupKey?: string,
-    params?: GetApiGroupsGroupKeyPlayerStatsParams,) => {
-    return [
-    `/api/groups/${groupKey}/player_stats`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetApiGroupsGroupKeyPlayerStatsQueryOptions = <TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse>(groupKey: string,
-    params?: GetApiGroupsGroupKeyPlayerStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiGroupsGroupKeyPlayerStatsQueryKey = (
+  groupKey?: string,
+  params?: GetApiGroupsGroupKeyPlayerStatsParams,
 ) => {
+  return [`/api/groups/${groupKey}/player_stats`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getGetApiGroupsGroupKeyPlayerStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  params?: GetApiGroupsGroupKeyPlayerStatsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiGroupsGroupKeyPlayerStatsQueryKey(groupKey,params);
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiGroupsGroupKeyPlayerStatsQueryKey(groupKey, params);
 
-  
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>> = ({
+    signal,
+  }) => getApiGroupsGroupKeyPlayerStats(groupKey, params, requestOptions, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>> = ({ signal }) => getApiGroupsGroupKeyPlayerStats(groupKey,params, requestOptions, signal);
+  return { queryKey, queryFn, enabled: !!groupKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type GetApiGroupsGroupKeyPlayerStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>
+>;
+export type GetApiGroupsGroupKeyPlayerStatsQueryError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      
-
-   return  { queryKey, queryFn, enabled: !!(groupKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiGroupsGroupKeyPlayerStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>>
-export type GetApiGroupsGroupKeyPlayerStatsQueryError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-
-export function useGetApiGroupsGroupKeyPlayerStats<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse>(
- groupKey: string,
-    params: undefined |  GetApiGroupsGroupKeyPlayerStatsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>> & Pick<
+export function useGetApiGroupsGroupKeyPlayerStats<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  params: undefined | GetApiGroupsGroupKeyPlayerStatsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyPlayerStats<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse>(
- groupKey: string,
-    params?: GetApiGroupsGroupKeyPlayerStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyPlayerStats<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  params?: GetApiGroupsGroupKeyPlayerStatsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
           TError,
           Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiGroupsGroupKeyPlayerStats<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse>(
- groupKey: string,
-    params?: GetApiGroupsGroupKeyPlayerStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiGroupsGroupKeyPlayerStats<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  params?: GetApiGroupsGroupKeyPlayerStatsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary 期間を指定してグループ内プレイヤー統計を取得（指定なしで全期間）
  */
 
-export function useGetApiGroupsGroupKeyPlayerStats<TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse>(
- groupKey: string,
-    params?: GetApiGroupsGroupKeyPlayerStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiGroupsGroupKeyPlayerStats<
+  TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+>(
+  groupKey: string,
+  params?: GetApiGroupsGroupKeyPlayerStatsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiGroupsGroupKeyPlayerStatsQueryOptions(groupKey, params, options);
 
-  const queryOptions = getGetApiGroupsGroupKeyPlayerStatsQueryOptions(groupKey,params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary すべてのグループを取得
  */
 export const getApiAdminGroups = (
-    
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<AdminGroup[]>(
-      {url: `/api/admin/groups`, method: 'GET', signal
-    },
-      options);
-    }
-  
-
-
+  return customFetch<AdminGroup[]>({ url: `/api/admin/groups`, method: 'GET', signal }, options);
+};
 
 export const getGetApiAdminGroupsQueryKey = () => {
-    return [
-    `/api/admin/groups`
-    ] as const;
-    }
+  return [`/api/admin/groups`] as const;
+};
 
-    
-export const getGetApiAdminGroupsQueryOptions = <TData = Awaited<ReturnType<typeof getApiAdminGroups>>, TError = ErrorResponse | DefaultErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
-) => {
+export const getGetApiAdminGroupsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminGroups>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiAdminGroupsQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiAdminGroupsQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAdminGroups>>> = ({ signal }) =>
+    getApiAdminGroups(requestOptions, signal);
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminGroups>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAdminGroups>>> = ({ signal }) => getApiAdminGroups(requestOptions, signal);
+export type GetApiAdminGroupsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminGroups>>
+>;
+export type GetApiAdminGroupsQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiAdminGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiAdminGroups>>>
-export type GetApiAdminGroupsQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiAdminGroups<TData = Awaited<ReturnType<typeof getApiAdminGroups>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>> & Pick<
+export function useGetApiAdminGroups<
+  TData = Awaited<ReturnType<typeof getApiAdminGroups>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>> &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiAdminGroups>>,
           TError,
           Awaited<ReturnType<typeof getApiAdminGroups>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiAdminGroups<TData = Awaited<ReturnType<typeof getApiAdminGroups>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAdminGroups<
+  TData = Awaited<ReturnType<typeof getApiAdminGroups>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>> &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiAdminGroups>>,
           TError,
           Awaited<ReturnType<typeof getApiAdminGroups>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiAdminGroups<TData = Awaited<ReturnType<typeof getApiAdminGroups>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAdminGroups<
+  TData = Awaited<ReturnType<typeof getApiAdminGroups>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary すべてのグループを取得
  */
 
-export function useGetApiAdminGroups<TData = Awaited<ReturnType<typeof getApiAdminGroups>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiAdminGroups<
+  TData = Awaited<ReturnType<typeof getApiAdminGroups>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminGroups>>, TError, TData>>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAdminGroupsQueryOptions(options);
 
-  const queryOptions = getGetApiAdminGroupsQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 /**
  * @summary 指定したグループを削除
  */
 export const deleteApiAdminGroupsGroupKey = (
-    groupKey: string,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<DefaultErrorResponse>(
-      {url: `/api/admin/groups/${groupKey}`, method: 'DELETE'
-    },
-      options);
-    }
-  
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    { url: `/api/admin/groups/${groupKey}`, method: 'DELETE' },
+    options,
+  );
+};
 
+export const getDeleteApiAdminGroupsGroupKeyMutationOptions = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>,
+    TError,
+    { groupKey: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>,
+  TError,
+  { groupKey: string },
+  TContext
+> => {
+  const mutationKey = ['deleteApiAdminGroupsGroupKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getDeleteApiAdminGroupsGroupKeyMutationOptions = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>, TError,{groupKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>, TError,{groupKey: string}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>,
+    { groupKey: string }
+  > = (props) => {
+    const { groupKey } = props ?? {};
 
-const mutationKey = ['deleteApiAdminGroupsGroupKey'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return deleteApiAdminGroupsGroupKey(groupKey, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiAdminGroupsGroupKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>, {groupKey: string}> = (props) => {
-          const {groupKey} = props ?? {};
+export type DeleteApiAdminGroupsGroupKeyMutationError = ErrorResponse | DefaultErrorResponse;
 
-          return  deleteApiAdminGroupsGroupKey(groupKey,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiAdminGroupsGroupKeyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>>
-    
-    export type DeleteApiAdminGroupsGroupKeyMutationError = ErrorResponse | DefaultErrorResponse
-
-    /**
+/**
  * @summary 指定したグループを削除
  */
-export const useDeleteApiAdminGroupsGroupKey = <TError = ErrorResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>, TError,{groupKey: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>,
-        TError,
-        {groupKey: string},
-        TContext
-      > => {
+export const useDeleteApiAdminGroupsGroupKey = <
+  TError = ErrorResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>,
+      TError,
+      { groupKey: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiAdminGroupsGroupKey>>,
+  TError,
+  { groupKey: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiAdminGroupsGroupKeyMutationOptions(options);
 
-      const mutationOptions = getDeleteApiAdminGroupsGroupKeyMutationOptions(options);
+  return useMutation(mutationOptions, queryClient);
+};
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
 export const getApiAdminContacts = (
-    
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Contact[]>(
-      {url: `/api/admin/contacts`, method: 'GET', signal
-    },
-      options);
-    }
-  
-
-
+  return customFetch<Contact[]>({ url: `/api/admin/contacts`, method: 'GET', signal }, options);
+};
 
 export const getGetApiAdminContactsQueryKey = () => {
-    return [
-    `/api/admin/contacts`
-    ] as const;
-    }
+  return [`/api/admin/contacts`] as const;
+};
 
-    
-export const getGetApiAdminContactsQueryOptions = <TData = Awaited<ReturnType<typeof getApiAdminContacts>>, TError = ErrorResponse | DefaultErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
-) => {
+export const getGetApiAdminContactsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminContacts>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiAdminContactsQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiAdminContactsQueryKey();
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAdminContacts>>> = ({ signal }) =>
+    getApiAdminContacts(requestOptions, signal);
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminContacts>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAdminContacts>>> = ({ signal }) => getApiAdminContacts(requestOptions, signal);
+export type GetApiAdminContactsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminContacts>>
+>;
+export type GetApiAdminContactsQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiAdminContactsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiAdminContacts>>>
-export type GetApiAdminContactsQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiAdminContacts<TData = Awaited<ReturnType<typeof getApiAdminContacts>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>> & Pick<
+export function useGetApiAdminContacts<
+  TData = Awaited<ReturnType<typeof getApiAdminContacts>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiAdminContacts>>,
           TError,
           Awaited<ReturnType<typeof getApiAdminContacts>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiAdminContacts<TData = Awaited<ReturnType<typeof getApiAdminContacts>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAdminContacts<
+  TData = Awaited<ReturnType<typeof getApiAdminContacts>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiAdminContacts>>,
           TError,
           Awaited<ReturnType<typeof getApiAdminContacts>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiAdminContacts<TData = Awaited<ReturnType<typeof getApiAdminContacts>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAdminContacts<
+  TData = Awaited<ReturnType<typeof getApiAdminContacts>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useGetApiAdminContacts<TData = Awaited<ReturnType<typeof getApiAdminContacts>>, TError = ErrorResponse | DefaultErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiAdminContacts<
+  TData = Awaited<ReturnType<typeof getApiAdminContacts>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContacts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAdminContactsQueryOptions(options);
 
-  const queryOptions = getGetApiAdminContactsQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-
 
 export const getApiAdminContactsContactId = (
-    contactId: number,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  contactId: number,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
 ) => {
-      
-      
-      return customFetch<Contact>(
-      {url: `/api/admin/contacts/${contactId}`, method: 'GET', signal
-    },
-      options);
-    }
-  
+  return customFetch<Contact>(
+    { url: `/api/admin/contacts/${contactId}`, method: 'GET', signal },
+    options,
+  );
+};
 
+export const getGetApiAdminContactsContactIdQueryKey = (contactId?: number) => {
+  return [`/api/admin/contacts/${contactId}`] as const;
+};
 
-
-export const getGetApiAdminContactsContactIdQueryKey = (contactId?: number,) => {
-    return [
-    `/api/admin/contacts/${contactId}`
-    ] as const;
-    }
-
-    
-export const getGetApiAdminContactsContactIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError = ErrorResponse | DefaultErrorResponse>(contactId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiAdminContactsContactIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  contactId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetApiAdminContactsContactIdQueryKey(contactId);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiAdminContactsContactIdQueryKey(contactId);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAdminContactsContactId>>> = ({
+    signal,
+  }) => getApiAdminContactsContactId(contactId, requestOptions, signal);
 
-  
+  return { queryKey, queryFn, enabled: !!contactId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAdminContactsContactId>>> = ({ signal }) => getApiAdminContactsContactId(contactId, requestOptions, signal);
+export type GetApiAdminContactsContactIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiAdminContactsContactId>>
+>;
+export type GetApiAdminContactsContactIdQueryError = ErrorResponse | DefaultErrorResponse;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(contactId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiAdminContactsContactIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiAdminContactsContactId>>>
-export type GetApiAdminContactsContactIdQueryError = ErrorResponse | DefaultErrorResponse
-
-
-export function useGetApiAdminContactsContactId<TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError = ErrorResponse | DefaultErrorResponse>(
- contactId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>> & Pick<
+export function useGetApiAdminContactsContactId<
+  TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  contactId: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
           TError,
           Awaited<ReturnType<typeof getApiAdminContactsContactId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiAdminContactsContactId<TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError = ErrorResponse | DefaultErrorResponse>(
- contactId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAdminContactsContactId<
+  TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  contactId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
           TError,
           Awaited<ReturnType<typeof getApiAdminContactsContactId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiAdminContactsContactId<TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError = ErrorResponse | DefaultErrorResponse>(
- contactId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiAdminContactsContactId<
+  TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  contactId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
-export function useGetApiAdminContactsContactId<TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError = ErrorResponse | DefaultErrorResponse>(
- contactId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiAdminContactsContactId<
+  TData = Awaited<ReturnType<typeof getApiAdminContactsContactId>>,
+  TError = ErrorResponse | DefaultErrorResponse,
+>(
+  contactId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiAdminContactsContactId>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiAdminContactsContactIdQueryOptions(contactId, options);
 
-  const queryOptions = getGetApiAdminContactsContactIdQueryOptions(contactId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
 
-
-
-
-
 export const patchApiAdminContactsContactId = (
-    contactId: number,
-    contactUpdate: ContactUpdate,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<Contact>(
-      {url: `/api/admin/contacts/${contactId}`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: contactUpdate
-    },
-      options);
-    }
-  
-
-
-export const getPatchApiAdminContactsContactIdMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiAdminContactsContactId>>, TError,{contactId: number;data: ContactUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof patchApiAdminContactsContactId>>, TError,{contactId: number;data: ContactUpdate}, TContext> => {
-
-const mutationKey = ['patchApiAdminContactsContactId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchApiAdminContactsContactId>>, {contactId: number;data: ContactUpdate}> = (props) => {
-          const {contactId,data} = props ?? {};
-
-          return  patchApiAdminContactsContactId(contactId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PatchApiAdminContactsContactIdMutationResult = NonNullable<Awaited<ReturnType<typeof patchApiAdminContactsContactId>>>
-    export type PatchApiAdminContactsContactIdMutationBody = ContactUpdate
-    export type PatchApiAdminContactsContactIdMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
-
-    export const usePatchApiAdminContactsContactId = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiAdminContactsContactId>>, TError,{contactId: number;data: ContactUpdate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof patchApiAdminContactsContactId>>,
-        TError,
-        {contactId: number;data: ContactUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getPatchApiAdminContactsContactIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    
-export const deleteApiAdminContactsContactId = (
-    contactId: number,
- options?: SecondParameter<typeof customFetch>,) => {
-      
-      
-      return customFetch<void>(
-      {url: `/api/admin/contacts/${contactId}`, method: 'DELETE'
-    },
-      options);
-    }
-  
-
-
-export const getDeleteApiAdminContactsContactIdMutationOptions = <TError = DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>, TError,{contactId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>, TError,{contactId: number}, TContext> => {
-
-const mutationKey = ['deleteApiAdminContactsContactId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>, {contactId: number}> = (props) => {
-          const {contactId} = props ?? {};
-
-          return  deleteApiAdminContactsContactId(contactId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiAdminContactsContactIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>>
-    
-    export type DeleteApiAdminContactsContactIdMutationError = DefaultErrorResponse
-
-    export const useDeleteApiAdminContactsContactId = <TError = DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>, TError,{contactId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>,
-        TError,
-        {contactId: number},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteApiAdminContactsContactIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    
-export const postApiContacts = (
-    contactCreate: ContactCreate,
- options?: SecondParameter<typeof customFetch>,signal?: AbortSignal
+  contactId: number,
+  contactUpdate: ContactUpdate,
+  options?: SecondParameter<typeof customFetch>,
 ) => {
-      
-      
-      return customFetch<Contact>(
-      {url: `/api/contacts/`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: contactCreate, signal
+  return customFetch<Contact>(
+    {
+      url: `/api/admin/contacts/${contactId}`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: contactUpdate,
     },
-      options);
-    }
-  
+    options,
+  );
+};
 
+export const getPatchApiAdminContactsContactIdMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchApiAdminContactsContactId>>,
+    TError,
+    { contactId: number; data: ContactUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchApiAdminContactsContactId>>,
+  TError,
+  { contactId: number; data: ContactUpdate },
+  TContext
+> => {
+  const mutationKey = ['patchApiAdminContactsContactId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const getPostApiContactsMutationOptions = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiContacts>>, TError,{data: ContactCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiContacts>>, TError,{data: ContactCreate}, TContext> => {
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchApiAdminContactsContactId>>,
+    { contactId: number; data: ContactUpdate }
+  > = (props) => {
+    const { contactId, data } = props ?? {};
 
-const mutationKey = ['postApiContacts'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+    return patchApiAdminContactsContactId(contactId, data, requestOptions);
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PatchApiAdminContactsContactIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchApiAdminContactsContactId>>
+>;
+export type PatchApiAdminContactsContactIdMutationBody = ContactUpdate;
+export type PatchApiAdminContactsContactIdMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiContacts>>, {data: ContactCreate}> = (props) => {
-          const {data} = props ?? {};
+export const usePatchApiAdminContactsContactId = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof patchApiAdminContactsContactId>>,
+      TError,
+      { contactId: number; data: ContactUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof patchApiAdminContactsContactId>>,
+  TError,
+  { contactId: number; data: ContactUpdate },
+  TContext
+> => {
+  const mutationOptions = getPatchApiAdminContactsContactIdMutationOptions(options);
 
-          return  postApiContacts(data,requestOptions)
-        }
+  return useMutation(mutationOptions, queryClient);
+};
 
-        
+export const deleteApiAdminContactsContactId = (
+  contactId: number,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<void>({ url: `/api/admin/contacts/${contactId}`, method: 'DELETE' }, options);
+};
 
+export const getDeleteApiAdminContactsContactIdMutationOptions = <
+  TError = DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>,
+    TError,
+    { contactId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>,
+  TError,
+  { contactId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteApiAdminContactsContactId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return  { mutationFn, ...mutationOptions }}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>,
+    { contactId: number }
+  > = (props) => {
+    const { contactId } = props ?? {};
 
-    export type PostApiContactsMutationResult = NonNullable<Awaited<ReturnType<typeof postApiContacts>>>
-    export type PostApiContactsMutationBody = ContactCreate
-    export type PostApiContactsMutationError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse
+    return deleteApiAdminContactsContactId(contactId, requestOptions);
+  };
 
-    export const usePostApiContacts = <TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiContacts>>, TError,{data: ContactCreate}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiContacts>>,
-        TError,
-        {data: ContactCreate},
-        TContext
-      > => {
+  return { mutationFn, ...mutationOptions };
+};
 
-      const mutationOptions = getPostApiContactsMutationOptions(options);
+export type DeleteApiAdminContactsContactIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>
+>;
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    
+export type DeleteApiAdminContactsContactIdMutationError = DefaultErrorResponse;
+
+export const useDeleteApiAdminContactsContactId = <
+  TError = DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>,
+      TError,
+      { contactId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiAdminContactsContactId>>,
+  TError,
+  { contactId: number },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiAdminContactsContactIdMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const postApiContacts = (
+  contactCreate: ContactCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<Contact>(
+    {
+      url: `/api/contacts/`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: contactCreate,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostApiContactsMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiContacts>>,
+    TError,
+    { data: ContactCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiContacts>>,
+  TError,
+  { data: ContactCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiContacts'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiContacts>>,
+    { data: ContactCreate }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiContacts(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiContactsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiContacts>>
+>;
+export type PostApiContactsMutationBody = ContactCreate;
+export type PostApiContactsMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
+
+export const usePostApiContacts = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiContacts>>,
+      TError,
+      { data: ContactCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiContacts>>,
+  TError,
+  { data: ContactCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiContactsMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};

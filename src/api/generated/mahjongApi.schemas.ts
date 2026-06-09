@@ -7,7 +7,7 @@
 /**
  * Errors
  */
-export type ErrorErrors = {[key: string]: unknown};
+export type ErrorErrors = { [key: string]: unknown };
 
 export interface Error {
   /** Error code */
@@ -37,9 +37,11 @@ export interface PaginationMetadata {
   next_page?: number;
 }
 
-export interface ValidationErrorField { [key: string]: unknown }
+export interface ValidationErrorField {
+  [key: string]: unknown;
+}
 
-export type ErrorResponseErrors = {[key: string]: ValidationErrorField};
+export type ErrorResponseErrors = { [key: string]: ValidationErrorField };
 
 export interface ErrorResponse {
   code: number;
@@ -139,8 +141,7 @@ export interface TournamentLink {
 /**
  * 卓タイプ
  */
-export type TableType = typeof TableType[keyof typeof TableType];
-
+export type TableType = (typeof TableType)[keyof typeof TableType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TableType = {
@@ -176,8 +177,7 @@ export interface Table {
 /**
  * 卓タイプ
  */
-export type TableCreateType = typeof TableCreateType[keyof typeof TableCreateType];
-
+export type TableCreateType = (typeof TableCreateType)[keyof typeof TableCreateType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TableCreateType = {
@@ -222,8 +222,8 @@ export interface GroupRequest {
   email: string;
   /** ユーザーのタイムゾーン（例: 'Asia/Tokyo'） */
   timezone?: string;
-  /** reCAPTCHAのトークン */
-  recaptcha_token: string;
+  /** reCAPTCHAのトークン(未使用) */
+  recaptcha_token?: string;
 }
 
 export interface GroupResponse {
@@ -231,6 +231,8 @@ export interface GroupResponse {
   message: string;
   /** 有効期限 */
   expires_at: string;
+  /** 作成中トークン */
+  token: string;
 }
 
 export interface GroupUpdate {
@@ -293,8 +295,7 @@ export interface PlayerUpdate {
 /**
  * 卓タイプ
  */
-export type TableUpdateType = typeof TableUpdateType[keyof typeof TableUpdateType];
-
+export type TableUpdateType = (typeof TableUpdateType)[keyof typeof TableUpdateType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TableUpdateType = {
@@ -364,7 +365,7 @@ export interface GameUpdate {
   scores?: ScoreInput[];
 }
 
-export type TournamentParticipantsErrorsItem = {[key: string]: unknown};
+export type TournamentParticipantsErrorsItem = { [key: string]: unknown };
 
 export interface TournamentParticipants {
   tournament_id: number;
@@ -427,7 +428,7 @@ export interface PlayerScore {
 /**
  * 大会情報
  */
-export type TournamentExportTournament = {[key: string]: unknown};
+export type TournamentExportTournament = { [key: string]: unknown };
 
 export interface TournamentExport {
   /** 大会情報 */
@@ -439,7 +440,7 @@ export interface TournamentExport {
 /**
  * グループ情報
  */
-export type GroupSummaryGroup = {[key: string]: unknown};
+export type GroupSummaryGroup = { [key: string]: unknown };
 
 export interface GroupSummary {
   /** グループ情報 */
@@ -451,8 +452,7 @@ export interface GroupSummary {
 /**
  * テーブル（卓）のタイプ
  */
-export type TableInfoType = typeof TableInfoType[keyof typeof TableInfoType];
-
+export type TableInfoType = (typeof TableInfoType)[keyof typeof TableInfoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TableInfoType = {
@@ -472,7 +472,7 @@ export interface TableInfo {
 /**
  * 各テーブルごとのスコア辞書。例: {'1': 25000, '2': -5000}
  */
-export type PlayerScoreMapScores = {[key: string]: number};
+export type PlayerScoreMapScores = { [key: string]: number };
 
 export interface PlayerScoreMap {
   /** プレイヤーID */
@@ -528,12 +528,12 @@ export interface GroupPlayerStat {
 /**
  * グループ情報（id, nameなど）
  */
-export type GroupPlayerStatsGroup = {[key: string]: unknown};
+export type GroupPlayerStatsGroup = { [key: string]: unknown };
 
 /**
  * 集計期間
  */
-export type GroupPlayerStatsPeriod = {[key: string]: string};
+export type GroupPlayerStatsPeriod = { [key: string]: string };
 
 export interface GroupPlayerStats {
   /** グループ情報（id, nameなど） */
@@ -583,8 +583,9 @@ export interface Contact {
  * ステータス
  * @nullable
  */
-export type ContactUpdateStatus = typeof ContactUpdateStatus[keyof typeof ContactUpdateStatus] | null;
-
+export type ContactUpdateStatus =
+  | (typeof ContactUpdateStatus)[keyof typeof ContactUpdateStatus]
+  | null;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ContactUpdateStatus = {
@@ -656,15 +657,14 @@ export type DefaultErrorResponse = Error;
 export type UnprocessableEntityResponse = Error;
 
 export type GetApiGroupsGroupKeyPlayerStatsParams = {
-/**
- * 集計開始日（Tournament.started_at基準、省略時は全期間）
- * @nullable
- */
-start_date?: string | null;
-/**
- * 集計終了日（Tournament.started_at基準、省略時は全期間）
- * @nullable
- */
-end_date?: string | null;
+  /**
+   * 集計開始日（Tournament.started_at基準、省略時は全期間）
+   * @nullable
+   */
+  start_date?: string | null;
+  /**
+   * 集計終了日（Tournament.started_at基準、省略時は全期間）
+   * @nullable
+   */
+  end_date?: string | null;
 };
-

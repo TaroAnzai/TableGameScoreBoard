@@ -2,7 +2,7 @@
 
 import { useMutation, useQueries } from '@tanstack/react-query';
 import { View } from 'lucide-react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
@@ -43,8 +43,9 @@ export const useCreateGroupRequest = () => {
     mutationFn: (data: GroupRequest) => {
       return postApiGroupsRequestLink(data);
     },
-    onSuccess: (data: GroupResponse) => {
+    onSuccess: (data: GroupResponse, variables: GroupRequest) => {
       const expire_at = formatLocalDateTime(toLocalDate(data.expires_at));
+      appStorage.addPendingGroupKey(data.token, variables.name);
       alertDialog({
         title: t('hooks.groupRequest.emailSentTitle'),
         description: t('hooks.groupRequest.emailSentDescription'),
@@ -78,6 +79,7 @@ export const useCreateGroupRequest = () => {
 };
 
 export const useCreateGroup = (onAfterCreate?: () => void) => {
+  // this function is not used in this app. It is provided for future use when we want to create a group without email verification.
   const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
   return useMutation({
@@ -120,6 +122,7 @@ export const useUpdateGroup = (onAfterUpdate?: () => void) => {
       Toast.show({
         type: 'success',
         text1: t('hooks.group.updateSuccess'),
+        text2: data.name,
       });
       onAfterUpdate?.();
     },
@@ -153,12 +156,17 @@ export const getKeyType = (data: Group): 'OWNER' | 'EDIT' | 'VIEW' | '' => {
 export const useGroupQueries = () => {
   const [refetchGroups, setRefetchGroups] = useState(0);
   const [groupKeys, setGroupKeys] = useState<string[]>([]);
+  const [pendingGroups, setPendingGroups] = useState<{ groupKey: string; groupName: string }[]>([]);
 
   // AsyncStorageからGroup Keyを取得
   useEffect(() => {
     const loadGroupKeys = async () => {
       const keys = await appStorage.getGroupKeys();
-      setGroupKeys(keys);
+      const pendingKeys = await appStorage.getPendingGroupKeys();
+      const pendingGroups = await appStorage.getPendingGroups();
+      const allKeys = Array.from(new Set([...keys, ...pendingKeys]));
+      setGroupKeys(allKeys);
+      setPendingGroups(pendingGroups);
     };
 
     loadGroupKeys();
@@ -178,21 +186,52 @@ export const useGroupQueries = () => {
 
   // クエリ結果監視
   useEffect(() => {
-    groupQueries.forEach((query, index) => {
-      const key = groupKeys[index];
+    const syncGroupKeys = async () => {
+      const pendingKeys = await appStorage.getPendingGroupKeys();
+      const savedGroupKeys = await appStorage.getGroupKeys();
+      let changed = false;
+      for (const [index, query] of groupQueries.entries()) {
+        const key = groupKeys[index];
 
-      if (query.isError) {
-        console.error(`Error fetching group ${key}:`, query.error);
+        if (!key) continue;
 
-        if ((query.error as any)?.status === 404) {
-          console.warn(`Group not found: ${key}, removing from storage`);
+        if (query.isSuccess) {
+          if (pendingKeys.includes(key)) {
+            await appStorage.removePendingGroupKey(key);
+            changed = true;
+          }
 
-          appStorage.removeGroupKey(key).then(() => {
-            setRefetchGroups((prev) => prev + 1);
-          });
+          if (!savedGroupKeys.includes(key)) {
+            await appStorage.addGroupKey(key);
+            changed = true;
+          }
+        }
+
+        if (query.isError) {
+          console.error(`Error fetching group ${key}:`, query.error);
+
+          const status = (query.error as any)?.status;
+
+          if (status === 404) {
+            console.warn(`Group not found: ${key}, removing from storage`);
+
+            // 登録済みなら削除
+            if (savedGroupKeys.includes(key)) {
+              await appStorage.removeGroupKey(key);
+              changed = true;
+            }
+
+            // Pendingは削除しない
+            // 取得できない場合はPendingに継続
+          }
+        }
+        if (changed) {
+          setRefetchGroups((prev) => prev + 1);
         }
       }
-    });
+    };
+
+    syncGroupKeys();
   }, [groupQueries, groupKeys]);
 
   const refetch = () => setRefetchGroups((prev) => prev + 1);
@@ -200,6 +239,7 @@ export const useGroupQueries = () => {
   return {
     groupQueries,
     groupKeys,
+    pendingGroups,
     isLoading: groupQueries.some((q) => q.isLoading),
     groups: groupQueries.filter((q) => q.isSuccess).map((q) => q.data),
     refetch,
