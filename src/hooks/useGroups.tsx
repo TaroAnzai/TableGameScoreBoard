@@ -15,6 +15,7 @@ import type {
   GroupResponse,
   GroupUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
+import type { PendingGroup } from '@/src/storage/appStorage';
 import { appStorage } from '@/src/storage/appStorage';
 
 import {
@@ -45,7 +46,17 @@ export const useCreateGroupRequest = () => {
     },
     onSuccess: (data: GroupResponse, variables: GroupRequest) => {
       const expire_at = formatLocalDateTime(toLocalDate(data.expires_at));
-      appStorage.addPendingGroupKey(data.token, variables.name);
+      console.log(
+        'Group request created successfully:',
+        data,
+        toLocalDate(data.expires_at),
+        typeof toLocalDate(data.expires_at),
+      );
+      appStorage.addPendingGroupKey({
+        token: data.token,
+        groupName: variables.name,
+        expiresAt: toLocalDate(data.expires_at) ?? new Date(),
+      });
       alertDialog({
         title: t('hooks.groupRequest.emailSentTitle'),
         description: t('hooks.groupRequest.emailSentDescription'),
@@ -156,13 +167,13 @@ export const getKeyType = (data: Group): 'OWNER' | 'EDIT' | 'VIEW' | '' => {
 export const useGroupQueries = () => {
   const [refetchGroups, setRefetchGroups] = useState(0);
   const [groupKeys, setGroupKeys] = useState<string[]>([]);
-  const [pendingGroups, setPendingGroups] = useState<{ groupKey: string; groupName: string }[]>([]);
+  const [pendingGroups, setPendingGroups] = useState<PendingGroup[]>([]);
 
   // AsyncStorageからGroup Keyを取得
   useEffect(() => {
     const loadGroupKeys = async () => {
       const keys = await appStorage.getGroupKeys();
-      const pendingKeys = await appStorage.getPendingGroupKeys();
+      const pendingKeys = await appStorage.getPendingGroupTokens();
       const pendingGroups = await appStorage.getPendingGroups();
       const allKeys = Array.from(new Set([...keys, ...pendingKeys]));
       setGroupKeys(allKeys);
@@ -187,7 +198,7 @@ export const useGroupQueries = () => {
   // クエリ結果監視
   useEffect(() => {
     const syncGroupKeys = async () => {
-      const pendingKeys = await appStorage.getPendingGroupKeys();
+      const pendingKeys = await appStorage.getPendingGroupTokens();
       const savedGroupKeys = await appStorage.getGroupKeys();
       let changed = false;
       for (const [index, query] of groupQueries.entries()) {

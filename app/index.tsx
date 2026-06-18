@@ -1,21 +1,27 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { MahjongContainer } from '@/components/MahjongContainer';
 import { TextInputModal } from '@/components/TextInputModal';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
 import { Group } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
 import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
+import { formatLocalDateTime } from '@/src/utils/date_utils';
 export default function Index() {
   const { t } = useTranslation();
-  const { groups, isLoading, refetch } = useGroupQueries();
+  const { groups, pendingGroups, isLoading, refetch } = useGroupQueries();
   const { mutate: createGroup, isPending: isCreateGroupPending } = useCreateGroupRequest();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModdal2Open, setIsModal2Open] = useState(false);
+
+  console.log('groups', groups);
+  console.log('pendingGroups', pendingGroups);
 
   const handleCreateGroup = async (groupName: string, email: string) => {
     if (!groupName || !email) return;
@@ -42,22 +48,99 @@ export default function Index() {
 
   return (
     <>
-      <MahjongContainer>
-        <Text className="mahjong-title">{t('welcomPage.pageTitle')}</Text>
+      <View className="flex-1 bg-background px-5 py-8">
+        <View className="gap-6">
+          {/* Header */}
+          <View className="gap-2">
+            <Text className="text-3xl font-bold text-foreground">{t('welcomPage.pageTitle')}</Text>
+            <Text className="text-muted-foreground">麻雀グループを作成・参加できます</Text>
+          </View>
+
+          {/* Create Group */}
+          <Card className="rounded-2xl border-border bg-card shadow-sm">
+            <CardContent className="gap-4 p-5">
+              <View className="gap-1">
+                <Text className="text-xl font-semibold">新しいグループを作成</Text>
+                <Text className="text-sm text-muted-foreground">
+                  メンバーを招待して対局記録を管理できます
+                </Text>
+              </View>
+
+              <Button className="h-12 rounded-xl" onPress={() => setIsModalOpen(true)}>
+                <Text className="font-semibold">{t('welcomPage.CreateNewGroup')}</Text>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Registered Groups */}
+          <View className="gap-3">
+            <Text className="text-lg font-semibold">{t('welcomPage.RegisteredGroups')}</Text>
+
+            {isLoading ? (
+              <Card className="rounded-2xl">
+                <CardContent className="items-center justify-center gap-3 p-8">
+                  <ActivityIndicator size="large" />
+                  <Text className="text-muted-foreground">Loading...</Text>
+                </CardContent>
+              </Card>
+            ) : (
+              <View className="gap-3">
+                {groups.map(
+                  (group) =>
+                    group && (
+                      <Pressable
+                        key={group.id + getAccessLevelstring(group.group_links)}
+                        onPress={() => handleEnterGroup(group)}
+                      >
+                        <Card className="rounded-2xl border-border bg-card active:opacity-80">
+                          <CardContent className="flex-row items-center justify-between p-4">
+                            <View className="gap-1">
+                              <Text className="text-base font-semibold">{group.name}</Text>
+                              <Text className="text-sm text-muted-foreground">アクセス権限</Text>
+                            </View>
+
+                            <Badge variant="secondary" className="rounded-full">
+                              <Text>{getAccessLevelstring(group.group_links)}</Text>
+                            </Badge>
+                          </CardContent>
+                        </Card>
+                      </Pressable>
+                    ),
+                )}
+              </View>
+            )}
+            {pendingGroups.length > 0 && (
+              <View className="gap-3">
+                <Text className="text-lg font-semibold">Pending Groups</Text>
+                {pendingGroups.map((group) => (
+                  <View key={group.token} className="gap-1">
+                    <Text className="text-base font-semibold">{group.groupName}</Text>
+                    <Text className="text-sm text-muted-foreground">
+                      {formatLocalDateTime(group.expiresAt)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+      <View>
+        <Text>{t('welcomPage.pageTitle')}</Text>
         <ButtonGridSection>
-          <Button className="mahjong-button" onPress={() => setIsModalOpen(true)}>
+          <Button onPress={() => setIsModalOpen(true)}>
             <Text>{t('welcomPage.CreateNewGroup')}</Text>
           </Button>
         </ButtonGridSection>
-        <View className="mahjong-section">
-          <Text className="mahjong-heading">{t('welcomPage.RegisteredGroups')}</Text>
+        <View>
+          <Text>{t('welcomPage.RegisteredGroups')}</Text>
           {isLoading ? (
             <View className="flex items-center justify-center gap-2">
               <ActivityIndicator size="large" />
               <Text>Loading...</Text>
             </View>
           ) : (
-            <View className="mahjong-list">
+            <View>
               {groups.map(
                 (group) =>
                   group && (
@@ -65,7 +148,7 @@ export default function Index() {
                       key={group.id + getAccessLevelstring(group.group_links)}
                       onPress={() => handleEnterGroup(group)}
                     >
-                      <Text className="mahjong-list-item">
+                      <Text>
                         {group?.name}（{getAccessLevelstring(group.group_links)}）
                       </Text>
                     </Pressable>
@@ -74,7 +157,7 @@ export default function Index() {
             </View>
           )}
         </View>
-      </MahjongContainer>
+      </View>
       <TextInputModal
         open={isModalOpen}
         title={t('welcomPage.CreateNewGroup')}

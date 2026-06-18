@@ -1,30 +1,27 @@
-// components/MahjongContainer.tsx
-import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
+import { View } from 'react-native';
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 type Props = {
   children: ReactNode;
 };
-
 export const MahjongContainer = ({ children }: Props) => {
   return (
-    <LinearGradient colors={['rgba(34,139,34,0.15)', 'rgba(0,100,0,0.1)']} style={styles.container}>
-      {children}
-    </LinearGradient>
+    <Card>
+      <CardHeader className="flex-row">
+        <View className="flex-1 gap-1.5">
+          <CardTitle>Subscribe to our newsletter</CardTitle>
+          <CardDescription>Enter your details to receive updates and tips</CardDescription>
+        </View>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
   );
 };
-//background: linear-gradient(145deg, rgba(34, 139, 34, 0.15), rgba(0, 100, 0, 0.1));
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    maxWidth: 500,
-    padding: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(144,238,144,0.3)',
-    borderRadius: 24,
-    overflow: 'hidden',
-    alignSelf: 'center',
-  },
-});
