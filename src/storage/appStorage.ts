@@ -48,7 +48,6 @@ export const appStorage = {
 
   async getPendingGroups(): Promise<PendingGroup[]> {
     const value = await AsyncStorage.getItem(PENDING_GROUP_KEYS_KEY);
-    console.log('Loaded pending groups from storage:', value);
 
     if (!value) {
       return [];
@@ -58,7 +57,6 @@ export const appStorage = {
       const parsed: unknown = JSON.parse(value);
 
       if (!Array.isArray(parsed)) {
-        console.error('Invalid pending groups format: expected an array');
         await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify([]));
         return [];
       }
@@ -68,22 +66,14 @@ export const appStorage = {
         .map((group) => ({ ...group, expiresAt: new Date(group.expiresAt) }));
 
       if (validGroups.length !== parsed.length) {
-        console.warn('Some pending groups were invalid and have been removed:', parsed);
         await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify(validGroups));
       }
 
       return validGroups;
     } catch (error) {
-      console.error('Failed to parse pending groups:', error);
-
       await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify([]));
       return [];
     }
-  },
-
-  async getPendingGroupTokens(): Promise<string[]> {
-    const groups = await this.getPendingGroups();
-    return groups.map((group) => group.token);
   },
 
   async setPendingGroups(groups: PendingGroup[]) {
@@ -105,7 +95,6 @@ export const appStorage = {
 
     if (!groups.some((group) => group.token === data.token)) {
       groups.push(data);
-      console.log('Adding pending group key:', data);
       await this.setPendingGroups(groups);
     }
   },

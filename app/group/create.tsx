@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
@@ -10,11 +10,10 @@ const GroupCreatePage = () => {
   const { alertDialog } = useAlertDialog();
   const { mutateAsync: createGroupFromToken } = useCreateGroup();
   const hasRun = useRef(false);
-
+  const { token } = useLocalSearchParams<{ token: string }>();
   useEffect(() => {
     if (hasRun.current) return; // ← 2回目はスキップ
     hasRun.current = true;
-    const token = new URLSearchParams(window.location.search).get('token');
 
     const createGroup = async () => {
       if (!token) {

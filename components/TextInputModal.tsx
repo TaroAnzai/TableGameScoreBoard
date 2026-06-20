@@ -95,11 +95,11 @@ export const TextInputModal = ({
           </View>
         </View>
         <DialogFooter>
-          <Button onPress={() => onClose()}>
+          <Button className="mr-2" variant="secondary" onPress={() => onClose()}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button onPress={() => onComfirm(inputText, inputText2)}>
-            <Text>OK</Text>
+          <Button className="mr-2 w-full" onPress={() => onComfirm(inputText, inputText2)}>
+            <Text className="text-white">OK</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,7 @@
 // src/components/common/AlertDialogProvider.tsx
 
 import React, { createContext, useCallback, useContext, useState } from 'react';
+import { View } from 'react-native';
 
 import {
   AlertDialog,
@@ -17,7 +18,9 @@ import { Text } from '@/components/ui/text';
 type AlertDialogOptions = {
   title?: string;
   description?: string;
-  body?: React.ReactNode;
+  text1?: string;
+  text2?: string;
+  text3?: string;
   confirmText?: string;
   cancelText?: string;
   showCancelButton?: boolean;
@@ -61,12 +64,12 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
           <AlertDialogHeader>
             <AlertDialogTitle>{options.title ?? '確認'}</AlertDialogTitle>
 
-            {!!options.description && (
-              <AlertDialogDescription>{options.description}</AlertDialogDescription>
-            )}
+            <AlertDialogDescription>
+              {[options.description, options.text1, options.text2, options.text3]
+                .filter(Boolean)
+                .join('\n')}
+            </AlertDialogDescription>
           </AlertDialogHeader>
-
-          {options.body}
 
           <AlertDialogFooter>
             {options.showCancelButton !== false && (

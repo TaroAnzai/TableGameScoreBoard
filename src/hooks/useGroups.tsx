@@ -46,12 +46,6 @@ export const useCreateGroupRequest = () => {
     },
     onSuccess: (data: GroupResponse, variables: GroupRequest) => {
       const expire_at = formatLocalDateTime(toLocalDate(data.expires_at));
-      console.log(
-        'Group request created successfully:',
-        data,
-        toLocalDate(data.expires_at),
-        typeof toLocalDate(data.expires_at),
-      );
       appStorage.addPendingGroupKey({
         token: data.token,
         groupName: variables.name,
@@ -60,13 +54,9 @@ export const useCreateGroupRequest = () => {
       alertDialog({
         title: t('hooks.groupRequest.emailSentTitle'),
         description: t('hooks.groupRequest.emailSentDescription'),
-        body: (
-          <View className="mt-2">
-            <Text>{t('hooks.groupRequest.emailSentBodyLink')}</Text>
-            <Text>{t('hooks.groupRequest.emailSentBodyExpire', { expire_at })}</Text>
-            <Text>{t('hooks.groupRequest.emailSentBodyNote')}</Text>
-          </View>
-        ),
+        text1: t('hooks.groupRequest.emailSentBodyLink'),
+        text2: t('hooks.groupRequest.emailSentBodyExpire', { expire_at }),
+        text3: t('hooks.groupRequest.emailSentBodyNote'),
         showCancelButton: false,
       });
       //
@@ -74,7 +64,6 @@ export const useCreateGroupRequest = () => {
       //
     },
     onError: (error: any) => {
-      console.error('Error creating group:', error);
       const message =
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
@@ -108,7 +97,6 @@ export const useCreateGroup = (onAfterCreate?: () => void) => {
       onAfterCreate?.();
     },
     onError: (error: any) => {
-      console.error('Error creating group:', error);
       const message =
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
@@ -138,7 +126,6 @@ export const useUpdateGroup = (onAfterUpdate?: () => void) => {
       onAfterUpdate?.();
     },
     onError: (error: any) => {
-      console.error('Error updating group:', error);
       const message =
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
@@ -165,6 +152,7 @@ export const getKeyType = (data: Group): 'OWNER' | 'EDIT' | 'VIEW' | '' => {
 };
 
 export const useGroupQueries = () => {
+  const { t } = useTranslation();
   const [refetchGroups, setRefetchGroups] = useState(0);
   const [groupKeys, setGroupKeys] = useState<string[]>([]);
   const [pendingGroups, setPendingGroups] = useState<PendingGroup[]>([]);
@@ -173,15 +161,28 @@ export const useGroupQueries = () => {
   useEffect(() => {
     const loadGroupKeys = async () => {
       const keys = await appStorage.getGroupKeys();
-      const pendingKeys = await appStorage.getPendingGroupTokens();
       const pendingGroups = await appStorage.getPendingGroups();
+      const now = new Date();
+      const validPendingGroups = pendingGroups.filter((group) => group.expiresAt > now);
+
+      appStorage.setPendingGroups(validPendingGroups);
+
+      const pendingKeys = validPendingGroups.map((group) => group.token);
       const allKeys = Array.from(new Set([...keys, ...pendingKeys]));
       setGroupKeys(allKeys);
-      setPendingGroups(pendingGroups);
+      setPendingGroups(validPendingGroups);
+      const removedExpiredGroups = pendingGroups.filter((group) => group.expiresAt <= now);
+      if (removedExpiredGroups.length > 0) {
+        Toast.show({
+          type: 'info',
+          text1: t('hooks.group.expiredPendingGroup'),
+          text2: `${removedExpiredGroups.map((g) => g.groupName).join(', ')}`,
+        });
+      }
     };
 
     loadGroupKeys();
-  }, [refetchGroups]);
+  }, [refetchGroups, t]);
 
   // 各 group_key ごとにクエリを作成
   const groupQueries = useQueries({
@@ -198,7 +199,9 @@ export const useGroupQueries = () => {
   // クエリ結果監視
   useEffect(() => {
     const syncGroupKeys = async () => {
-      const pendingKeys = await appStorage.getPendingGroupTokens();
+      const pendingKeys = await appStorage
+        .getPendingGroups()
+        .then((groups) => groups.map((group) => group.token));
       const savedGroupKeys = await appStorage.getGroupKeys();
       let changed = false;
       for (const [index, query] of groupQueries.entries()) {
@@ -219,13 +222,9 @@ export const useGroupQueries = () => {
         }
 
         if (query.isError) {
-          console.error(`Error fetching group ${key}:`, query.error);
-
           const status = (query.error as any)?.status;
 
           if (status === 404) {
-            console.warn(`Group not found: ${key}, removing from storage`);
-
             // 登録済みなら削除
             if (savedGroupKeys.includes(key)) {
               await appStorage.removeGroupKey(key);

@@ -173,7 +173,8 @@
       "updateSuccess": "グループを更新しました",
       "createErrorTitle": "グループ作成時にエラーが発生しました",
       "updateErrorTitle": "グループ更新時にエラーが発生しました",
-      "unknownError": "不明なエラー"
+      "unknownError": "不明なエラー",
+      "expiredPendingGroup": "申請中グループの有効期限切れ"
     }
   },
   "scoreTable": {

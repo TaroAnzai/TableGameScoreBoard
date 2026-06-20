@@ -20,9 +20,6 @@ export default function Index() {
   const { mutate: createGroup, isPending: isCreateGroupPending } = useCreateGroupRequest();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  console.log('groups', groups);
-  console.log('pendingGroups', pendingGroups);
-
   const handleCreateGroup = async (groupName: string, email: string) => {
     if (!groupName || !email) return;
     Keyboard.dismiss();
@@ -57,20 +54,11 @@ export default function Index() {
           </View>
 
           {/* Create Group */}
-          <Card className="rounded-2xl border-border bg-card shadow-sm">
-            <CardContent className="gap-4 p-5">
-              <View className="gap-1">
-                <Text className="text-xl font-semibold">新しいグループを作成</Text>
-                <Text className="text-sm text-muted-foreground">
-                  メンバーを招待して対局記録を管理できます
-                </Text>
-              </View>
-
-              <Button className="h-12 rounded-xl" onPress={() => setIsModalOpen(true)}>
-                <Text className="font-semibold">{t('welcomPage.CreateNewGroup')}</Text>
-              </Button>
-            </CardContent>
-          </Card>
+          <ButtonGridSection>
+            <Button className="h-12 rounded-xl" onPress={() => setIsModalOpen(true)}>
+              <Text className="font-semibold">{t('welcomPage.CreateNewGroup')}</Text>
+            </Button>
+          </ButtonGridSection>
 
           {/* Registered Groups */}
           <View className="gap-3">
@@ -123,39 +111,6 @@ export default function Index() {
               </View>
             )}
           </View>
-        </View>
-      </View>
-      <View>
-        <Text>{t('welcomPage.pageTitle')}</Text>
-        <ButtonGridSection>
-          <Button onPress={() => setIsModalOpen(true)}>
-            <Text>{t('welcomPage.CreateNewGroup')}</Text>
-          </Button>
-        </ButtonGridSection>
-        <View>
-          <Text>{t('welcomPage.RegisteredGroups')}</Text>
-          {isLoading ? (
-            <View className="flex items-center justify-center gap-2">
-              <ActivityIndicator size="large" />
-              <Text>Loading...</Text>
-            </View>
-          ) : (
-            <View>
-              {groups.map(
-                (group) =>
-                  group && (
-                    <Pressable
-                      key={group.id + getAccessLevelstring(group.group_links)}
-                      onPress={() => handleEnterGroup(group)}
-                    >
-                      <Text>
-                        {group?.name}（{getAccessLevelstring(group.group_links)}）
-                      </Text>
-                    </Pressable>
-                  ),
-              )}
-            </View>
-          )}
         </View>
       </View>
       <TextInputModal

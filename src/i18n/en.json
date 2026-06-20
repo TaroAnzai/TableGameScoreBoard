@@ -174,7 +174,8 @@
       "updateSuccess": "Group updated successfully",
       "createErrorTitle": "Error creating group",
       "updateErrorTitle": "Error updating group",
-      "unknownError": "Unknown error"
+      "unknownError": "Unknown error",
+      "expiredPendingGroup": "Expired pending group"
     }
   },
   "scoreTable": {

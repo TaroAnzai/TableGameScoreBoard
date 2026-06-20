@@ -6,19 +6,29 @@ interface ButtonGridSectionProps {
 }
 
 export const ButtonGridSection = ({ children }: ButtonGridSectionProps) => {
-  const childArray = React.Children.toArray(children);
+  const items = React.Children.toArray(children);
 
   return (
-    <View style={styles.gridSection}>
-      {childArray.map((child, index) => {
-        const isLastOdd = index === childArray.length - 1 && childArray.length % 2 === 1;
+    <View className="mb-6 items-center justify-between rounded-2xl border border-border px-2.5 py-4">
+      <View className="w-full gap-3">
+        {items.reduce<React.ReactNode[]>((rows, child, index) => {
+          if (index % 2 === 0) {
+            const isLastOdd = index === items.length - 1;
 
-        return (
-          <View key={index} style={[styles.gridItem, isLastOdd && styles.gridItemFull]}>
-            {child}
-          </View>
-        );
-      })}
+            rows.push(
+              <View key={index} className="flex-row gap-3">
+                <View className="flex-1 items-center">{child}</View>
+
+                {!isLastOdd && items[index + 1] && (
+                  <View className="flex-1 items-center">{items[index + 1]}</View>
+                )}
+              </View>,
+            );
+          }
+
+          return rows;
+        }, [])}
+      </View>
     </View>
   );
 };

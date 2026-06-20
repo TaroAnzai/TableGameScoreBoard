@@ -21,7 +21,6 @@ export const customFetch = async <T>(
 ): Promise<T> => {
   // ✅ ベースURLを組み込む
   const fullUrl = `${API_BASE_URL}${config.url}`;
-  console.log(fullUrl);
   // クエリパラメータ処理
   let urlWithParams = fullUrl;
   if (config.params) {
