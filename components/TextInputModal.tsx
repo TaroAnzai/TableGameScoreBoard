@@ -1,3 +1,4 @@
+import { BlurView } from 'expo-blur';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -15,7 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
 interface TextInputModalProps {
   open: boolean;
   onComfirm: (inputText: string, inputText2?: string) => void;
@@ -63,9 +63,9 @@ export const TextInputModal = ({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogContent className="w-[95%] max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title} ver6</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{discription}</DialogDescription>
         </DialogHeader>
         <View className="grid gap-4">
@@ -76,7 +76,6 @@ export const TextInputModal = ({
               onChangeText={setInputText}
               keyboardType={getKeyboardType(inputType)}
               secureTextEntry={inputType === 'password'}
-              className="h-12 w-full rounded-md border border-gray-300 bg-white px-3 text-base text-gray-900"
             />
           </View>
           <View className="grid gap-3">
@@ -88,18 +87,17 @@ export const TextInputModal = ({
                   onChangeText={setInputText2}
                   keyboardType={getKeyboardType(twoInputType)}
                   secureTextEntry={twoInputType === 'password'}
-                  className="h-12 w-full rounded-md border border-gray-300 bg-white px-3 text-base text-gray-900"
                 />
               </>
             )}
           </View>
         </View>
         <DialogFooter>
-          <Button className="mr-2" variant="secondary" onPress={() => onClose()}>
+          <Button variant="secondary" onPress={() => onClose()}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button className="mr-2 w-full" onPress={() => onComfirm(inputText, inputText2)}>
-            <Text className="text-white">OK</Text>
+          <Button onPress={() => onComfirm(inputText, inputText2)}>
+            <Text>OK</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -9,7 +9,7 @@ export const ButtonGridSection = ({ children }: ButtonGridSectionProps) => {
   const items = React.Children.toArray(children);
 
   return (
-    <View className="mb-6 items-center justify-between rounded-2xl border border-border px-2.5 py-4">
+    <View className="bg-green-700 mb-6 items-center justify-between rounded-2xl border border-green-300 px-2.5 py-4">
       <View className="w-full gap-3">
         {items.reduce<React.ReactNode[]>((rows, child, index) => {
           if (index % 2 === 0) {

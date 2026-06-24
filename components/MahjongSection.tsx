@@ -6,11 +6,11 @@ type Props = {
   children: ReactNode;
   className?: string;
 };
-const MahjongContainer = (options: Props) => {
+const MahjongSection = (options: Props) => {
   return (
     <View
       className={cn(
-        'bg-green-900 border-2 border-green-300 rounded-xl  p-2 m-2',
+        'bg-green-700 mb-6 items-center justify-between rounded-2xl border border-green-300 px-2.5 py-4',
         options.className,
       )}
     >
@@ -19,4 +19,4 @@ const MahjongContainer = (options: Props) => {
   );
 };
 
-export default MahjongContainer;
+export default MahjongSection;

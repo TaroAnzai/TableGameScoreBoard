@@ -1,11 +1,13 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
-import { MahjongContainer } from '@/components/MahjongContainer';
+import MahjongContainer from '@/components/MahjongContainer';
 import { TextInputModal } from '@/components/TextInputModal';
+import { TextInputModal2 } from '@/components/TextInputModal2';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,21 +38,18 @@ export default function Index() {
   const handleEnterGroup = (group: Group) => {
     const key = group.owner_link ?? group.edit_link ?? group.view_link;
     if (!key) return;
-
-    Toast.show({
-      type: 'info',
-      text1: 'Entering group...',
-    });
+    router.push(`/group/${key}`);
   };
 
   return (
     <>
-      <View className="flex-1 bg-background px-5 py-8">
+      <MahjongContainer>
         <View className="gap-6">
           {/* Header */}
-          <View className="gap-2">
-            <Text className="text-3xl font-bold text-foreground">{t('welcomPage.pageTitle')}</Text>
-            <Text className="text-muted-foreground">麻雀グループを作成・参加できます</Text>
+          <View>
+            <Text className="text-center text-xl font-semibold text-white">
+              {t('welcomPage.pageTitle')}
+            </Text>
           </View>
 
           {/* Create Group */}
@@ -76,23 +75,18 @@ export default function Index() {
                 {groups.map(
                   (group) =>
                     group && (
-                      <Pressable
+                      <Button
                         key={group.id + getAccessLevelstring(group.group_links)}
+                        variant="outline"
                         onPress={() => handleEnterGroup(group)}
                       >
-                        <Card className="rounded-2xl border-border bg-card active:opacity-80">
-                          <CardContent className="flex-row items-center justify-between p-4">
-                            <View className="gap-1">
-                              <Text className="text-base font-semibold">{group.name}</Text>
-                              <Text className="text-sm text-muted-foreground">アクセス権限</Text>
-                            </View>
-
-                            <Badge variant="secondary" className="rounded-full">
-                              <Text>{getAccessLevelstring(group.group_links)}</Text>
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      </Pressable>
+                        <View className="flex-row items-center gap-2">
+                          <Text className="text-base font-semibold">{group.name}</Text>
+                          <Badge variant="outline">
+                            <Text>{getAccessLevelstring(group.group_links)}</Text>
+                          </Badge>
+                        </View>
+                      </Button>
                     ),
                 )}
               </View>
@@ -112,7 +106,7 @@ export default function Index() {
             )}
           </View>
         </View>
-      </View>
+      </MahjongContainer>
       <TextInputModal
         open={isModalOpen}
         title={t('welcomPage.CreateNewGroup')}
