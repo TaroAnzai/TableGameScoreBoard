@@ -1,13 +1,11 @@
 // src/hooks/useGroups.tsx
 
 import { useMutation, useQueries } from '@tanstack/react-query';
-import { View } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
-import { Text } from '@/components/ui/text';
 import type {
   Group,
   GroupCreate,

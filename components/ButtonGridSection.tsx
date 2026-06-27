@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 interface ButtonGridSectionProps {
   children?: React.ReactNode;
@@ -10,7 +10,7 @@ export const ButtonGridSection = ({ children }: ButtonGridSectionProps) => {
 
   return (
     <View className="bg-green-700 mb-6 items-center justify-between rounded-2xl border border-green-300 px-2.5 py-4">
-      <View className="w-full gap-3">
+      <View className="w-full gap-4">
         {items.reduce<React.ReactNode[]>((rows, child, index) => {
           if (index % 2 === 0) {
             const isLastOdd = index === items.length - 1;
@@ -32,18 +32,3 @@ export const ButtonGridSection = ({ children }: ButtonGridSectionProps) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  gridSection: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  gridItem: {
-    width: '48%',
-    alignItems: 'center',
-  },
-  gridItemFull: {
-    width: '100%',
-  },
-});

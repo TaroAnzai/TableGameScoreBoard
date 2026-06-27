@@ -1,8 +1,6 @@
-import { BlurView } from 'expo-blur';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-import { Text, TextInput } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +10,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,27 +60,30 @@ export const TextInputModal = ({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogContent>
+      <DialogContent key={`${open}-${value}-${twoValue}`}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{discription}</DialogDescription>
         </DialogHeader>
-        <View className="grid gap-4">
-          <View className="grid gap-3">
+        <View className="gap-4">
+          <View className="gap-3">
             <Label htmlFor="primaryInput">{InputLabel}</Label>
             <Input
-              value={inputText}
+              defaultValue=""
               onChangeText={setInputText}
-              keyboardType={getKeyboardType(inputType)}
-              secureTextEntry={inputType === 'password'}
+              keyboardType="default"
+              secureTextEntry={false}
+              autoCapitalize="none"
+              autoCorrect={false}
+              className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
             />
           </View>
-          <View className="grid gap-3">
+          <View className="gap-3">
             {twoInput && (
               <>
                 <Label htmlFor="twoInput">{twoInputLabel}</Label>
                 <Input
-                  value={inputText2}
+                  defaultValue={inputText2}
                   onChangeText={setInputText2}
                   keyboardType={getKeyboardType(twoInputType)}
                   secureTextEntry={twoInputType === 'password'}
