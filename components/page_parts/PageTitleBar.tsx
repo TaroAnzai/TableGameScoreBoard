@@ -1,13 +1,13 @@
 // src/components/PageTitleBar.tsx
-import * as Clipboard from 'expo-clipboard';
 import { usePathname, useRouter } from 'expo-router';
 import { ChevronLeft, ChevronsUp, Share2 } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Share, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import EditableTitle from '@/components/page_parts/EditableTitle';
+import ShareModal from '@/components/page_parts/ShareModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +27,12 @@ interface PageTitleBarProps {
   parentUrl?: string | null;
   showBackButton?: boolean;
 }
-
+interface shareDataType {
+  groupName: string;
+  accessLevel: string;
+  typeName: string;
+  shareUrl: string;
+}
 export default function PageTitleBar({
   title,
   shareLinks = [],
@@ -41,6 +46,8 @@ export default function PageTitleBar({
   const pathname = usePathname();
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
+  const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
+  const [shareData, setShareData] = React.useState<shareDataType>();
 
   const pathSegments = pathname.split('/').filter(Boolean);
 
@@ -57,9 +64,8 @@ export default function PageTitleBar({
     return getAccessLevelstring(shareLinks);
   }, [shareLinks]);
 
-  const handleShareUrl = async (accessType: string) => {
+  const handleShareUrl = (accessType: string) => {
     const shortKey = shareLinks.find((l) => l.access_level === accessType)?.short_key;
-
     if (!shortKey) {
       alertDialog({
         title: t('titleBar.noLink', { accessType }),
@@ -68,38 +74,13 @@ export default function PageTitleBar({
       return;
     }
 
-    // Web版の window.location.origin の代わり。
-    // 実際のURLはアプリの仕様に合わせて調整してください。
-    const shareUrl = `mahjongapp://${type}/${shortKey}`;
-
-    try {
-      await Share.share({
-        title: t('titleBar.shareTitle', { typeName }),
-        message: `${t('titleBar.shareText', { typeName })}\n${shareUrl}`,
-        url: shareUrl,
-      });
-    } catch (err: any) {
-      try {
-        await Clipboard.setStringAsync(shareUrl);
-
-        alertDialog({
-          title: t('titleBar.shareSuccessTitle'),
-          description: t('titleBar.shareSuccessDescription', {
-            typeName,
-            url: shareUrl,
-          }),
-          showCancelButton: false,
-        });
-      } catch (clipboardErr: any) {
-        alertDialog({
-          title: t('titleBar.shareErrorTitle'),
-          description: t('titleBar.shareErrorDescription', {
-            error: clipboardErr.message,
-          }),
-          showCancelButton: false,
-        });
-      }
-    }
+    setShareData({
+      groupName: title,
+      accessLevel: accessType,
+      typeName: typeName,
+      shareUrl: `mahjongapp://${type}/${shortKey}`,
+    });
+    setIsShareModalOpen(true);
   };
 
   return (
@@ -144,6 +125,16 @@ export default function PageTitleBar({
             </DropdownMenuContent>
           </DropdownMenu>
         </View>
+      )}
+      {shareData && isShareModalOpen && (
+        <ShareModal
+          groupName={shareData.groupName}
+          accessLevel={shareData.accessLevel}
+          typeName={shareData.typeName}
+          shareUrl={shareData.shareUrl}
+          open={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+        />
       )}
     </View>
   );

@@ -96,7 +96,7 @@ const TournamentPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
 
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
-  const parentPageUrl = `/group/{groupKey}`;
+  const parentPageUrl = `/group/${groupKey}`;
 
   const handleOpenAddPlayerModal = async () => {
     if (!groupPlayers || groupPlayers.length === 0) {

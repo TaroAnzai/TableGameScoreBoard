@@ -54,13 +54,13 @@ const SelectorModal = <T extends SelectorItem>({
             <Text className="text-center text-muted-foreground">{msg}</Text>
           </View>
         ) : (
-          <ScrollView className="w-full max-h-80">
+          <ScrollView className="max-h-80">
             <View className="w-full gap-2">
               {items.map((item) => (
                 <Pressable
                   key={String(item.id)}
                   onPress={() => onSelect(item)}
-                  className="rounded-2xl border border-green-300/30 bg-green-600 p-2 active:opacity-80"
+                  className="rounded-2xl border border-green-300 bg-green-600 p-2"
                 >
                   <Text className="text-base text-white">{item.name}</Text>
 
