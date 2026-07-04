@@ -9,7 +9,7 @@ import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import MahjongContainer from '@/components/MahjongContainer';
 import MultiSelectorModal from '@/components/MultiSelectorModal';
-// API 関連
+// API 関連a
 // コンポーネント
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import SelectorModal from '@/components/SelectorModal';

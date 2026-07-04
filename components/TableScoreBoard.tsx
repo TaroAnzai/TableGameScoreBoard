@@ -1,8 +1,9 @@
 import React, { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 
-import { Table, TableCell, TableRow } from '@/components/common/Table';
+import { Table, TBody, Td, THead, Tr } from '@/components/common/Table';
+import { Text } from '@/components/ui/text';
 import type {
   Game,
   Player,
@@ -133,17 +134,35 @@ const TableScoreBoard = ({
   return (
     <View className="flex-col">
       <Table>
-        <TableRow>
-          <TableCell columnIndex={0} header>
-            名前
-          </TableCell>
-          <TableCell columnIndex={1} header>
-            点数
-          </TableCell>
-          <TableCell columnIndex={2} header>
-            順位
-          </TableCell>
-        </TableRow>
+        <THead>
+          <Tr>
+            <Td>
+              <Text numberOfLines={1}>順位</Text>
+            </Td>
+            <Td>
+              <Text numberOfLines={1}>名前</Text>
+            </Td>
+            <Td>
+              <Text numberOfLines={1}>点数</Text>
+            </Td>
+            <Td>
+              <Text numberOfLines={1}>順位</Text>
+            </Td>
+          </Tr>
+        </THead>
+        <TBody>
+          <Tr>
+            <Td>
+              <Text>100</Text>
+            </Td>
+            <Td>
+              <Text>100</Text>
+            </Td>
+            <Td>
+              <Text>1</Text>
+            </Td>
+          </Tr>
+        </TBody>
       </Table>
       <View className="flex-col">
         <ScrollView horizontal className="mt-4">
