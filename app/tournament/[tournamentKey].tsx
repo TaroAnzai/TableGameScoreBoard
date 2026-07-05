@@ -341,7 +341,6 @@ const EditableRate = ({
   };
 
   const handleRateBlur = () => {
-    console.log('handleRateBlur');
     setIsEditingRate(false);
 
     if (editedRate === '' || Number(editedRate) <= 0) {
@@ -363,7 +362,6 @@ const EditableRate = ({
           value={editedRate.toString()}
           onChangeText={handleRateChange}
           onBlur={(e) => {
-            console.log('Input onBlur');
             handleRateBlur();
           }}
           onSubmitEditing={handleRateBlur}

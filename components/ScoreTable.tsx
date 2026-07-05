@@ -52,11 +52,13 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
               {sortedTables.map((table) => {
                 const score = (player.scores ?? {})[String(table.id)] ?? '';
 
-                return <ScoreCell key={table.id}>{score !== 0 ? String(score) : ''}</ScoreCell>;
+                return (
+                  <ScoreCell key={table.id}>{score !== 0 ? score.toLocaleString() : ''}</ScoreCell>
+                );
               })}
 
-              <ScoreCell>{String(player.total ?? '')}</ScoreCell>
-              <ScoreCell>{Number(player.converted_total ?? 0).toFixed(1)}</ScoreCell>
+              <ScoreCell>{String(player.total?.toLocaleString() ?? '')}</ScoreCell>
+              <ScoreCell>{Number(player.converted_total ?? 0).toLocaleString()}</ScoreCell>
             </View>
           ))}
         </View>
