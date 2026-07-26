@@ -10,7 +10,7 @@ const MahjongSection = (options: Props) => {
   return (
     <View
       className={cn(
-        'bg-green-700 mb-6 items-center justify-between rounded-2xl border border-green-300 px-2.5 py-4',
+        'flex-1 bg-green-700 mb-6 items-center justify-between rounded-2xl border border-green-300 px-2.5 py-4',
         options.className,
       )}
     >

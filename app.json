@@ -18,7 +18,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mahjongmobile"
+      "package": "com.anzai-home.mahjongapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,6 +28,12 @@
       "expo-localization",
       "expo-secure-store",
       "expo-splash-screen"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8d9eb11b-19c2-460f-a3d2-d308a93b68c4"
+      }
+    }
   }
 }

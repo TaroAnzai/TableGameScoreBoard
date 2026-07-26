@@ -1,8 +1,8 @@
 // src/pages/TournamentPage.jsx
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -325,8 +325,8 @@ const EditableRate = ({
   label: string;
   onChange: (rate: number) => void;
 }) => {
-  const [isEditingRate, setIsEditingRate] = useState(false);
   const [editedRate, setEditedRate] = useState<number | ''>(rate ?? 1);
+  const submittedRef = useRef(false);
 
   const handleRateChange = (text: string) => {
     if (text === '') {
@@ -340,40 +340,42 @@ const EditableRate = ({
     }
   };
 
-  const handleRateBlur = () => {
-    setIsEditingRate(false);
-
+  const handleRateSubmit = () => {
+    submittedRef.current = true;
     if (editedRate === '' || Number(editedRate) <= 0) {
       setEditedRate(rate ?? 1);
       return;
     }
-
+    if (editedRate === rate) {
+      return;
+    }
     const newRate = Number(editedRate);
     onChange(newRate);
   };
-
+  const handleRateBlur = () => {
+    if (submittedRef.current) {
+      submittedRef.current = false;
+      return;
+    }
+    setEditedRate(rate ?? 1);
+  };
   return (
-    <View className="flex-row items-center gap-2">
-      <Text>{label}</Text>
-      {isEditingRate ? (
+    <Pressable className="w-full items-center" onPress={Keyboard.dismiss}>
+      <View className="flex-row items-center gap-2">
+        <Text>{label}:</Text>
         <Input
-          className="w-20"
+          className="w-20 text-right"
           keyboardType="numeric"
           value={editedRate.toString()}
           onChangeText={handleRateChange}
           onBlur={(e) => {
             handleRateBlur();
           }}
-          onSubmitEditing={handleRateBlur}
-          blurOnSubmit
-          autoFocus
+          onSubmitEditing={handleRateSubmit}
+          submitBehavior="blurAndSubmit"
         />
-      ) : (
-        <Pressable onPress={() => setIsEditingRate(true)}>
-          <Text>{editedRate}</Text>
-        </Pressable>
-      )}
-    </View>
+      </View>
+    </Pressable>
   );
 };
 export default TournamentPage;
