@@ -5,30 +5,42 @@
     "scheme": "mahjongapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/mahjong_icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anzaihome.mahjongapp",
+      "associatedDomains": ["applinks:anzai-home.com"]
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/mahjong_foreground.png",
+        "backgroundImage": "./assets/mahjong_background.png",
+        "monochromeImage": "./assets/mahjong_monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anzai-home.mahjongapp"
+      "package": "com.anzaihome.mahjongapp",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "anzai-home.com",
+              "pathPrefix": "/mahjong"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
+
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/mahjong_favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-localization",
-      "expo-secure-store",
-      "expo-splash-screen"
-    ],
+    "plugins": ["expo-router", "expo-localization", "expo-secure-store", "expo-splash-screen"],
     "extra": {
       "router": {},
       "eas": {

@@ -1,6 +1,6 @@
 //This File no used in this project, just for  npx @react-native-reusables/cli@latest doctor
 
-import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, type Theme } from 'expo-router/react-navigation';
 
 export const THEME = {
   light: {
