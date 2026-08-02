@@ -33,6 +33,7 @@ import type {
   GetApiGroupsGroupKeyPlayerStatsParams,
   Group,
   GroupCreate,
+  GroupCreateStatus,
   GroupPlayerStats,
   GroupRequest,
   GroupResponse,
@@ -798,6 +799,99 @@ export const usePostApiGroupsRequestLink = <
   TContext
 > => {
   const mutationOptions = getPostApiGroupsRequestLinkMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary グループ作成リンクのステータスをリクエストする
+ */
+export const postApiGroupsRequestLinkStatus = (
+  groupCreate: GroupCreate,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<GroupCreateStatus>(
+    {
+      url: `/api/groups/request-link/status`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: groupCreate,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostApiGroupsRequestLinkStatusMutationOptions = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiGroupsRequestLinkStatus>>,
+    TError,
+    { data: GroupCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiGroupsRequestLinkStatus>>,
+  TError,
+  { data: GroupCreate },
+  TContext
+> => {
+  const mutationKey = ['postApiGroupsRequestLinkStatus'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiGroupsRequestLinkStatus>>,
+    { data: GroupCreate }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiGroupsRequestLinkStatus(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiGroupsRequestLinkStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiGroupsRequestLinkStatus>>
+>;
+export type PostApiGroupsRequestLinkStatusMutationBody = GroupCreate;
+export type PostApiGroupsRequestLinkStatusMutationError =
+  | ErrorResponse
+  | UnprocessableEntityResponse
+  | DefaultErrorResponse;
+
+/**
+ * @summary グループ作成リンクのステータスをリクエストする
+ */
+export const usePostApiGroupsRequestLinkStatus = <
+  TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiGroupsRequestLinkStatus>>,
+      TError,
+      { data: GroupCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiGroupsRequestLinkStatus>>,
+  TError,
+  { data: GroupCreate },
+  TContext
+> => {
+  const mutationOptions = getPostApiGroupsRequestLinkStatusMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

@@ -1,7 +1,7 @@
 // src/hooks/useGroups.tsx
 
-import { useMutation, useQueries } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
@@ -13,10 +13,11 @@ import type {
   GroupResponse,
   GroupUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
-import type { PendingGroup } from '@/src/storage/appStorage';
-import { appStorage } from '@/src/storage/appStorage';
+import { appStorage, PendingGroup } from '@/src/storage/appStorage';
+import { syncPendingGroups } from '@/src/utils/groupSync';
 
 import {
+  getGetApiGroupsGroupKeyQueryKey,
   getGetApiGroupsGroupKeyQueryOptions,
   postApiGroups,
   postApiGroupsRequestLink,
@@ -38,16 +39,21 @@ import { formatLocalDateTime, toLocalDate } from '../utils/date_utils';
 export const useCreateGroupRequest = () => {
   const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: GroupRequest) => {
       return postApiGroupsRequestLink(data);
     },
-    onSuccess: (data: GroupResponse, variables: GroupRequest) => {
+    onSuccess: async (data: GroupResponse, variables: GroupRequest) => {
       const expire_at = formatLocalDateTime(toLocalDate(data.expires_at));
       appStorage.addPendingGroupKey({
         token: data.token,
         groupName: variables.name,
         expiresAt: toLocalDate(data.expires_at) ?? new Date(),
+      });
+      // AsyncStorageからpendingGroupsを再取得させる
+      await queryClient.invalidateQueries({
+        queryKey: ['groupKeysAndPendingGroups'],
       });
       alertDialog({
         title: t('hooks.groupRequest.emailSentTitle'),
@@ -77,7 +83,6 @@ export const useCreateGroupRequest = () => {
 };
 
 export const useCreateGroup = (onAfterCreate?: () => void) => {
-  // this function is not used in this app. It is provided for future use when we want to create a group without email verification.
   const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
   return useMutation({
@@ -149,42 +154,65 @@ export const getKeyType = (data: Group): 'OWNER' | 'EDIT' | 'VIEW' | '' => {
   return '';
 };
 
+type ApiError = { status?: number };
+
+const isNotFoundError = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null && (error as ApiError).status === 404;
+const EMPTY_GROUP_KEYS: string[] = [];
+const EMPTY_PENDING_GROUPS: PendingGroup[] = [];
 export const useGroupQueries = () => {
   const { t } = useTranslation();
-  const [refetchGroups, setRefetchGroups] = useState(0);
-  const [groupKeys, setGroupKeys] = useState<string[]>([]);
-  const [pendingGroups, setPendingGroups] = useState<PendingGroup[]>([]);
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // AsyncStorageからGroup Keyを取得
-  useEffect(() => {
-    const loadGroupKeys = async () => {
+  const hookRenderCount = useRef(0);
+  hookRenderCount.current++;
+
+  // AsyncStorageからGroup Keyとpending groupsを取得
+  // 手動の useState + useEffect ではなく useQuery に寄せることで、
+  // 「マウント時にfetchしてsetStateする」effectそのものを不要にする
+  const groupKeysQuery = useQuery({
+    queryKey: ['groupKeysAndPendingGroups'],
+    queryFn: async () => {
+      // 外部デバイスで作成済みになっていないか確認
+      await syncPendingGroups();
+
       const keys = await appStorage.getGroupKeys();
-      const pendingGroups = await appStorage.getPendingGroups();
+      const storedPendingGroups = await appStorage.getPendingGroups();
       const now = new Date();
-      const validPendingGroups = pendingGroups.filter((group) => group.expiresAt > now);
 
-      appStorage.setPendingGroups(validPendingGroups);
+      const validPendingGroups = storedPendingGroups.filter((group) => group.expiresAt > now);
+      const expiredGroups = storedPendingGroups.filter((group) => group.expiresAt <= now);
 
-      const pendingKeys = validPendingGroups.map((group) => group.token);
-      const allKeys = Array.from(new Set([...keys, ...pendingKeys]));
-      setGroupKeys(allKeys);
-      setPendingGroups(validPendingGroups);
-      const removedExpiredGroups = pendingGroups.filter((group) => group.expiresAt <= now);
-      if (removedExpiredGroups.length > 0) {
+      if (expiredGroups.length > 0) {
+        await appStorage.setPendingGroups(validPendingGroups);
+
         Toast.show({
           type: 'info',
           text1: t('hooks.group.expiredPendingGroup'),
-          text2: `${removedExpiredGroups.map((g) => g.groupName).join(', ')}`,
+          text2: expiredGroups.map((group) => group.groupName).join(', '),
         });
       }
-    };
 
-    loadGroupKeys();
-  }, [refetchGroups, t]);
+      /*
+       * groupKeysには正式なowner/edit/viewキーだけを含める。
+       * Pending tokenを通常のグループ詳細APIへ渡さない。
+       */
+      return { keys, validPendingGroups };
+    },
+  });
 
-  // 各 group_key ごとにクエリを作成
-  const groupQueries = useQueries({
-    queries: groupKeys.map((key) => ({
+  const groupKeys = groupKeysQuery.data?.keys ?? EMPTY_GROUP_KEYS;
+  const pendingGroups = groupKeysQuery.data?.validPendingGroups ?? EMPTY_PENDING_GROUPS;
+
+  // 各 group_key ごとにクエリを作成し、combine で派生値をメモ化
+  const {
+    results: groupQueries,
+    isLoading,
+    groups,
+    notFoundKeys,
+  } = useQueries({
+    queries: groupKeys.map((key: string) => ({
       ...getGetApiGroupsGroupKeyQueryOptions(key),
       retry: 1,
       select: (data: Group) => ({
@@ -192,64 +220,80 @@ export const useGroupQueries = () => {
         keyType: getKeyType(data),
       }),
     })),
+    combine: (results) => ({
+      results,
+      isLoading: results.some((query) => query.isLoading),
+      groups: results.filter((query) => query.isSuccess).map((query) => query.data),
+      notFoundKeys: results
+        .map((query, index) => (isNotFoundError(query.error) ? groupKeys[index] : null))
+        .filter((key): key is string => key !== null),
+    }),
   });
 
-  // クエリ結果監視
+  const notFoundKeysSignal = notFoundKeys.join(',');
+
+  // クエリ結果監視：外部ストレージ(AsyncStorage)を最新状態に同期する
+  // ここは「Reactの外にある状態を外部システムに反映する」正当なeffectの用途
   useEffect(() => {
-    const syncGroupKeys = async () => {
-      const pendingKeys = await appStorage
-        .getPendingGroups()
-        .then((groups) => groups.map((group) => group.token));
-      const savedGroupKeys = await appStorage.getGroupKeys();
-      let changed = false;
-      for (const [index, query] of groupQueries.entries()) {
-        const key = groupKeys[index];
+    if (!notFoundKeysSignal) {
+      return;
+    }
 
-        if (!key) continue;
-
-        if (query.isSuccess) {
-          if (pendingKeys.includes(key)) {
-            await appStorage.removePendingGroupKey(key);
-            changed = true;
-          }
-
-          if (!savedGroupKeys.includes(key)) {
-            await appStorage.addGroupKey(key);
-            changed = true;
-          }
-        }
-
-        if (query.isError) {
-          const status = (query.error as any)?.status;
-
-          if (status === 404) {
-            // 登録済みなら削除
-            if (savedGroupKeys.includes(key)) {
-              await appStorage.removeGroupKey(key);
-              changed = true;
-            }
-
-            // Pendingは削除しない
-            // 取得できない場合はPendingに継続
-          }
-        }
-        if (changed) {
-          setRefetchGroups((prev) => prev + 1);
-        }
+    const removeInvalidGroupKeys = async () => {
+      for (const key of notFoundKeysSignal.split(',')) {
+        await appStorage.removeGroupKey(key);
       }
+
+      await queryClient.invalidateQueries({ queryKey: ['groupKeysAndPendingGroups'] });
     };
 
-    syncGroupKeys();
-  }, [groupQueries, groupKeys]);
+    void removeInvalidGroupKeys();
+  }, [notFoundKeysSignal, queryClient]);
 
-  const refetch = () => setRefetchGroups((prev) => prev + 1);
+  const refetch = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['groupKeysAndPendingGroups'] });
 
+    /*
+     * 既存のキーが変わらなかった場合でも、
+     * グループ本体の最新情報を取得する。
+     */
+    await Promise.all(
+      groupKeys.map((key) =>
+        queryClient.invalidateQueries({
+          queryKey: getGetApiGroupsGroupKeyQueryKey(key),
+          exact: true,
+        }),
+      ),
+    );
+  }, [groupKeys, queryClient]);
+
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true);
+
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch]);
+
+  console.log('useGroupQueries render', {
+    count: hookRenderCount.current,
+    isRefreshing,
+    groupKeysStatus: groupKeysQuery.status,
+    groupKeysFetchStatus: groupKeysQuery.fetchStatus,
+    groupKeysDataUpdatedAt: groupKeysQuery.dataUpdatedAt,
+    groupKeys,
+    groupsCount: groups.length,
+  });
   return {
     groupQueries,
     groupKeys,
     pendingGroups,
-    isLoading: groupQueries.some((q) => q.isLoading),
-    groups: groupQueries.filter((q) => q.isSuccess).map((q) => q.data),
+    isLoading: isLoading || groupKeysQuery.isLoading,
+    isRefreshing,
+    groups,
     refetch,
+    refresh,
   };
 };

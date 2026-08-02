@@ -1,13 +1,19 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import {
+  ActivityIndicator,
+  AppState,
+  AppStateStatus,
+  Keyboard,
+  RefreshControl,
+  ScrollView,
+  View,
+} from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import MahjongContainer from '@/components/MahjongContainer';
 import { TextInputModal } from '@/components/TextInputModal';
-import { TextInputModal2 } from '@/components/TextInputModal2';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,10 +24,34 @@ import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 import { formatLocalDateTime } from '@/src/utils/date_utils';
 export default function Index() {
   const { t } = useTranslation();
-  const { groups, pendingGroups, isLoading, refetch } = useGroupQueries();
-  const { mutate: createGroup, isPending: isCreateGroupPending } = useCreateGroupRequest();
+  const { groups, pendingGroups, isLoading, isRefreshing, refetch, refresh } = useGroupQueries();
+  const { mutate: createGroup } = useCreateGroupRequest();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const appState = useRef<AppStateStatus>(AppState.currentState);
+  const refetchingRef = useRef(false);
+
+  const renderCountRef = useRef(0);
+  renderCountRef.current++;
+  console.log(`Index.tsx render count: ${renderCountRef.current}`);
+
+  /**
+   * 複数の更新契機が重なった場合でも、
+   * 同時に複数回refetchしないようにする。
+   */
+  const safeRefetch = useCallback(async () => {
+    if (refetchingRef.current) {
+      return;
+    }
+
+    refetchingRef.current = true;
+
+    try {
+      await refetch();
+    } finally {
+      refetchingRef.current = false;
+    }
+  }, [refetch]);
   const handleCreateGroup = async (groupName: string, email: string) => {
     if (!groupName || !email) return;
     Keyboard.dismiss();
@@ -41,10 +71,60 @@ export default function Index() {
     router.push(`/group/${key}`);
   };
 
+  /*
+   * AppStateの変化を監視して、アプリがフォアグラウンドに戻ったときにrefetchする
+   */
+  useFocusEffect(
+    useCallback(() => {
+      console.log(`App is in focus, refetching groups... ${renderCountRef.current}`);
+      void safeRefetch();
+    }, [safeRefetch]),
+  );
+
+  /*
+   * アプリがアクティブになったときにrefetchする
+   */
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      const wasInBackground = appState.current === 'background' || appState.current === 'inactive';
+
+      if (wasInBackground && nextAppState === 'active') {
+        console.log(`App is active, refetching groups... ${renderCountRef.current}`);
+        void safeRefetch();
+      }
+
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [safeRefetch]);
+  const previousRefetchRef = useRef(refetch);
+
+  useEffect(() => {
+    console.log(
+      `refetch function changed: ${previousRefetchRef.current !== refetch} ${renderCountRef.current}`,
+    );
+
+    previousRefetchRef.current = refetch;
+  }, [refetch]);
   return (
     <>
       <MahjongContainer>
-        <View className="gap-6">
+        <ScrollView
+          contentContainerClassName="gap-6 pb-8"
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={() => {
+                console.log(`pull to refresh, Refreshing groups... ${renderCountRef.current}`);
+                void refresh();
+              }}
+            />
+          }
+        >
           {/* Header */}
           <View>
             <Text className="text-center text-xl font-semibold text-white">
@@ -105,7 +185,7 @@ export default function Index() {
               </View>
             )}
           </View>
-        </View>
+        </ScrollView>
       </MahjongContainer>
       <TextInputModal
         open={isModalOpen}

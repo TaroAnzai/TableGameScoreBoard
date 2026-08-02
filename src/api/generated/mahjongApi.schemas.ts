@@ -227,12 +227,17 @@ export interface GroupRequest {
 }
 
 export interface GroupResponse {
-  /** メッセージ */
-  message: string;
   /** 有効期限 */
   expires_at: string;
   /** 作成中トークン */
   token: string;
+}
+
+export interface GroupCreateStatus {
+  /** 作成ステータス */
+  status: string;
+  /** 管理者用キー */
+  owner_link?: string;
 }
 
 export interface GroupUpdate {
