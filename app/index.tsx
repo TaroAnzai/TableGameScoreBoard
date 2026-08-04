@@ -31,10 +31,6 @@ export default function Index() {
   const appState = useRef<AppStateStatus>(AppState.currentState);
   const refetchingRef = useRef(false);
 
-  const renderCountRef = useRef(0);
-  renderCountRef.current++;
-  console.log(`Index.tsx render count: ${renderCountRef.current}`);
-
   /**
    * 複数の更新契機が重なった場合でも、
    * 同時に複数回refetchしないようにする。
@@ -76,7 +72,6 @@ export default function Index() {
    */
   useFocusEffect(
     useCallback(() => {
-      console.log(`App is in focus, refetching groups... ${renderCountRef.current}`);
       void safeRefetch();
     }, [safeRefetch]),
   );
@@ -89,7 +84,6 @@ export default function Index() {
       const wasInBackground = appState.current === 'background' || appState.current === 'inactive';
 
       if (wasInBackground && nextAppState === 'active') {
-        console.log(`App is active, refetching groups... ${renderCountRef.current}`);
         void safeRefetch();
       }
 
@@ -103,10 +97,6 @@ export default function Index() {
   const previousRefetchRef = useRef(refetch);
 
   useEffect(() => {
-    console.log(
-      `refetch function changed: ${previousRefetchRef.current !== refetch} ${renderCountRef.current}`,
-    );
-
     previousRefetchRef.current = refetch;
   }, [refetch]);
   return (
@@ -119,7 +109,6 @@ export default function Index() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={() => {
-                console.log(`pull to refresh, Refreshing groups... ${renderCountRef.current}`);
                 void refresh();
               }}
             />

@@ -138,8 +138,8 @@ const GroupPage = () => {
         </Button>
       </ButtonGridSection>
 
-      <MahjongSection>
-        <MahjongSubTitle>{t('groupPage.sectionMemberList')}</MahjongSubTitle>
+      <MahjongSection className="justify-start">
+        <MahjongSubTitle className="mb-4">{t('groupPage.sectionMemberList')}</MahjongSubTitle>
 
         {isLoadingPlayers ? (
           <View className="items-center justify-center gap-2">
@@ -147,7 +147,7 @@ const GroupPage = () => {
             <span>Loading...</span>
           </View>
         ) : (
-          <MahjongList>
+          <MahjongList columns={2}>
             {players?.map((player) => (
               <MahjongListItem key={player.id}>{player.name}</MahjongListItem>
             ))}

@@ -60,6 +60,8 @@ export default function PageTitleBar({
   const type = pathSegments[0] as keyof typeof typeNameMap;
   const typeName = typeNameMap[type] ?? t('titleBar.undefined');
 
+  const app_web_url = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000';
+
   const accessLevel = useMemo(() => {
     return getAccessLevelstring(shareLinks);
   }, [shareLinks]);
@@ -78,7 +80,7 @@ export default function PageTitleBar({
       groupName: title,
       accessLevel: accessType,
       typeName: typeName,
-      shareUrl: `mahjongapp://${type}/${shortKey}`,
+      shareUrl: `${app_web_url}/${type}/${shortKey}`,
     });
     setIsShareModalOpen(true);
   };

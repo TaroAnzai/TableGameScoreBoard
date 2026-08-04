@@ -1,3 +1,4 @@
+import React from 'react';
 import { View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
@@ -7,22 +8,39 @@ type HeadingProps = {
   children: React.ReactNode;
   className?: string;
 };
-type ListItemProps = {
-  children: string;
-  className?: string;
-};
 
 export const MahjongSubTitle = ({ children, className }: HeadingProps) => {
   return <Text className={cn('text-lg', className)}>{children}</Text>;
 };
 
-export const MahjongList = ({ children, className }: HeadingProps) => {
-  return <View className={cn('gap-2', className)}>{children}</View>;
+type MahjongListProps = {
+  children: React.ReactNode;
+  className?: string;
+  columns?: number;
 };
+
+export const MahjongList = ({ children, className, columns = 1 }: MahjongListProps) => {
+  const width = `${100 / Math.max(columns, 1)}%` as `${number}%`;
+
+  return (
+    <View className={cn('w-full flex-row flex-wrap', className)}>
+      {React.Children.map(children, (child) => (
+        <View style={{ width: width }} className="p-1">
+          {child}
+        </View>
+      ))}
+    </View>
+  );
+};
+type ListItemProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
 export const MahjongListItem = ({ children, className }: ListItemProps) => {
   return (
     <View>
-      <Text className={cn('', className)}>{children}</Text>
+      <Text className={cn('text-center', className)}>{children}</Text>
     </View>
   );
 };

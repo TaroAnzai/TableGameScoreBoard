@@ -1,0 +1,25 @@
+APK作成方法
+
+Expoのアカウントを作成してログイン
+npx eas-cli@latest login
+
+ログイン状態確認
+npx eas-cli@latest whoami
+
+EAS Buildを初期設定
+npx eas-cli@latest build:configure
+　ロジェクト直下へ eas.jsonが作成される
+
+
+
+依存関係やExpo SDKとの整合性を確認
+npx expo-doctor
+
+Android APKを作成
+npx eas-cli@latest build --platform android --profile preview
+
+ローカルでbuildする場合
+npx eas-cli@latest build --platform android --profile preview　--local
+
+USB接続している場合は、PCからインストール
+adb install app.apk

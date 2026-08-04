@@ -1,7 +1,7 @@
 // src/hooks/useGroups.tsx
 
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
@@ -165,9 +165,6 @@ export const useGroupQueries = () => {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const hookRenderCount = useRef(0);
-  hookRenderCount.current++;
-
   // AsyncStorageからGroup Keyとpending groupsを取得
   // 手動の useState + useEffect ではなく useQuery に寄せることで、
   // 「マウント時にfetchしてsetStateする」effectそのものを不要にする
@@ -277,15 +274,6 @@ export const useGroupQueries = () => {
     }
   }, [refetch]);
 
-  console.log('useGroupQueries render', {
-    count: hookRenderCount.current,
-    isRefreshing,
-    groupKeysStatus: groupKeysQuery.status,
-    groupKeysFetchStatus: groupKeysQuery.fetchStatus,
-    groupKeysDataUpdatedAt: groupKeysQuery.dataUpdatedAt,
-    groupKeys,
-    groupsCount: groups.length,
-  });
   return {
     groupQueries,
     groupKeys,
