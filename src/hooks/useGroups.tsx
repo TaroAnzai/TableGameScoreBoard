@@ -1,7 +1,13 @@
 // src/hooks/useGroups.tsx
 
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  DefinedUseQueryResult,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
@@ -12,6 +18,8 @@ import type {
   GroupRequest,
   GroupResponse,
   GroupUpdate,
+  DefaultErrorResponse,
+  ErrorResponse,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { appStorage, PendingGroup } from '@/src/storage/appStorage';
 import { syncPendingGroups } from '@/src/utils/groupSync';
@@ -46,14 +54,14 @@ export const useCreateGroupRequest = () => {
     },
     onSuccess: async (data: GroupResponse, variables: GroupRequest) => {
       const expire_at = formatLocalDateTime(toLocalDate(data.expires_at));
-      appStorage.addPendingGroupKey({
+      await appStorage.addPendingGroupKey({
         token: data.token,
         groupName: variables.name,
         expiresAt: toLocalDate(data.expires_at) ?? new Date(),
       });
       // AsyncStorageからpendingGroupsを再取得させる
       await queryClient.invalidateQueries({
-        queryKey: ['groupKeysAndPendingGroups'],
+        queryKey: GROUP_KEYS_QUERY_KEY,
       });
       alertDialog({
         title: t('hooks.groupRequest.emailSentTitle'),
@@ -158,6 +166,7 @@ type ApiError = { status?: number };
 
 const isNotFoundError = (error: unknown): boolean =>
   typeof error === 'object' && error !== null && (error as ApiError).status === 404;
+const GROUP_KEYS_QUERY_KEY = ['groupKeysAndPendingGroups'] as const;
 const EMPTY_GROUP_KEYS: string[] = [];
 const EMPTY_PENDING_GROUPS: PendingGroup[] = [];
 export const useGroupQueries = () => {
@@ -169,7 +178,7 @@ export const useGroupQueries = () => {
   // 手動の useState + useEffect ではなく useQuery に寄せることで、
   // 「マウント時にfetchしてsetStateする」effectそのものを不要にする
   const groupKeysQuery = useQuery({
-    queryKey: ['groupKeysAndPendingGroups'],
+    queryKey: GROUP_KEYS_QUERY_KEY,
     queryFn: async () => {
       // 外部デバイスで作成済みになっていないか確認
       await syncPendingGroups();
@@ -202,29 +211,30 @@ export const useGroupQueries = () => {
   const groupKeys = groupKeysQuery.data?.keys ?? EMPTY_GROUP_KEYS;
   const pendingGroups = groupKeysQuery.data?.validPendingGroups ?? EMPTY_PENDING_GROUPS;
 
-  // 各 group_key ごとにクエリを作成し、combine で派生値をメモ化
-  const {
-    results: groupQueries,
-    isLoading,
-    groups,
-    notFoundKeys,
-  } = useQueries({
-    queries: groupKeys.map((key: string) => ({
-      ...getGetApiGroupsGroupKeyQueryOptions(key),
-      retry: 1,
-      select: (data: Group) => ({
-        ...data,
-        keyType: getKeyType(data),
-      }),
-    })),
-    combine: (results) => ({
-      results,
+  const groupQueryOptions = useMemo(
+    () =>
+      groupKeys.map((key) => ({
+        ...getGetApiGroupsGroupKeyQueryOptions(key),
+        retry: 1,
+      })),
+    [groupKeys],
+  );
+
+  // useQueries は queries/combine の参照も再計算条件にするため、キー変更時だけ更新する。
+  const combineGroupQueries = useCallback(
+    (results: DefinedUseQueryResult<Group, ErrorResponse | DefaultErrorResponse>[]) => ({
       isLoading: results.some((query) => query.isLoading),
       groups: results.filter((query) => query.isSuccess).map((query) => query.data),
       notFoundKeys: results
         .map((query, index) => (isNotFoundError(query.error) ? groupKeys[index] : null))
         .filter((key): key is string => key !== null),
     }),
+    [groupKeys],
+  );
+
+  const { isLoading, groups, notFoundKeys } = useQueries({
+    queries: groupQueryOptions,
+    combine: combineGroupQueries,
   });
 
   const notFoundKeysSignal = notFoundKeys.join(',');
@@ -241,28 +251,30 @@ export const useGroupQueries = () => {
         await appStorage.removeGroupKey(key);
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['groupKeysAndPendingGroups'] });
+      await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
     };
 
     void removeInvalidGroupKeys();
   }, [notFoundKeysSignal, queryClient]);
 
   const refetch = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['groupKeysAndPendingGroups'] });
+    await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
+
+    const latestGroupKeys =
+      queryClient.getQueryData<{ keys: string[] }>(GROUP_KEYS_QUERY_KEY)?.keys ?? EMPTY_GROUP_KEYS;
 
     /*
-     * 既存のキーが変わらなかった場合でも、
-     * グループ本体の最新情報を取得する。
+     * ストレージ同期後の最新キーを使い、グループ本体の最新情報を取得する。
      */
     await Promise.all(
-      groupKeys.map((key) =>
+      latestGroupKeys.map((key) =>
         queryClient.invalidateQueries({
           queryKey: getGetApiGroupsGroupKeyQueryKey(key),
           exact: true,
         }),
       ),
     );
-  }, [groupKeys, queryClient]);
+  }, [queryClient]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -275,7 +287,6 @@ export const useGroupQueries = () => {
   }, [refetch]);
 
   return {
-    groupQueries,
     groupKeys,
     pendingGroups,
     isLoading: isLoading || groupKeysQuery.isLoading,

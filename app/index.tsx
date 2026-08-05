@@ -94,11 +94,6 @@ export default function Index() {
       subscription.remove();
     };
   }, [safeRefetch]);
-  const previousRefetchRef = useRef(refetch);
-
-  useEffect(() => {
-    previousRefetchRef.current = refetch;
-  }, [refetch]);
   return (
     <>
       <MahjongContainer>

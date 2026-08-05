@@ -1,6 +1,6 @@
 // src/components/common/AlertDialogProvider.tsx
 
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import {
@@ -55,8 +55,10 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
     setIsOpen(false);
     resolver(false);
   };
+  const contextValue = useMemo(() => ({ alertDialog }), [alertDialog]);
+
   return (
-    <AlertDialogContext.Provider value={{ alertDialog }}>
+    <AlertDialogContext.Provider value={contextValue}>
       {children}
 
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
