@@ -10,6 +10,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Legacy utilities keep their current fallback until each existing
+        // component is migrated under ThemeProvider.
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -19,6 +21,9 @@ module.exports = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
+        'on-primary': 'var(--ds-on-primary)',
+        'primary-container': 'var(--ds-primary-container)',
+        'on-primary-container': 'var(--ds-on-primary-container)',
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
@@ -50,6 +55,23 @@ module.exports = {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        surface: 'var(--ds-surface)',
+        'surface-variant': 'var(--ds-surface-variant)',
+        'on-surface': 'var(--ds-on-surface)',
+        'on-surface-variant': 'var(--ds-on-surface-variant)',
+        outline: 'var(--ds-outline)',
+        error: 'var(--ds-error)',
+        'on-error': 'var(--ds-on-error)',
+        success: 'var(--ds-success)',
+        warning: 'var(--ds-warning)',
+        disabled: 'var(--ds-disabled)',
+        'on-disabled': 'var(--ds-on-disabled)',
+        'score-positive': 'var(--ds-score-positive)',
+        'score-negative': 'var(--ds-score-negative)',
+        rank1: 'var(--ds-rank-1)',
+        rank2: 'var(--ds-rank-2)',
+        rank3: 'var(--ds-rank-3)',
+        chip: 'var(--ds-chip)',
       },
 
       borderRadius: {
