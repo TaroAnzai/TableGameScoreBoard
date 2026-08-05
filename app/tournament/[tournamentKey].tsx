@@ -98,6 +98,10 @@ const TournamentPage = () => {
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
   const parentPageUrl = `/group/${groupKey}`;
 
+  const candidatePlayers = groupPlayers?.filter(
+    (player) => !players?.some((p) => p.id === player.id),
+  );
+
   const handleOpenAddPlayerModal = async () => {
     if (!groupPlayers || groupPlayers.length === 0) {
       alert(t('tournamentPage.alertNoPlayersToAdd'));
@@ -272,7 +276,7 @@ const TournamentPage = () => {
         </Button>
       </ButtonGridSection>
 
-      <MahjongSection>
+      <MahjongSection className="justify-start">
         <Text>{t('tournamentPage.sectionTournamentScore')}</Text>
         {isChipTableNonZero(scoreMap) && <Text>{t('tournamentPage.chipNotZeroWarning')}</Text>}
         {scoreMap ? (
@@ -289,7 +293,7 @@ const TournamentPage = () => {
         <MultiSelectorModal
           open={showAddPlayerModal}
           title={t('tournamentPage.modalSelectPlayerTitle')}
-          items={groupPlayers ?? []}
+          items={candidatePlayers ?? []}
           onConfirm={handleAddPlayer}
           onClose={() => setShowAddPlayerModal(false)}
         />

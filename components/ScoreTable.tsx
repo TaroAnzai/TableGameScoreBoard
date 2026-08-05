@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  View,
+} from 'react-native';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Text } from '@/components/ui/text';
@@ -13,6 +19,8 @@ interface ScoreTableProps {
 
 export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   const { t } = useTranslation();
+  const headerScrollRef = useRef<ScrollView>(null);
+  const detailScrollRef = useRef<ScrollView>(null);
 
   if (!scoreMap) {
     return <Text className="text-center text-white">{t('Common.noScoreData')}</Text>;
@@ -22,20 +30,27 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   const chipTables = scoreMap.tables.filter((table) => table.type === 'CHIP');
   const sortedTables = [...normalTables, ...chipTables];
 
+  const syncHeaderScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    headerScrollRef.current?.scrollTo({ x: event.nativeEvent.contentOffset.x, animated: false });
+  };
+
+  const syncDetailScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    detailScrollRef.current?.scrollTo({ x: event.nativeEvent.contentOffset.x, animated: false });
+  };
+
   return (
-    <View className="flex-row">
-      <View className="flex-col mt-4">
-        {/* インデックス */}
+    <View className="flex-1 self-stretch min-h-0 mt-4">
+      {/* ヘッダー */}
+      <View className="flex-row">
         <ColIndexCell fixed>{t('scoreTable.columnParticipant')}</ColIndexCell>
-        {scoreMap.players.map((player) => (
-          <ScoreCell key={player.id} fixed>
-            {player.name}
-          </ScoreCell>
-        ))}
-      </View>
-      <ScrollView horizontal>
-        <View className="mt-4">
-          {/* ヘッダー */}
+        <ScrollView
+          ref={headerScrollRef}
+          className="flex-1 min-w-0"
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          onScrollEndDrag={syncDetailScroll}
+          onMomentumScrollEnd={syncDetailScroll}
+        >
           <View className="flex-row">
             {sortedTables.map((table) => (
               <Pressable key={table.id} onPress={() => table.id && onClick(table.id)}>
@@ -46,22 +61,46 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
             <ColIndexCell>{t('scoreTable.columnTotal')}</ColIndexCell>
             <ColIndexCell>{t('scoreTable.columnConvertedTotal')}</ColIndexCell>
           </View>
+        </ScrollView>
+      </View>
 
-          {/* 明細 */}
-          {scoreMap.players.map((player) => (
-            <View key={player.id} className="flex-row">
-              {sortedTables.map((table) => {
-                const score = (player.scores ?? {})[String(table.id)] ?? '';
+      {/* 明細 */}
+      <ScrollView className="flex-1 min-h-0" nestedScrollEnabled>
+        <View className="flex-row">
+          <View>
+            {scoreMap.players.map((player) => (
+              <ScoreCell key={player.id} fixed>
+                {player.name}
+              </ScoreCell>
+            ))}
+          </View>
+          <ScrollView
+            ref={detailScrollRef}
+            className="flex-1 min-w-0"
+            horizontal
+            nestedScrollEnabled
+            onScroll={syncHeaderScroll}
+            scrollEventThrottle={16}
+          >
+            <View>
+              {scoreMap.players.map((player) => (
+                <View key={player.id} className="flex-row">
+                  {sortedTables.map((table) => {
+                    const score = (player.scores ?? {})[String(table.id)] ?? '';
 
-                return (
-                  <ScoreCell key={table.id}>{score !== 0 ? score.toLocaleString() : ''}</ScoreCell>
-                );
-              })}
+                    return (
+                      <ScoreCell key={table.id}>
+                        {score !== 0 ? score.toLocaleString() : ''}
+                      </ScoreCell>
+                    );
+                  })}
 
-              <ScoreCell>{String(player.total?.toLocaleString() ?? '')}</ScoreCell>
-              <ScoreCell>{Number(player.converted_total ?? 0).toLocaleString()}</ScoreCell>
+                  <ScoreCell>{String(player.total?.toLocaleString() ?? '')}</ScoreCell>
+                  <ScoreCell>{Number(player.converted_total ?? 0).toLocaleString()}</ScoreCell>
+                </View>
+              ))}
             </View>
-          ))}
+          </ScrollView>
         </View>
       </ScrollView>
     </View>

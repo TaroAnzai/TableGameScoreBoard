@@ -2,7 +2,6 @@ import React, { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 
-import { Table, TBody, Td, THead, Tr } from '@/components/common/Table';
 import { Text } from '@/components/ui/text';
 import type {
   Game,
@@ -132,9 +131,9 @@ const TableScoreBoard = ({
   });
 
   return (
-    <View className="flex-col">
-      <ScrollView horizontal className="mt-4">
-        <View className="mt-4">
+    <View className="flex-1 self-stretch min-h-0">
+      <ScrollView horizontal className="flex-1 min-h-0 mt-4">
+        <View className="flex-1 min-h-0 mt-4">
           <View className="flex-row">
             {/* Header */}
             <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
@@ -151,84 +150,86 @@ const TableScoreBoard = ({
               </View>
             ))}
           </View>
-          {/* Rows */}
-          {displayGames.map((game, index) => (
-            <Fragment key={game?.id ?? `row-${index}`}>
-              <Pressable className="flex-row" onPress={() => handleRowPress(index)}>
-                <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
-                  <Text className="text-center text-white" numberOfLines={1}>
-                    {isChipTable
-                      ? t('Common.chip')
-                      : t('scoreBoard.gameLabel', { index: index + 1 })}
-                  </Text>
-                </View>
-
-                {displayPlayers.map((player) => {
-                  const score = game?.scores?.find((s) => s.player_id === player.id)?.score ?? '';
-
-                  return (
-                    <View
-                      key={`${index}-${player.id}`}
-                      className="w-[70px] border border-gray-300 p-1"
-                    >
-                      {editingGameIndex === index && player.id > 0 ? (
-                        <TextInput
-                          value={editingScores[player.id] ?? ''}
-                          onChangeText={(value) => handleScoreChange(player.id, value)}
-                          keyboardType="numeric"
-                          className="bg-white text-black text-center p-1"
-                        />
-                      ) : (
-                        <Text className="text-center text-white" numberOfLines={1}>
-                          {score}
-                        </Text>
-                      )}
-                    </View>
-                  );
-                })}
-              </Pressable>
-
-              {editingGameIndex === index && (
-                <View className="border border-gray-300 p-2">
-                  <Text className="text-right text-white font-bold">
-                    {t('scoreBoard.totalLabel')}: {rowTotal}
-                  </Text>
-
-                  <View className="flex-row justify-center items-center gap-4 mt-2">
-                    <Pressable
-                      onPress={handleConfirm}
-                      disabled={rowTotal !== 0 && table.type === 'NORMAL'}
-                      className="rounded bg-blue-500 px-4 py-2 disabled:opacity-50"
-                    >
-                      <Text className="text-white">{t('Common.Confirmed')}</Text>
-                    </Pressable>
-
-                    <Pressable onPress={handleCancel} className="rounded bg-blue-500 px-4 py-2">
-                      <Text className="text-white">{t('Common.Cancel')}</Text>
-                    </Pressable>
+          <ScrollView className="flex-1 min-h-0" nestedScrollEnabled>
+            {/* Rows */}
+            {displayGames.map((game, index) => (
+              <Fragment key={game?.id ?? `row-${index}`}>
+                <Pressable className="flex-row" onPress={() => handleRowPress(index)}>
+                  <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
+                    <Text className="text-center text-white" numberOfLines={1}>
+                      {isChipTable
+                        ? t('Common.chip')
+                        : t('scoreBoard.gameLabel', { index: index + 1 })}
+                    </Text>
                   </View>
-                </View>
-              )}
-            </Fragment>
-          ))}
 
-          {!isChipTable && (
-            <View className="flex-row">
-              <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
-                <Text className="text-center text-white font-bold">
-                  {t('scoreBoard.totalLabel')}
-                </Text>
-              </View>
+                  {displayPlayers.map((player) => {
+                    const score = game?.scores?.find((s) => s.player_id === player.id)?.score ?? '';
 
-              {displayPlayers.map((player) => (
-                <View key={`total-${player.id}`} className="w-[70px] border border-gray-300 p-2">
+                    return (
+                      <View
+                        key={`${index}-${player.id}`}
+                        className="w-[70px] border border-gray-300 p-1"
+                      >
+                        {editingGameIndex === index && player.id > 0 ? (
+                          <TextInput
+                            value={editingScores[player.id] ?? ''}
+                            onChangeText={(value) => handleScoreChange(player.id, value)}
+                            keyboardType="numeric"
+                            className="bg-white text-black text-center p-1"
+                          />
+                        ) : (
+                          <Text className="text-center text-white" numberOfLines={1}>
+                            {score}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  })}
+                </Pressable>
+
+                {editingGameIndex === index && (
+                  <View className="border border-gray-300 p-2">
+                    <Text className="text-right text-white font-bold">
+                      {t('scoreBoard.totalLabel')}: {rowTotal}
+                    </Text>
+
+                    <View className="flex-row justify-center items-center gap-4 mt-2">
+                      <Pressable
+                        onPress={handleConfirm}
+                        disabled={rowTotal !== 0 && table.type === 'NORMAL'}
+                        className="rounded bg-blue-500 px-4 py-2 disabled:opacity-50"
+                      >
+                        <Text className="text-white">{t('Common.Confirmed')}</Text>
+                      </Pressable>
+
+                      <Pressable onPress={handleCancel} className="rounded bg-blue-500 px-4 py-2">
+                        <Text className="text-white">{t('Common.Cancel')}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+              </Fragment>
+            ))}
+
+            {!isChipTable && (
+              <View className="flex-row">
+                <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
                   <Text className="text-center text-white font-bold">
-                    {totalScores[player.id] ?? 0}
+                    {t('scoreBoard.totalLabel')}
                   </Text>
                 </View>
-              ))}
-            </View>
-          )}
+
+                {displayPlayers.map((player) => (
+                  <View key={`total-${player.id}`} className="w-[70px] border border-gray-300 p-2">
+                    <Text className="text-center text-white font-bold">
+                      {totalScores[player.id] ?? 0}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </ScrollView>
         </View>
       </ScrollView>
     </View>

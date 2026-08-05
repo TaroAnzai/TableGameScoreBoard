@@ -71,12 +71,11 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
         )}
 
         <DialogFooter>
-          <Button onPress={handleConfirm} disabled={selectedIds.length === 0}>
-            <Text>OK</Text>
-          </Button>
-
           <Button variant="outline" onPress={onClose}>
             <Text>{t('Common.Cancel')}</Text>
+          </Button>
+          <Button onPress={handleConfirm} disabled={selectedIds.length === 0}>
+            <Text>OK</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -60,7 +60,7 @@ export const TextInputModal = ({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogContent key={`${open}-${value}-${twoValue}`}>
+      <DialogContent key={`${open}-${value}-${twoValue}`} className="-translate-y-[80px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{discription}</DialogDescription>
@@ -71,8 +71,8 @@ export const TextInputModal = ({
             <Input
               defaultValue=""
               onChangeText={setInputText}
-              keyboardType="default"
-              secureTextEntry={false}
+              keyboardType={getKeyboardType(inputType)}
+              secureTextEntry={inputType === 'password'}
               autoCapitalize="none"
               autoCorrect={false}
               className="rounded-md border border-input bg-background px-3 py-2 text-foreground"

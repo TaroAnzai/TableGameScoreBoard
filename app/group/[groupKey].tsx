@@ -87,6 +87,7 @@ const GroupPage = () => {
       tournamentKey: data.edit_link,
       tableCreate: { name: t('Common.chip'), type: 'CHIP' },
     });
+    setIsCreateTournamentModalOpen(false);
     router.push(`/tournament/${data.edit_link}`);
   };
 
