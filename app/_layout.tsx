@@ -10,24 +10,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { AlertDialogProvider } from '@/components/common/AlertDialogProvider';
+import { ThemeProvider, useTheme } from '@/src/providers/ThemeProvider';
 
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 const queryClient = new QueryClient();
+
+const RootContent = () => {
+  const { resolvedTheme } = useTheme();
+
+  return (
+    <AlertDialogProvider>
+      <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
+      <SafeAreaView className="flex-1 bg-background">
+        <Stack screenOptions={{ headerShown: false }} />
+      </SafeAreaView>
+      <PortalHost />
+      <Toast />
+    </AlertDialogProvider>
+  );
+};
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <AlertDialogProvider>
-          <StatusBar style="auto" />
-          <SafeAreaView className="flex-1">
-            <Stack screenOptions={{ headerShown: false }} />
-          </SafeAreaView>
-          <PortalHost />
-          <Toast />
-        </AlertDialogProvider>
+        <ThemeProvider>
+          <RootContent />
+        </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
