@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { router, useFocusEffect } from 'expo-router';
 import { Settings } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -14,9 +15,9 @@ import {
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import MahjongContainer from '@/components/MahjongContainer';
+import { MahjongListItem } from '@/components/MahjongListItem';
 import MahjongSection from '@/components/MahjongSection';
 import { TextInputModal } from '@/components/TextInputModal';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
@@ -151,18 +152,16 @@ export default function Index() {
                 {groups.map(
                   (group) =>
                     group && (
-                      <Button
+                      <MahjongListItem
                         key={group.id + getAccessLevelstring(group.group_links)}
-                        variant="outline"
+                        title={group.name}
+                        badge={getAccessLevelstring(group.group_links)}
+                        accessories={[
+                          group.created_at && '作成日' + format(group.created_at, 'yyyy-MM-dd'),
+                          group.description && group.description,
+                        ]}
                         onPress={() => handleEnterGroup(group)}
-                      >
-                        <View className="flex-row items-center gap-2">
-                          <Text className="text-base font-semibold">{group.name}</Text>
-                          <Badge variant="outline">
-                            <Text>{getAccessLevelstring(group.group_links)}</Text>
-                          </Badge>
-                        </View>
-                      </Button>
+                      />
                     ),
                 )}
               </View>

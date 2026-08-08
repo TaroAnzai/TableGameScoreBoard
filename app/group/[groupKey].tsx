@@ -5,8 +5,9 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
-import { MahjongList, MahjongListItem, MahjongSubTitle } from '@/components/common/TextStyles';
+import { MahjongList, MahjongSubTitle } from '@/components/common/TextStyles';
 import MahjongContainer from '@/components/MahjongContainer';
+import { MahjongListItem } from '@/components/MahjongListItem';
 import MahjongSection from '@/components/MahjongSection';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import SelectorModal from '@/components/SelectorModal';
@@ -164,7 +165,7 @@ const GroupPage = () => {
             ) : (
               <MahjongList columns={2}>
                 {players?.map((player) => (
-                  <MahjongListItem key={player.id}>{player.name}</MahjongListItem>
+                  <MahjongListItem key={player.id} title={player.name} />
                 ))}
               </MahjongList>
             )}

@@ -32,15 +32,3 @@ export const MahjongList = ({ children, className, columns = 1 }: MahjongListPro
     </View>
   );
 };
-type ListItemProps = {
-  children: React.ReactNode;
-  className?: string;
-};
-
-export const MahjongListItem = ({ children, className }: ListItemProps) => {
-  return (
-    <View>
-      <Text className={cn('text-center', className)}>{children}</Text>
-    </View>
-  );
-};
