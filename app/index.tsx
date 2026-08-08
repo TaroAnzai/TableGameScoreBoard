@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
+import { Settings } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -17,6 +18,7 @@ import { TextInputModal } from '@/components/TextInputModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Group } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
@@ -110,10 +112,19 @@ export default function Index() {
           }
         >
           {/* Header */}
-          <View>
-            <Text className="text-center text-xl font-semibold text-white">
+          <View className="relative h-12 flex-row items-center justify-center">
+            <Text className="text-center text-xl font-bold text-on-surface">
               {t('welcomPage.pageTitle')}
             </Text>
+            <Button
+              accessibilityLabel={t('settings.open')}
+              className="absolute right-0 h-12 w-12 rounded-full p-0"
+              size="icon"
+              variant="ghost"
+              onPress={() => router.push('/settings')}
+            >
+              <Icon as={Settings} className="text-on-surface" size={24} />
+            </Button>
           </View>
 
           {/* Create Group */}

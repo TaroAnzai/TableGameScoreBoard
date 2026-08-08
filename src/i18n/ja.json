@@ -17,6 +17,29 @@
     "GroupName": "グループ名",
     "Email": "メールアドレス"
   },
+  "settings": {
+    "open": "設定を開く",
+    "back": "前の画面に戻る",
+    "title": "設定",
+    "theme": {
+      "title": "テーマ",
+      "description": "アプリの表示テーマを選択します。",
+      "options": {
+        "system": {
+          "label": "端末設定に従う",
+          "description": "端末のライト・ダーク設定に合わせます。"
+        },
+        "light": {
+          "label": "ライト",
+          "description": "常に明るいテーマで表示します。"
+        },
+        "dark": {
+          "label": "ダーク",
+          "description": "常に暗いテーマで表示します。"
+        }
+      }
+    }
+  },
   "groupPage": {
     "groupKeyNotFound": "グループキーが不明です",
     "loading": "読み込み中...",

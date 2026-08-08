@@ -17,6 +17,29 @@
     "GroupName": "Group name",
     "Email": "Email"
   },
+  "settings": {
+    "open": "Open settings",
+    "back": "Go back",
+    "title": "Settings",
+    "theme": {
+      "title": "Theme",
+      "description": "Choose the appearance of the app.",
+      "options": {
+        "system": {
+          "label": "Use device setting",
+          "description": "Match the device's light or dark appearance."
+        },
+        "light": {
+          "label": "Light",
+          "description": "Always use the light theme."
+        },
+        "dark": {
+          "label": "Dark",
+          "description": "Always use the dark theme."
+        }
+      }
+    }
+  },
   "groupPage": {
     "groupKeyNotFound": "Group key is missing",
     "loading": "Loading...",
