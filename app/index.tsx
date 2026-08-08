@@ -14,6 +14,7 @@ import {
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import MahjongContainer from '@/components/MahjongContainer';
+import MahjongSection from '@/components/MahjongSection';
 import { TextInputModal } from '@/components/TextInputModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -135,7 +136,7 @@ export default function Index() {
           </ButtonGridSection>
 
           {/* Registered Groups */}
-          <View className="gap-3">
+          <MahjongSection>
             <Text className="text-lg font-semibold">{t('welcomPage.RegisteredGroups')}</Text>
 
             {isLoading ? (
@@ -179,7 +180,7 @@ export default function Index() {
                 ))}
               </View>
             )}
-          </View>
+          </MahjongSection>
         </ScrollView>
       </MahjongContainer>
       <TextInputModal
