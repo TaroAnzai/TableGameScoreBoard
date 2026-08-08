@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
+import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 import type { GroupPlayerStat } from '@/src/api/generated/mahjongApi.schemas';
 
 import { PlayerStatsModal } from './PlayerStatsModal';
@@ -16,39 +18,50 @@ export const PlayerStatsTable = ({ playerStatsList }: PlayerStatsTableProps) => 
 
   return (
     <View className="w-full">
-      <Text className="mb-3 text-center text-sm text-gray-600">{t('statsPage.tableTitle')}</Text>
+      <Text className="mb-3 text-center text-xl font-bold leading-7 text-on-surface">
+        {t('statsPage.tableTitle')}
+      </Text>
 
       <ScrollView horizontal>
-        <View className="min-w-full overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <View className="flex-row bg-gray-100">
-            <Text className="w-32 px-3 py-2 font-bold text-gray-700">{t('statsPage.thName')}</Text>
-            <Text className="w-24 px-3 py-2 text-right font-bold text-gray-700">
+        <View className="min-w-full overflow-hidden rounded-xl border border-outline bg-surface">
+          <View className="min-h-11 flex-row items-center bg-surface-variant">
+            <Text className="w-32 px-3 py-2 text-[13px] font-bold leading-[18px] text-on-surface">
+              {t('statsPage.thName')}
+            </Text>
+            <Text className="w-24 px-3 py-2 text-right text-[13px] font-bold leading-[18px] text-on-surface">
               {t('statsPage.thGamesPlayed')}
             </Text>
-            <Text className="w-24 px-3 py-2 text-right font-bold text-gray-700">
+            <Text className="w-24 px-3 py-2 text-right text-[13px] font-bold leading-[18px] text-on-surface">
               {t('statsPage.thTotalPoints')}
             </Text>
-            <Text className="w-24 px-3 py-2 text-right font-bold text-gray-700">
+            <Text className="w-24 px-3 py-2 text-right text-[13px] font-bold leading-[18px] text-on-surface">
               {t('statsPage.thBalance')}
             </Text>
           </View>
 
           {playerStatsList.map((p) => (
-            <View key={p.player_id} className="flex-row border-t border-gray-200">
-              <View className="w-32 px-3 py-2">
-                <Pressable
+            <View key={p.player_id} className="min-h-11 flex-row items-center border-t border-outline">
+              <View className="w-32 px-2 py-1">
+                <Button
                   onPress={() => setSelectedPlayerStats(p)}
-                  className="rounded-md border border-gray-300 px-2 py-1 active:opacity-70"
+                  className="h-auto min-h-12 w-full rounded-lg px-2 py-2"
+                  variant="ghost"
                 >
-                  <Text className="text-center text-sm text-gray-900">{p.player_name}</Text>
-                </Pressable>
+                  <Text className="text-center text-sm text-on-surface">{p.player_name}</Text>
+                </Button>
               </View>
 
-              <Text className="w-24 px-3 py-2 text-right text-gray-900">{p.tournament_count}</Text>
+              <Text className="w-24 px-3 py-2 text-right text-sm text-on-surface">
+                {(p.tournament_count ?? 0).toLocaleString()}
+              </Text>
 
-              <Text className="w-24 px-3 py-2 text-right text-gray-900">{p.total_score}</Text>
+              <Text className="w-24 px-3 py-2 text-right text-sm text-on-surface">
+                {(p.total_score ?? 0).toLocaleString()}
+              </Text>
 
-              <Text className="w-24 px-3 py-2 text-right text-gray-900">{p.total_balance}</Text>
+              <Text className="w-24 px-3 py-2 text-right text-sm text-on-surface">
+                {(p.total_balance ?? 0).toLocaleString()}
+              </Text>
             </View>
           ))}
         </View>

@@ -19,6 +19,7 @@ import type {
   ScoreInput,
   Table as ScoreTable,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { componentSize, mahjong, radius } from '@/src/lib/theme';
 
 interface TableScoreInputModalProps {
   open: boolean;
@@ -88,24 +89,30 @@ const TableScoreInputModal = ({
     >
       <DialogContent
         style={{
-          width: Math.min(width - 32, 500),
+          borderRadius: radius.xl,
+          width: Math.min(width - 32, componentSize.dialogMaxWidth),
         }}
-        className="-translate-y-[80px]"
+        className="bg-surface"
       >
         <DialogHeader>
           <DialogTitle>{t('scoreBoard.inputTitle', { game: title })}</DialogTitle>
         </DialogHeader>
-        <View className="flex-row w-full">
+        <View className="w-full flex-row overflow-hidden rounded-xl border border-outline">
           <View>
             {/* Index */}
-            <View className="w-[70px] border border-gray-300 bg-green-800 py-5 px-2">
-              <Text className="text-center font-bold text-white" numberOfLines={1}>
+            <View
+              style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.gameColumnWidth }}
+              className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
+            >
+              <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface" numberOfLines={1}>
                 {t('scoreBoard.gameTitle')}
               </Text>
             </View>
-            <View className="w-[70px] border border-gray-300 bg-green-800 p-2">
-              <Text className="text-center font-bold text-white">
-                {' '}
+            <View
+              style={{ minHeight: componentSize.inputHeight, width: mahjong.gameColumnWidth }}
+              className="items-center justify-center border-r border-outline bg-surface-variant px-2 py-1"
+            >
+              <Text className="text-center text-sm font-bold text-on-surface">
                 {tableType === 'CHIP'
                   ? t('Common.chip')
                   : t('scoreBoard.gameLabel', { index: gameIndex + 1 })}
@@ -119,9 +126,10 @@ const TableScoreInputModal = ({
                 {inputPlayers.map((player) => (
                   <View
                     key={player.id}
-                    className="w-[60px] bg-green-800 border border-gray-300 py-5 px-1"
+                    style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.scoreCellWidth }}
+                    className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
                   >
-                    <Text className="text-center text-white font-bold" numberOfLines={1}>
+                    <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface" numberOfLines={1}>
                       {player.name}
                     </Text>
                   </View>
@@ -131,13 +139,17 @@ const TableScoreInputModal = ({
               {/* Input */}
               <View className="flex-row">
                 {inputPlayers.map((player) => (
-                  <View key={player.id} className="w-[60px] border border-gray-300">
+                  <View
+                    key={player.id}
+                    style={{ minHeight: componentSize.inputHeight, width: mahjong.scoreCellWidth }}
+                    className="border-r border-outline bg-surface"
+                  >
                     <Input
                       value={scores[player.id] ?? ''}
                       onChangeText={(value) => handleScoreChange(player.id, value)}
                       keyboardType="numeric"
                       selectTextOnFocus
-                      className="w-full text-right"
+                      className="h-auto min-h-12 w-full rounded-none border-0 bg-surface py-3 text-right text-base font-bold text-on-surface"
                     />
                   </View>
                 ))}
@@ -146,15 +158,29 @@ const TableScoreInputModal = ({
           </ScrollView>
         </View>
 
-        <Text className="text-right font-bold">
-          {t('scoreBoard.totalLabel')}: {total}
+        <Text
+          className={[
+            'text-right text-base font-bold',
+            tableType !== 'NORMAL' || total === 0 ? 'text-success' : 'text-warning',
+          ].join(' ')}
+        >
+          {t('scoreBoard.totalLabel')}: {total.toLocaleString()}
         </Text>
+        {tableType === 'NORMAL' && total !== 0 && (
+          <Text className="text-right text-sm text-warning">
+            {t('scoreBoard.totalMustBeZero')}
+          </Text>
+        )}
 
         <DialogFooter>
-          <Button variant="outline" onPress={onClose}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button disabled={!canConfirm} onPress={() => onConfirm(formattedScores)}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            disabled={!canConfirm}
+            onPress={() => onConfirm(formattedScores)}
+          >
             <Text>{t('Common.Confirmed')}</Text>
           </Button>
         </DialogFooter>

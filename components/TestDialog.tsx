@@ -9,11 +9,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
+import { radius } from '@/src/lib/theme';
 interface TextInputModalProps {
   open: boolean;
   onclose: () => void;
@@ -21,7 +21,7 @@ interface TextInputModalProps {
 export const DialogPreview = ({ open, onclose }: TextInputModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onclose}>
-      <DialogContent className="max-w-[425px]">
+      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>Make</DialogDescription>
@@ -38,11 +38,11 @@ export const DialogPreview = ({ open, onclose }: TextInputModalProps) => {
         </View>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">
+            <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline">
               <Text>Cancel</Text>
             </Button>
           </DialogClose>
-          <Button>
+          <Button className="h-auto min-h-12 rounded-xl py-3">
             <Text>Save changes</Text>
           </Button>
         </DialogFooter>

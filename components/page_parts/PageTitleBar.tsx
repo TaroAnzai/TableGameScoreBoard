@@ -8,13 +8,16 @@ import { View } from 'react-native';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import EditableTitle from '@/components/page_parts/EditableTitle';
 import ShareModal from '@/components/page_parts/ShareModal';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Text } from '@/components/ui/text';
+import { Icon } from '@/components/ui/icon';
+import { Text, TextClassContext } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
 import type { ShareLink } from '@/src/api/generated/mahjongApi.schemas';
 import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 
@@ -60,7 +63,7 @@ export default function PageTitleBar({
   const type = pathSegments[0] as keyof typeof typeNameMap;
   const typeName = typeNameMap[type] ?? t('titleBar.undefined');
 
-  const app_web_url = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000';
+  const appWebUrl = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000';
 
   const accessLevel = useMemo(() => {
     return getAccessLevelstring(shareLinks);
@@ -80,38 +83,68 @@ export default function PageTitleBar({
       groupName: title,
       accessLevel: accessType,
       typeName: typeName,
-      shareUrl: `${app_web_url}/${type}/${shortKey}`,
+      shareUrl: `${appWebUrl}/${type}/${shortKey}`,
     });
     setIsShareModalOpen(true);
   };
 
   return (
-    <View className="relative h-12 flex-row items-center justify-center px-4">
-      <View className="absolute left-4 flex-row items-center gap-3">
+    <View className="relative min-h-12 flex-row items-center justify-center border-b border-outline bg-surface py-2">
+      <View className="absolute left-0 flex-row items-center">
         {parentUrl !== null && parentUrl !== undefined && (
-          <ChevronsUp size={24} color="white" onPress={() => router.push(parentUrl as any)} />
+          <Button
+            accessibilityLabel={t('titleBar.parentPage')}
+            className="h-12 w-12 rounded-full p-0"
+            size="icon"
+            variant="ghost"
+            onPress={() => router.push(parentUrl as any)}
+          >
+            <Icon as={ChevronsUp} className="text-on-surface" size={24} />
+          </Button>
         )}
 
-        {showBackButton && <ChevronLeft size={24} color="white" onPress={() => router.back()} />}
+        {showBackButton && (
+          <Button
+            accessibilityLabel={t('titleBar.back')}
+            className="h-12 w-12 rounded-full p-0"
+            size="icon"
+            variant="ghost"
+            onPress={() => router.back()}
+          >
+            <Icon as={ChevronLeft} className="text-on-surface" size={24} />
+          </Button>
+        )}
       </View>
 
-      <View className="max-w-[70%] items-center justify-center">
-        {TitleComponent ? (
-          <TitleComponent onPress={onTitleClick} />
-        ) : (
-          <EditableTitle
-            value={title}
-            onChange={onTitleChange}
-            className="text-center text-lg font-bold text-white"
-          />
+      <View
+        className={cn(
+          'items-center justify-center',
+          parentUrl !== null && parentUrl !== undefined && showBackButton
+            ? 'max-w-[55%]'
+            : 'max-w-[70%]',
         )}
+      >
+        <TextClassContext.Provider value="text-center text-2xl font-bold leading-8 text-on-surface">
+          {TitleComponent ? (
+            <TitleComponent onPress={onTitleClick} />
+          ) : (
+            <EditableTitle value={title} onChange={onTitleChange} />
+          )}
+        </TextClassContext.Provider>
       </View>
 
       {shareLinks.length > 0 && (
-        <View className="absolute right-4">
+        <View className="absolute right-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Share2 size={24} color="white" />
+              <Button
+                accessibilityLabel={t('titleBar.shareMenu')}
+                className="h-12 w-12 rounded-full p-0"
+                size="icon"
+                variant="ghost"
+              >
+                <Icon as={Share2} className="text-on-surface" size={24} />
+              </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">

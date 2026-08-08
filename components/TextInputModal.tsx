@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Text } from '@/components/ui/text';
+import { radius } from '@/src/lib/theme';
 interface TextInputModalProps {
   open: boolean;
   onComfirm: (inputText: string, inputText2?: string) => void;
@@ -60,7 +62,11 @@ export const TextInputModal = ({
         if (!nextOpen) onClose();
       }}
     >
-      <DialogContent key={`${open}-${value}-${twoValue}`} className="-translate-y-[80px]">
+      <DialogContent
+        key={`${open}-${value}-${twoValue}`}
+        className="bg-surface"
+        style={{ borderRadius: radius.xl }}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{discription}</DialogDescription>
@@ -69,13 +75,13 @@ export const TextInputModal = ({
           <View className="gap-3">
             <Label htmlFor="primaryInput">{InputLabel}</Label>
             <Input
-              defaultValue=""
+              value={inputText}
               onChangeText={setInputText}
               keyboardType={getKeyboardType(inputType)}
               secureTextEntry={inputType === 'password'}
               autoCapitalize="none"
               autoCorrect={false}
-              className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
+              className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
           </View>
           <View className="gap-3">
@@ -87,16 +93,20 @@ export const TextInputModal = ({
                   onChangeText={setInputText2}
                   keyboardType={getKeyboardType(twoInputType)}
                   secureTextEntry={twoInputType === 'password'}
+                  className="h-auto min-h-12 rounded-xl bg-surface py-3"
                 />
               </>
             )}
           </View>
         </View>
         <DialogFooter>
-          <Button variant="secondary" onPress={() => onClose()}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button onPress={() => onComfirm(inputText, inputText2)}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            onPress={() => onComfirm(inputText, inputText2)}
+          >
             <Text>OK</Text>
           </Button>
         </DialogFooter>

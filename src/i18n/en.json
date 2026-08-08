@@ -131,7 +131,8 @@
     "gameTitle": "Game",
     "gameLabel": "Game{{index}}",
     "inputTitle": "Enter scores for {{game}}",
-    "totalLabel": "Total"
+    "totalLabel": "Total",
+    "totalMustBeZero": "The total for a standard table must be zero"
   },
   "titleBar": {
     "group": "Group",
@@ -146,6 +147,9 @@
     "shareSuccessDescription": "Copied the URL for {{typeName}} to your clipboard:\n{{url}}",
     "shareErrorTitle": "Copy Failed",
     "shareErrorDescription": "Failed to copy the URL to clipboard.\n{{error}}",
+    "parentPage": "Go to parent page",
+    "back": "Go back",
+    "shareMenu": "Open share menu",
     "shareViewLink": "Share View Link",
     "shareEditLink": "Share Edit Link"
   },

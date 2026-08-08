@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
+import { radius } from '@/src/lib/theme';
+
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Text } from './ui/text';
 
 interface MultiSelectorModalProps<T extends { id: number; name: string }> {
   title: string;
@@ -34,13 +37,15 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
         {items.length === 0 ? (
-          <Text className="py-4 text-center text-white">{t('Common.emptyMessage')}</Text>
+          <Text className="py-4 text-center text-on-surface-variant">
+            {t('Common.emptyMessage')}
+          </Text>
         ) : (
           <ScrollView className="max-h-80 w-full">
             <View className="w-full">
@@ -50,19 +55,23 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
                 return (
                   <Pressable
                     key={item.id}
+                    accessibilityState={{ checked: selected }}
+                    role="checkbox"
                     onPress={() => toggleSelect(item.id)}
-                    className="mb-4 flex-row items-center"
+                    className="mb-2 min-h-14 w-full flex-row items-center rounded-xl border border-outline bg-surface px-4 py-3 active:bg-surface-variant"
                   >
                     <View
                       className={[
-                        'mr-3 h-6 w-6 items-center justify-center rounded border border-white',
-                        selected ? 'bg-green-500' : 'bg-transparent',
+                        'mr-3 h-6 w-6 items-center justify-center rounded border',
+                        selected
+                          ? 'border-primary bg-primary'
+                          : 'border-outline bg-transparent',
                       ].join(' ')}
                     >
-                      {selected && <Text className="text-base font-bold text-white">✓</Text>}
+                      {selected && <Text className="text-base font-bold text-on-primary">✓</Text>}
                     </View>
 
-                    <Text className="text-xl text-white">{item.name}</Text>
+                    <Text className="text-base font-semibold text-on-surface">{item.name}</Text>
                   </Pressable>
                 );
               })}
@@ -71,10 +80,14 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onPress={onClose}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button onPress={handleConfirm} disabled={selectedIds.length === 0}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            onPress={handleConfirm}
+            disabled={selectedIds.length === 0}
+          >
             <Text>OK</Text>
           </Button>
         </DialogFooter>

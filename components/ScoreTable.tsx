@@ -11,6 +11,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Text } from '@/components/ui/text';
 import type { TournamentScoreMap } from '@/src/api/generated/mahjongApi.schemas';
+import { mahjong } from '@/src/lib/theme';
 
 interface ScoreTableProps {
   scoreMap: TournamentScoreMap | undefined;
@@ -23,7 +24,11 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   const detailScrollRef = useRef<ScrollView>(null);
 
   if (!scoreMap) {
-    return <Text className="text-center text-white">{t('Common.noScoreData')}</Text>;
+    return (
+      <Text className="py-8 text-center text-sm text-on-surface-variant">
+        {t('Common.noScoreData')}
+      </Text>
+    );
   }
 
   const normalTables = scoreMap.tables.filter((table) => table.type !== 'CHIP');
@@ -39,7 +44,7 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   };
 
   return (
-    <View className="flex-1 self-stretch min-h-0 mt-4">
+    <View className="mt-4 min-h-0 flex-1 self-stretch overflow-hidden rounded-xl border border-outline bg-surface">
       {/* ヘッダー */}
       <View className="flex-row">
         <ColIndexCell fixed>{t('scoreTable.columnParticipant')}</ColIndexCell>
@@ -53,7 +58,12 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
         >
           <View className="flex-row">
             {sortedTables.map((table) => (
-              <Pressable key={table.id} onPress={() => table.id && onClick(table.id)}>
+              <Pressable
+                key={table.id}
+                hitSlop={2}
+                role="button"
+                onPress={() => table.id && onClick(table.id)}
+              >
                 <ColIndexCell underline>{table.name}</ColIndexCell>
               </Pressable>
             ))}
@@ -86,16 +96,20 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
               {scoreMap.players.map((player) => (
                 <View key={player.id} className="flex-row">
                   {sortedTables.map((table) => {
-                    const score = (player.scores ?? {})[String(table.id)] ?? '';
+                    const score = (player.scores ?? {})[String(table.id)] as number | undefined;
 
                     return (
                       <ScoreCell key={table.id}>
-                        {score !== 0 ? score.toLocaleString() : ''}
+                        {score === undefined ? '—' : score.toLocaleString()}
                       </ScoreCell>
                     );
                   })}
 
-                  <ScoreCell>{String(player.total?.toLocaleString() ?? '')}</ScoreCell>
+                  <ScoreCell>
+                    {player.total === null || player.total === undefined
+                      ? '—'
+                      : player.total.toLocaleString()}
+                  </ScoreCell>
                   <ScoreCell>{Number(player.converted_total ?? 0).toLocaleString()}</ScoreCell>
                 </View>
               ))}
@@ -111,27 +125,29 @@ type ScoreCellProps = {
   children: React.ReactNode;
   fixed?: boolean;
   underline?: boolean;
-  className?: string;
 };
 
-const CELL_HEIGHT = 40;
-const CELL_WIDTH = 62;
-const FIXED_WIDTH = 96;
 const ScoreCell = ({ children, fixed = false, underline = false }: ScoreCellProps) => {
   return (
     <View
-      style={{ width: fixed ? FIXED_WIDTH : CELL_WIDTH, height: CELL_HEIGHT }}
+      style={{
+        minHeight: mahjong.tableHeaderHeight,
+        width: fixed ? mahjong.playerColumnWidth : mahjong.scoreCellWidth,
+      }}
       className={[
-        'border border-gray-300 items-center justify-center',
-        fixed ? 'bg-green-800' : 'bg-transparent',
+        'items-center justify-center border-b border-r border-outline px-2 py-1',
+        fixed ? 'bg-surface-variant' : 'bg-surface',
       ].join(' ')}
     >
       <Popover>
-        <PopoverTrigger>
+        <PopoverTrigger hitSlop={2}>
           <Text
             numberOfLines={1}
             ellipsizeMode="tail"
-            className={['text-center text-white', underline ? 'underline' : ''].join(' ')}
+            className={[
+              'text-center text-base font-bold leading-[22px] text-on-surface',
+              underline ? 'underline' : '',
+            ].join(' ')}
           >
             {children}
           </Text>
@@ -148,22 +164,24 @@ type ColIndexCellProps = {
   children: React.ReactNode;
   fixed?: boolean;
   underline?: boolean;
-  className?: string;
 };
 
 const ColIndexCell = ({ children, fixed = false, underline = false }: ColIndexCellProps) => {
   return (
     <View
-      style={{ width: fixed ? FIXED_WIDTH : CELL_WIDTH, height: CELL_HEIGHT }}
-      className={[
-        'border border-gray-300 items-center justify-center',
-        fixed ? 'bg-green-800' : 'bg-green-800',
-      ].join(' ')}
+      style={{
+        minHeight: mahjong.tableHeaderHeight,
+        width: fixed ? mahjong.playerColumnWidth : mahjong.scoreCellWidth,
+      }}
+      className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
     >
       <Text
         numberOfLines={1}
         ellipsizeMode="tail"
-        className={['text-center text-white', underline ? 'underline' : ''].join(' ')}
+        className={[
+          'text-center text-[13px] font-bold leading-[18px] text-on-surface',
+          underline ? 'underline' : '',
+        ].join(' ')}
       >
         {children}
       </Text>

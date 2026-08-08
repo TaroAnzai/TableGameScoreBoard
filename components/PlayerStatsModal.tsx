@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
 import type { GroupPlayerStat } from '@/src/api/generated/mahjongApi.schemas';
+import { radius } from '@/src/lib/theme';
 
 import { Button } from './ui/button';
 import {
@@ -37,7 +38,7 @@ export const PlayerStatsModal = ({ open, onClose, playerStats }: PlayerStatsModa
   if (!playerStats) return null;
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{t('statsPage.dialogTitle')}</DialogTitle>
           <DialogDescription>
@@ -45,8 +46,8 @@ export const PlayerStatsModal = ({ open, onClose, playerStats }: PlayerStatsModa
           </DialogDescription>
         </DialogHeader>
 
-        <View className="rounded-lg border border-gray-200">
-          {Object.entries(STATS_NAME_MAP).map(([key, label], index) => {
+        <View className="overflow-hidden rounded-xl border border-outline bg-surface">
+          {Object.entries(STATS_NAME_MAP).map(([key, label]) => {
             const value = playerStats[key as keyof GroupPlayerStat];
 
             if (value === undefined || value === null || value === '') {
@@ -54,10 +55,12 @@ export const PlayerStatsModal = ({ open, onClose, playerStats }: PlayerStatsModa
             }
 
             return (
-              <View key={key} className={`flex-row p-2`}>
-                <Text>{t(`statsPage.statsNameMap.${label}`)}</Text>
+              <View key={key} className="min-h-11 flex-row items-center border-b border-outline px-3 py-2 last:border-b-0">
+                <Text className="flex-1 text-sm text-on-surface">
+                  {t(`statsPage.statsNameMap.${label}`)}
+                </Text>
 
-                <Text className="ml-auto">
+                <Text className="ml-3 text-right text-base font-bold text-on-surface">
                   {typeof value === 'number' ? value.toLocaleString() : String(value)}
                 </Text>
               </View>
@@ -66,7 +69,7 @@ export const PlayerStatsModal = ({ open, onClose, playerStats }: PlayerStatsModa
         </View>
 
         <DialogFooter>
-          <Button onPress={onClose}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={onClose}>
             <Text> {t('Common.close')}</Text>
           </Button>
         </DialogFooter>

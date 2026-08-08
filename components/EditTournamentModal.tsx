@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { View } from 'react-native';
 
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Text } from '@/components/ui/text';
 import type { Tournament, TournamentUpdate } from '@/src/api/generated/mahjongApi.schemas';
-
-import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { radius } from '@/src/lib/theme';
 
 interface EditTournamentModalProps {
   tournament: Tournament;
@@ -34,53 +37,50 @@ const EditTournamentModal = ({
   };
 
   return (
-    <Dialog open={open}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>大会情報を編集</DialogTitle>
         </DialogHeader>
 
         <View className="gap-4">
-          <View className="gap-1">
-            <Text className="text-white">大会名：</Text>
-            <TextInput
+          <View className="gap-2">
+            <Label>大会名</Label>
+            <Input
               value={name}
               onChangeText={setName}
-              className="w-full rounded-md border border-green-300/40 px-3 py-2 text-white"
-              placeholderTextColor="#aaa"
+              className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
           </View>
 
-          <View className="gap-1">
-            <Text className="text-white">メモ：</Text>
-            <TextInput
+          <View className="gap-2">
+            <Label>メモ</Label>
+            <Input
               value={description}
               onChangeText={setDescription}
               multiline
               textAlignVertical="top"
-              className="min-h-24 w-full rounded-md border border-green-300/40 px-3 py-2 text-white"
-              placeholderTextColor="#aaa"
+              className="min-h-24 rounded-xl bg-surface py-3"
             />
           </View>
 
-          <View className="gap-1">
-            <Text className="text-white">開始日：</Text>
-            <TextInput
+          <View className="gap-2">
+            <Label>開始日</Label>
+            <Input
               value={startedAt}
               onChangeText={setStartedAt}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor="#aaa"
-              className="w-full rounded-md border border-green-300/40 px-3 py-2 text-white"
+              className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
           </View>
         </View>
 
         <DialogFooter>
-          <Button onPress={handleSubmit}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={handleSubmit}>
             <Text>保存</Text>
           </Button>
 
-          <Button variant="outline" onPress={onClose}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
             <Text>閉じる</Text>
           </Button>
         </DialogFooter>

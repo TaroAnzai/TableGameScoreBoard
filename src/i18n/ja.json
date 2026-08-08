@@ -130,7 +130,8 @@
     "gameTitle": "局",
     "gameLabel": "第{{index}}局",
     "inputTitle": "{{game}}の点数入力",
-    "totalLabel": "合計"
+    "totalLabel": "合計",
+    "totalMustBeZero": "通常卓の合計は0にしてください"
   },
   "titleBar": {
     "group": "グループ",
@@ -145,6 +146,9 @@
     "shareSuccessDescription": "{{typeName}}のURLをクリップボードにコピーしました:\n{{url}}",
     "shareErrorTitle": "コピーに失敗しました",
     "shareErrorDescription": "URLをクリップボードにコピーに失敗しました。\n{{error}}",
+    "parentPage": "上の階層へ移動",
+    "back": "戻る",
+    "shareMenu": "共有メニューを開く",
     "shareViewLink": "閲覧リンクを共有",
     "shareEditLink": "編集リンクを共有"
   },

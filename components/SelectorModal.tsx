@@ -1,7 +1,9 @@
 // src/components/SelectorModal.tsx
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+
+import { radius } from '@/src/lib/theme';
 
 import { Button } from './ui/button';
 import {
@@ -43,7 +45,7 @@ const SelectorModal = <T extends SelectorItem>({
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
-      <DialogContent>
+      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t('Common.Select')}</DialogDescription>
@@ -57,24 +59,27 @@ const SelectorModal = <T extends SelectorItem>({
           <ScrollView className="max-h-80">
             <View className="w-full gap-2">
               {items.map((item) => (
-                <Pressable
+                <Button
                   key={String(item.id)}
                   onPress={() => onSelect(item)}
-                  className="rounded-2xl border border-green-300 bg-green-600 p-2"
+                  className="h-auto min-h-14 w-full items-start rounded-xl border border-outline bg-surface px-4 py-3"
+                  variant="ghost"
                 >
-                  <Text className="text-base text-white">{item.name}</Text>
+                  <Text className="text-base font-semibold text-on-surface">{item.name}</Text>
 
                   {plusDisplayItem && item[plusDisplayItem] !== null && (
-                    <Text className="text-sm text-white/80">{String(item[plusDisplayItem])}</Text>
+                    <Text className="text-sm text-on-surface-variant">
+                      {String(item[plusDisplayItem])}
+                    </Text>
                   )}
-                </Pressable>
+                </Button>
               ))}
             </View>
           </ScrollView>
         )}
 
         <DialogFooter>
-          <Button onPress={onClose}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={onClose}>
             <Text>{t('Common.close')}</Text>
           </Button>
         </DialogFooter>

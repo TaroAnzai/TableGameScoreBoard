@@ -10,6 +10,7 @@ import type {
   ScoreInput,
   Table as ScoreTable,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { mahjong } from '@/src/lib/theme';
 
 interface TableScoreBoardProps {
   table: ScoreTable;
@@ -85,20 +86,27 @@ const TableScoreBoard = ({
   });
 
   return (
-    <View className="flex-1 self-stretch min-h-0">
-      <ScrollView horizontal className="flex-1 min-h-0 mt-4">
-        <View className="flex-1 min-h-0 mt-4">
+    <View className="min-h-0 flex-1 self-stretch">
+      <ScrollView horizontal className="mt-4 min-h-0 flex-1">
+        <View className="min-h-0 flex-1 overflow-hidden rounded-xl border border-outline bg-surface">
           <View className="flex-row">
             {/* Header */}
-            <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
-              <Text className="text-center text-white font-bold" numberOfLines={1}>
+            <View
+              style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.gameColumnWidth }}
+              className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
+            >
+              <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface" numberOfLines={1}>
                 {t('scoreBoard.gameTitle')}
               </Text>
             </View>
 
             {displayPlayers.map((player) => (
-              <View key={player.id} className="w-[70px] bg-green-800 border border-gray-300 p-2">
-                <Text className="text-center text-white font-bold" numberOfLines={1}>
+              <View
+                key={player.id}
+                style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.playerColumnWidth }}
+                className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
+              >
+                <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface" numberOfLines={1}>
                   {player.name}
                 </Text>
               </View>
@@ -108,9 +116,18 @@ const TableScoreBoard = ({
             {/* Rows */}
             {displayGames.map((game, index) => (
               <Fragment key={game?.id ?? `row-${index}`}>
-                <Pressable className="flex-row" onPress={() => handleRowPress(index)}>
-                  <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
-                    <Text className="text-center text-white" numberOfLines={1}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled }}
+                  className="min-h-11 flex-row active:bg-primary-container"
+                  disabled={disabled}
+                  onPress={() => handleRowPress(index)}
+                >
+                  <View
+                    style={{ width: mahjong.gameColumnWidth }}
+                    className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
+                  >
+                    <Text className="text-center text-sm text-on-surface" numberOfLines={1}>
                       {isChipTable
                         ? t('Common.chip')
                         : t('scoreBoard.gameLabel', { index: index + 1 })}
@@ -123,10 +140,11 @@ const TableScoreBoard = ({
                     return (
                       <View
                         key={`${index}-${player.id}`}
-                        className="w-[70px] border border-gray-300 p-1"
+                        style={{ width: mahjong.playerColumnWidth }}
+                        className="items-center justify-center border-b border-r border-outline bg-surface px-2 py-1"
                       >
-                        <Text className="text-center text-white" numberOfLines={1}>
-                          {score}
+                        <Text className="text-center text-base font-bold leading-[22px] text-on-surface" numberOfLines={1}>
+                          {score === '' ? '—' : Number(score).toLocaleString()}
                         </Text>
                       </View>
                     );
@@ -137,16 +155,23 @@ const TableScoreBoard = ({
 
             {!isChipTable && (
               <View className="flex-row">
-                <View className="w-[70px] bg-green-800 border border-gray-300 p-2">
-                  <Text className="text-center text-white font-bold">
+                <View
+                  style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.gameColumnWidth }}
+                  className="items-center justify-center border-r border-outline bg-surface-variant px-2 py-1"
+                >
+                  <Text className="text-center text-sm font-bold text-on-surface">
                     {t('scoreBoard.totalLabel')}
                   </Text>
                 </View>
 
                 {displayPlayers.map((player) => (
-                  <View key={`total-${player.id}`} className="w-[70px] border border-gray-300 p-2">
-                    <Text className="text-center text-white font-bold">
-                      {totalScores[player.id] ?? 0}
+                  <View
+                    key={`total-${player.id}`}
+                    style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.playerColumnWidth }}
+                    className="items-center justify-center border-r border-outline bg-surface-variant px-2 py-1"
+                  >
+                    <Text className="text-center text-base font-bold leading-[22px] text-on-surface">
+                      {(totalScores[player.id] ?? 0).toLocaleString()}
                     </Text>
                   </View>
                 ))}
