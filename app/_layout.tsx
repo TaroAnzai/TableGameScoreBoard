@@ -5,6 +5,7 @@ import { PortalHost } from '@rn-primitives/portal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -17,15 +18,17 @@ export {
 const queryClient = new QueryClient();
 export default function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AlertDialogProvider>
-        <StatusBar style="auto" />
-        <SafeAreaView className="flex-1">
-          <Stack screenOptions={{ headerShown: false }} />
-        </SafeAreaView>
-        <PortalHost />
-        <Toast />
-      </AlertDialogProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <AlertDialogProvider>
+          <StatusBar style="auto" />
+          <SafeAreaView className="flex-1">
+            <Stack screenOptions={{ headerShown: false }} />
+          </SafeAreaView>
+          <PortalHost />
+          <Toast />
+        </AlertDialogProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

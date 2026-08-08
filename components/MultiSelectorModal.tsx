@@ -33,7 +33,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
   };
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
