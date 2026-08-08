@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { router, useFocusEffect } from 'expo-router';
-import { Settings } from 'lucide-react-native';
+import { Minus, Settings, SquareMinus } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,9 +14,11 @@ import {
 } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
+import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import MahjongContainer from '@/components/MahjongContainer';
 import { MahjongListItem } from '@/components/MahjongListItem';
 import MahjongSection from '@/components/MahjongSection';
+import SelectorModal from '@/components/SelectorModal';
 import { TextInputModal } from '@/components/TextInputModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,13 +26,22 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Group } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
+import { appStorage } from '@/src/storage/appStorage';
 import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
-import { formatLocalDateTime } from '@/src/utils/date_utils';
+
+type RemovableGroup = Omit<Group, 'id'> & { id: string | number };
+
 export default function Index() {
   const { t } = useTranslation();
   const { groups, pendingGroups, isLoading, isRefreshing, refetch, refresh } = useGroupQueries();
   const { mutate: createGroup } = useCreateGroupRequest();
+  const { alertDialog } = useAlertDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRemoveGroupModalOpen, setIsRemoveGroupModalOpen] = useState(false);
+  const removableGroups = groups.map((group) => ({
+    ...group,
+    id: group.id ?? group.owner_link ?? group.edit_link ?? group.view_link ?? group.name,
+  }));
 
   const appState = useRef<AppStateStatus>(AppState.currentState);
   const refetchingRef = useRef(false);
@@ -52,6 +63,24 @@ export default function Index() {
       refetchingRef.current = false;
     }
   }, [refetch]);
+
+  const handleRemoveGroup = async (group: RemovableGroup) => {
+    setIsRemoveGroupModalOpen(false);
+
+    const groupKey = group.owner_link ?? group.edit_link ?? group.view_link;
+    if (!groupKey) return;
+
+    const confirmed = await alertDialog({
+      title: t('groupPage.dialogRemoveGroupTitle'),
+      description: t('groupPage.dialogRemoveGroupDescription', { groupName: group.name }),
+      showCancelButton: true,
+    });
+    if (!confirmed) return;
+
+    await appStorage.removeGroupKey(groupKey);
+    await safeRefetch();
+  };
+
   const handleCreateGroup = async (groupName: string, email: string) => {
     if (!groupName || !email) return;
     Keyboard.dismiss();
@@ -138,7 +167,20 @@ export default function Index() {
 
           {/* Registered Groups */}
           <MahjongSection>
-            <Text className="text-lg font-semibold">{t('welcomPage.RegisteredGroups')}</Text>
+            <View className="relative h-10 w-full flex-row items-center justify-center">
+              <Text className="text-lg font-semibold">{t('welcomPage.RegisteredGroups')}</Text>
+              {groups.length > 0 && (
+                <Button
+                  accessibilityLabel={t('welcomPage.RemoveRegisteredGroup')}
+                  className="absolute right-0 h-10 w-10 rounded-full p-0"
+                  size="icon"
+                  variant="ghost"
+                  onPress={() => setIsRemoveGroupModalOpen(true)}
+                >
+                  <Icon as={SquareMinus} className="text-error" size={24} />
+                </Button>
+              )}
+            </View>
 
             {isLoading ? (
               <Card className="rounded-2xl">
@@ -148,7 +190,7 @@ export default function Index() {
                 </CardContent>
               </Card>
             ) : (
-              <View className="gap-3">
+              <View className="gap-1">
                 {groups.map(
                   (group) =>
                     group && (
@@ -157,7 +199,7 @@ export default function Index() {
                         title={group.name}
                         badge={getAccessLevelstring(group.group_links)}
                         accessories={[
-                          group.created_at && '作成日' + format(group.created_at, 'yyyy-MM-dd'),
+                          group.created_at && '作成日:' + format(group.created_at, 'yyyy-MM-dd'),
                           group.description && group.description,
                         ]}
                         onPress={() => handleEnterGroup(group)}
@@ -167,21 +209,29 @@ export default function Index() {
               </View>
             )}
             {pendingGroups.length > 0 && (
-              <View className="gap-3">
+              <View className="gap-3 align-center">
                 <Text className="text-lg font-semibold">Pending Groups</Text>
                 {pendingGroups.map((group) => (
-                  <View key={group.token} className="gap-1">
-                    <Text className="text-base font-semibold">{group.groupName}</Text>
-                    <Text className="text-sm text-muted-foreground">
-                      {formatLocalDateTime(group.expiresAt)}
-                    </Text>
-                  </View>
+                  <MahjongListItem
+                    key={group.token}
+                    title={group.groupName}
+                    accessories={[
+                      group.expiresAt && '有効期限:' + format(group.expiresAt, 'yyyy-MM-dd'),
+                    ]}
+                  />
                 ))}
               </View>
             )}
           </MahjongSection>
         </ScrollView>
       </MahjongContainer>
+      <SelectorModal
+        title={t('welcomPage.SelectGroupToRemove')}
+        open={isRemoveGroupModalOpen}
+        items={removableGroups}
+        onSelect={handleRemoveGroup}
+        onClose={() => setIsRemoveGroupModalOpen(false)}
+      />
       <TextInputModal
         open={isModalOpen}
         title={t('welcomPage.CreateNewGroup')}

@@ -64,7 +64,7 @@ export const TextInputModal = ({
     >
       <DialogContent
         key={`${open}-${value}-${twoValue}`}
-        className="bg-surface"
+        className="bg-surface -translate-y-20"
         style={{ borderRadius: radius.xl }}
       >
         <DialogHeader>

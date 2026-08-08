@@ -15,7 +15,9 @@
     "CreateNewGroup": "新しいグループを作成",
     "EnterGroupName": "グループ名を入力してください",
     "GroupName": "グループ名",
-    "Email": "メールアドレス"
+    "Email": "メールアドレス",
+    "RemoveRegisteredGroup": "登録グループを削除",
+    "SelectGroupToRemove": "削除する登録グループを選択"
   },
   "settings": {
     "open": "設定を開く",

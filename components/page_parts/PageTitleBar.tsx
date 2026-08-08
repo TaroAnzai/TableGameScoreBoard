@@ -99,7 +99,7 @@ export default function PageTitleBar({
             variant="ghost"
             onPress={() => router.push(parentUrl as any)}
           >
-            <Icon as={ChevronsUp} className="text-on-surface" size={24} />
+            <Icon as={ChevronLeft} className="text-on-surface" size={24} />
           </Button>
         )}
 

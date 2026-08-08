@@ -1,7 +1,9 @@
+import { format } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { SquarePlus, UserMinus, UserPlus } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -13,6 +15,7 @@ import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import SelectorModal from '@/components/SelectorModal';
 import { TextInputModal } from '@/components/TextInputModal';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { useGetApiGroupsGroupKey } from '@/src/api/generated/mahjongApi';
@@ -41,8 +44,24 @@ const GroupPage = () => {
   const [showTournamentModal, setShowTournamentModal] = useState(false);
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isCreatePlayerModalOpen, setIsCreatePlayerModalOpen] = useState(false);
+  const [isGroupRegistered, setIsGroupRegistered] = useState<boolean | null>(null);
   const [value, setValue] = useState('tournament');
   const accessLevel = getAccessLevelstring(group?.group_links);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    appStorage.getGroupKeys().then((groupKeys) => {
+      if (isMounted) {
+        setIsGroupRegistered(groupKeys.includes(groupKey));
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [groupKey]);
+
   const handleTitleChange = (newTitle: string) => {
     if (!newTitle) return;
     if (!groupKey) return;
@@ -56,18 +75,8 @@ const GroupPage = () => {
       showCancelButton: true,
     });
     if (!res) return;
-    appStorage.addGroupKey(groupKey);
-    router.push('/');
-  };
-  const handleRemoveGroup = async () => {
-    if (!groupKey || !group) return;
-    const confirmed = await alertDialog({
-      title: t('groupPage.dialogRemoveGroupTitle'),
-      description: t('groupPage.dialogRemoveGroupDescription', { groupName: group.name }),
-      showCancelButton: true,
-    });
-    if (!confirmed) return;
-    appStorage.removeGroupKey(groupKey);
+    await appStorage.addGroupKey(groupKey);
+    setIsGroupRegistered(true);
     router.push('/');
   };
   const handleAddPlayer = (name: string) => {
@@ -107,41 +116,16 @@ const GroupPage = () => {
       />
 
       <ButtonGridSection>
-        <Button
-          disabled={accessLevel === 'VIEW'}
-          onPress={() => setIsCreatePlayerModalOpen(true)}
-          className="w-full"
-        >
-          <Text>{t('groupPage.buttonAddPlayer')}</Text>
-        </Button>
-        <Button
-          disabled={accessLevel === 'VIEW'}
-          onPress={() => setShowDeleteModal(true)}
-          className="w-full"
-        >
-          <Text>{t('groupPage.buttonDeletePlayer')}</Text>
-        </Button>
-        <Button
-          disabled={accessLevel === 'VIEW'}
-          onPress={() => setIsCreateTournamentModalOpen(true)}
-          className="w-full"
-        >
-          <Text>{t('groupPage.buttonCreateTournament')}</Text>
-        </Button>
-        <Button onPress={() => setShowTournamentModal(true)} className="w-full">
-          <Text>{t('groupPage.buttonSelectTournament')}</Text>
-        </Button>
-        <Button onPress={handleAddGroup} className="w-full">
-          <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
-        </Button>
-        <Button onPress={handleRemoveGroup} className="w-full">
-          <Text>{t('groupPage.buttonRemoveFromBrowser')}</Text>
-        </Button>
+        {isGroupRegistered === false && (
+          <Button onPress={handleAddGroup} className="w-full">
+            <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
+          </Button>
+        )}
         <Button onPress={() => router.push(`/group/stats/${groupKey}`)} className="w-full">
           <Text>{t('groupPage.buttonStats')}</Text>
         </Button>
       </ButtonGridSection>
-      <Tabs value={value} onValueChange={setValue} className="w-full">
+      <Tabs value={value} onValueChange={setValue} className="min-h-0 w-full flex-1">
         <TabsList className="h-11">
           <TabsTrigger value="tournament">
             <Text className="text-base">{t('groupPage.tabTournamentList')}</Text>
@@ -150,15 +134,74 @@ const GroupPage = () => {
             <Text className="text-base">{t('groupPage.tabMemberList')}</Text>
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="tournament" className="w-full flex-none">
-          <Text>To Be Added</Text>
+        <TabsContent value="tournament" className="min-h-0 w-full flex-1">
+          {/* Tournament List */}
+          <MahjongSection className="min-h-0 justify-start">
+            <View className="w-full relative mb-4 h-10 items-center justify-center">
+              <MahjongSubTitle className="mb-4">
+                {t('groupPage.buttonSelectTournament')}
+              </MahjongSubTitle>
+              {accessLevel !== 'VIEW' && (
+                <View className="absolute inset-y-0 right-0 flex-row items-center gap-1">
+                  <Pressable
+                    className="h-10 w-10 items-center justify-center"
+                    onPress={() => setIsCreateTournamentModalOpen(true)}
+                  >
+                    <Icon as={SquarePlus} className="text-on-surface" size={24} />
+                  </Pressable>
+                </View>
+              )}
+            </View>
+
+            {tournaments?.length === 0 ? (
+              <Text>{t('groupPage.sectionTournamentListEmpty')}</Text>
+            ) : (
+              <MahjongList>
+                {tournaments?.map((tournament) => (
+                  <MahjongListItem
+                    key={tournament.id}
+                    title={tournament.name}
+                    badge={'Rate:' + tournament.rate.toString()}
+                    accessories={[
+                      tournament.created_at &&
+                        '作成日' + format(new Date(tournament.created_at), 'yyyy-MM-dd'),
+                    ]}
+                    onPress={() => {
+                      const tournament_key = tournament.edit_link ?? tournament.view_link;
+                      router.push(`/tournament/${tournament_key}`);
+                    }}
+                  />
+                ))}
+              </MahjongList>
+            )}
+          </MahjongSection>
         </TabsContent>
-        <TabsContent value="member" className="w-full flex-none">
-          <MahjongSection className="flex-none justify-start">
-            <MahjongSubTitle className="mb-4">{t('groupPage.sectionMemberList')}</MahjongSubTitle>
+        <TabsContent value="member" className="min-h-0 w-full flex-1">
+          {/* Member List */}
+          <MahjongSection className="min-h-0 justify-start">
+            <View className="w-full relative mb-4 h-10 items-center justify-center">
+              <MahjongSubTitle>{t('groupPage.sectionMemberList')}</MahjongSubTitle>
+              {accessLevel !== 'VIEW' && (
+                <View className="absolute right-0 flex-row items-center gap-1">
+                  <Pressable
+                    className="h-10 w-10 items-center justify-center"
+                    onPress={() => setIsCreatePlayerModalOpen(true)}
+                  >
+                    <Icon as={UserPlus} className="text-on-surface" size={24} />
+                  </Pressable>
+
+                  <Pressable
+                    className="h-10 w-10 items-center justify-center"
+                    onPress={() => setShowDeleteModal(true)}
+                  >
+                    <Icon as={UserMinus} className="text-error" size={24} />
+                  </Pressable>
+                </View>
+              )}
+            </View>
 
             {isLoadingPlayers ? (
-              <View className="items-center justify-center gap-2">
+              <View className=" items-center justify-center gap-2">
                 <ActivityIndicator size="large" />
                 <Text>Loading...</Text>
               </View>

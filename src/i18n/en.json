@@ -15,7 +15,9 @@
     "CreateNewGroup": "Create new group",
     "EnterGroupName": "Enter group name",
     "GroupName": "Group name",
-    "Email": "Email"
+    "Email": "Email",
+    "RemoveRegisteredGroup": "Remove a registered group",
+    "SelectGroupToRemove": "Select a registered group to remove"
   },
   "settings": {
     "open": "Open settings",
