@@ -10,50 +10,41 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Legacy utilities keep their current fallback until each existing
-        // component is migrated under ThemeProvider.
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        border: 'var(--ds-outline)',
+        input: 'var(--ds-outline)',
+        ring: 'var(--ds-primary)',
+        background: 'var(--ds-background)',
+        foreground: 'var(--ds-on-surface)',
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: 'var(--ds-primary)',
+          foreground: 'var(--ds-on-primary)',
         },
         'on-primary': 'var(--ds-on-primary)',
         'primary-container': 'var(--ds-primary-container)',
         'on-primary-container': 'var(--ds-on-primary-container)',
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+          DEFAULT: 'var(--ds-primary-container)',
+          foreground: 'var(--ds-on-primary-container)',
         },
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+          DEFAULT: 'var(--ds-error)',
+          foreground: 'var(--ds-on-error)',
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: 'var(--ds-surface-variant)',
+          foreground: 'var(--ds-on-surface-variant)',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+          DEFAULT: 'var(--ds-surface-variant)',
+          foreground: 'var(--ds-on-surface)',
         },
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+          DEFAULT: 'var(--ds-surface)',
+          foreground: 'var(--ds-on-surface)',
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
-        chart: {
-          1: 'hsl(var(--chart-1))',
-          2: 'hsl(var(--chart-2))',
-          3: 'hsl(var(--chart-3))',
-          4: 'hsl(var(--chart-4))',
-          5: 'hsl(var(--chart-5))',
+          DEFAULT: 'var(--ds-surface)',
+          foreground: 'var(--ds-on-surface)',
         },
         surface: 'var(--ds-surface)',
         'surface-variant': 'var(--ds-surface-variant)',
