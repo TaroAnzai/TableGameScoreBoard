@@ -1,7 +1,8 @@
 import React, { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
+import TableScoreInputModal from '@/components/TableScoreInputModal';
 import { Text } from '@/components/ui/text';
 import type {
   Game,
@@ -28,9 +29,6 @@ const TableScoreBoard = ({
   const { t } = useTranslation();
 
   const [editingGameIndex, setEditingGameIndex] = useState<number | null>(null);
-  const [editingScores, setEditingScores] = useState<Record<number, string>>({});
-  const [rowTotal, setRowTotal] = useState(0);
-
   const isChipTable = table.type === 'CHIP';
 
   const displayPlayers = [...players];
@@ -58,63 +56,19 @@ const TableScoreBoard = ({
   const handleRowPress = (index: number) => {
     if (editingGameIndex === index || disabled) return;
 
-    const game = displayGames[index];
-    const initialScores: Record<number, string> = {};
-
-    displayPlayers.forEach((player) => {
-      const scoreEntry = game?.scores?.find((s) => s.player_id === player.id);
-      initialScores[player.id] = scoreEntry?.score ? String(scoreEntry.score) : '';
-    });
-
     setEditingGameIndex(index);
-    setEditingScores(initialScores);
-
-    const initialTotal = Object.values(initialScores).reduce((acc, val) => {
-      const num = Number(val);
-      return acc + (Number.isNaN(num) ? 0 : num);
-    }, 0);
-
-    setRowTotal(initialTotal);
   };
 
-  const handleScoreChange = (playerId: number, value: string) => {
-    if (value !== '' && !/^-?\d*\.?\d*$/.test(value)) return;
-
-    setEditingScores((prev) => {
-      const newScores = { ...prev, [playerId]: value };
-
-      const total = Object.values(newScores).reduce((acc, val) => {
-        const num = Number(val);
-        return acc + (Number.isNaN(num) ? 0 : num);
-      }, 0);
-
-      setRowTotal(total);
-      return newScores;
-    });
-  };
-
-  const handleConfirm = () => {
+  const handleConfirm = (scores: ScoreInput[]) => {
     if (editingGameIndex === null) return;
 
     const game = displayGames[editingGameIndex];
-
-    const formatted: ScoreInput[] = Object.entries(editingScores)
-      .filter(([, score]) => score !== '')
-      .map(([playerId, score]) => ({
-        player_id: Number(playerId),
-        score: Number(score),
-      }));
-
-    if (formatted.length === 0) return;
-
-    onUpdateGame(game?.id ?? null, formatted);
+    onUpdateGame(game?.id ?? null, scores);
     setEditingGameIndex(null);
-    setEditingScores({});
   };
 
   const handleCancel = () => {
     setEditingGameIndex(null);
-    setEditingScores({});
   };
 
   const totalScores: Record<number, number> = {};
@@ -171,44 +125,13 @@ const TableScoreBoard = ({
                         key={`${index}-${player.id}`}
                         className="w-[70px] border border-gray-300 p-1"
                       >
-                        {editingGameIndex === index && player.id > 0 ? (
-                          <TextInput
-                            value={editingScores[player.id] ?? ''}
-                            onChangeText={(value) => handleScoreChange(player.id, value)}
-                            keyboardType="numeric"
-                            className="bg-white text-black text-center p-1"
-                          />
-                        ) : (
-                          <Text className="text-center text-white" numberOfLines={1}>
-                            {score}
-                          </Text>
-                        )}
+                        <Text className="text-center text-white" numberOfLines={1}>
+                          {score}
+                        </Text>
                       </View>
                     );
                   })}
                 </Pressable>
-
-                {editingGameIndex === index && (
-                  <View className="border border-gray-300 p-2">
-                    <Text className="text-right text-white font-bold">
-                      {t('scoreBoard.totalLabel')}: {rowTotal}
-                    </Text>
-
-                    <View className="flex-row justify-center items-center gap-4 mt-2">
-                      <Pressable
-                        onPress={handleConfirm}
-                        disabled={rowTotal !== 0 && table.type === 'NORMAL'}
-                        className="rounded bg-blue-500 px-4 py-2 disabled:opacity-50"
-                      >
-                        <Text className="text-white">{t('Common.Confirmed')}</Text>
-                      </Pressable>
-
-                      <Pressable onPress={handleCancel} className="rounded bg-blue-500 px-4 py-2">
-                        <Text className="text-white">{t('Common.Cancel')}</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                )}
               </Fragment>
             ))}
 
@@ -232,6 +155,19 @@ const TableScoreBoard = ({
           </ScrollView>
         </View>
       </ScrollView>
+
+      {editingGameIndex !== null && (
+        <TableScoreInputModal
+          key={`${editingGameIndex}-${displayGames[editingGameIndex]?.id ?? 'new'}`}
+          open
+          tableType={table.type}
+          game={displayGames[editingGameIndex]}
+          gameIndex={editingGameIndex}
+          players={displayPlayers}
+          onConfirm={handleConfirm}
+          onClose={handleCancel}
+        />
+      )}
     </View>
   );
 };

@@ -107,6 +107,7 @@
   "scoreBoard": {
     "gameTitle": "Game",
     "gameLabel": "Game{{index}}",
+    "inputTitle": "Enter scores for {{game}}",
     "totalLabel": "Total"
   },
   "titleBar": {

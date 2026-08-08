@@ -106,6 +106,7 @@
   "scoreBoard": {
     "gameTitle": "局",
     "gameLabel": "第{{index}}局",
+    "inputTitle": "{{game}}の点数入力",
     "totalLabel": "合計"
   },
   "titleBar": {
