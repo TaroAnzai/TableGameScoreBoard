@@ -52,6 +52,9 @@
     "buttonRemoveFromBrowser": "ブラウザから削除",
     "buttonStats": "成績",
 
+    "tabTournamentList": "大会一覧",
+    "tabMemberList": "メンバー一覧",
+
     "sectionMemberList": "メンバー一覧",
 
     "dialogAddGroupTitle": "登録グループ追加",

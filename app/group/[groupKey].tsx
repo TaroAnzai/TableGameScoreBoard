@@ -12,6 +12,7 @@ import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import SelectorModal from '@/components/SelectorModal';
 import { TextInputModal } from '@/components/TextInputModal';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { useGetApiGroupsGroupKey } from '@/src/api/generated/mahjongApi';
 import { Player } from '@/src/api/generated/mahjongApi.schemas';
@@ -20,6 +21,7 @@ import { useCreatePlayer, useDeletePlayer, useGetPlayer } from '@/src/hooks/useP
 import { useCreateTable } from '@/src/hooks/useTables';
 import { useCreateTournament, useGetTournaments } from '@/src/hooks/useTournaments';
 import { appStorage } from '@/src/storage/appStorage';
+import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 const GroupPage = () => {
   const { t } = useTranslation();
   const { groupKey } = useLocalSearchParams<{ groupKey: string }>();
@@ -34,12 +36,12 @@ const GroupPage = () => {
   const { mutateAsync: createTournament } = useCreateTournament();
   const { mutateAsync: createChipTable } = useCreateTable();
 
-  const [accessLevel, setAccessLevel] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTournamentModal, setShowTournamentModal] = useState(false);
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isCreatePlayerModalOpen, setIsCreatePlayerModalOpen] = useState(false);
-
+  const [value, setValue] = useState('tournament');
+  const accessLevel = getAccessLevelstring(group?.group_links);
   const handleTitleChange = (newTitle: string) => {
     if (!newTitle) return;
     if (!groupKey) return;
@@ -138,23 +140,37 @@ const GroupPage = () => {
           <Text>{t('groupPage.buttonStats')}</Text>
         </Button>
       </ButtonGridSection>
+      <Tabs value={value} onValueChange={setValue} className="w-full">
+        <TabsList className="h-11">
+          <TabsTrigger value="tournament">
+            <Text className="text-base">{t('groupPage.tabTournamentList')}</Text>
+          </TabsTrigger>
+          <TabsTrigger value="member">
+            <Text className="text-base">{t('groupPage.tabMemberList')}</Text>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="tournament" className="w-full flex-none">
+          <Text>To Be Added</Text>
+        </TabsContent>
+        <TabsContent value="member" className="w-full flex-none">
+          <MahjongSection className="flex-none justify-start">
+            <MahjongSubTitle className="mb-4">{t('groupPage.sectionMemberList')}</MahjongSubTitle>
 
-      <MahjongSection className="justify-start">
-        <MahjongSubTitle className="mb-4">{t('groupPage.sectionMemberList')}</MahjongSubTitle>
-
-        {isLoadingPlayers ? (
-          <View className="items-center justify-center gap-2">
-            <ActivityIndicator size="large" />
-            <span>Loading...</span>
-          </View>
-        ) : (
-          <MahjongList columns={2}>
-            {players?.map((player) => (
-              <MahjongListItem key={player.id}>{player.name}</MahjongListItem>
-            ))}
-          </MahjongList>
-        )}
-      </MahjongSection>
+            {isLoadingPlayers ? (
+              <View className="items-center justify-center gap-2">
+                <ActivityIndicator size="large" />
+                <Text>Loading...</Text>
+              </View>
+            ) : (
+              <MahjongList columns={2}>
+                {players?.map((player) => (
+                  <MahjongListItem key={player.id}>{player.name}</MahjongListItem>
+                ))}
+              </MahjongList>
+            )}
+          </MahjongSection>
+        </TabsContent>
+      </Tabs>
 
       {showDeleteModal && (
         <SelectorModal

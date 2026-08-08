@@ -35,4 +35,13 @@ module.exports = [
       'simple-import-sort/exports': 'warn',
     },
   },
+  {
+    files: ['src/api/generated/**/*.{js,jsx,ts,tsx}', 'components/ui/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'func-style': 'off',
+      'prefer-arrow-callback': 'off',
+      'simple-import-sort/imports': 'off',
+      'simple-import-sort/exports': 'off',
+    },
+  },
 ];

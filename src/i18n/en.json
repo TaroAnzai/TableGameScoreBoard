@@ -52,6 +52,9 @@
     "buttonRemoveFromBrowser": "Remove from Browser",
     "buttonStats": "Stats",
 
+    "tabTournamentList": "Tournament List",
+    "tabMemberList": "Member List",
+
     "sectionMemberList": "Member List",
 
     "dialogAddGroupTitle": "Add Group to Browser",
