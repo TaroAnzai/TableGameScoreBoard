@@ -69,7 +69,10 @@ const hasChipTableScore = (scoreMap: TournamentScoreMap | undefined) => {
 const TournamentPage = () => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
-  const { tournamentKey } = useLocalSearchParams<{ tournamentKey: string }>();
+  const { tournamentKey, parentGroupKey } = useLocalSearchParams<{
+    tournamentKey: string;
+    parentGroupKey?: string;
+  }>();
   //Query系フック設定
   const { tournament, isLoadingTournament } = useGetTournament(tournamentKey);
   const groupKey =
@@ -95,7 +98,7 @@ const TournamentPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
 
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
-  const parentPageUrl = `/group/${groupKey}`;
+  const parentPageUrl = `/group/${parentGroupKey ?? groupKey}`;
 
   const candidatePlayers = groupPlayers?.filter(
     (player) => !players?.some((p) => p.id === player.id),
@@ -235,7 +238,10 @@ const TournamentPage = () => {
       }
     }
     await deleteTournament({ tournamentKey: tournamentKey! });
-    router.push(`/group/${groupKey}`);
+    router.push({
+      pathname: '/group/[groupKey]',
+      params: { groupKey: parentGroupKey ?? groupKey },
+    });
   };
 
   if (!tournamentKey) {

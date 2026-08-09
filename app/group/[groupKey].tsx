@@ -107,7 +107,10 @@ const GroupPage = () => {
       tableCreate: { name: t('Common.chip'), type: 'CHIP' },
     });
     setIsCreateTournamentModalOpen(false);
-    router.push(`/tournament/${data.edit_link}`);
+    router.push({
+      pathname: '/tournament/[tournamentKey]',
+      params: { tournamentKey: data.edit_link, parentGroupKey: groupKey },
+    });
   };
 
   const handleDeleteTournament = async (tournament: Tournament) => {
@@ -200,7 +203,10 @@ const GroupPage = () => {
                     ]}
                     onPress={() => {
                       const tournament_key = tournament.edit_link ?? tournament.view_link;
-                      router.push(`/tournament/${tournament_key}`);
+                      router.push({
+                        pathname: '/tournament/[tournamentKey]',
+                        params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
+                      });
                     }}
                   />
                 ))}
@@ -293,7 +299,10 @@ const GroupPage = () => {
           onSelect={(tournament) => {
             if (tournament) {
               const tournament_key = tournament.edit_link ?? tournament.view_link;
-              router.push(`/tournament/${tournament_key}`);
+              router.push({
+                pathname: '/tournament/[tournamentKey]',
+                params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
+              });
             }
             setShowTournamentModal(false);
           }}

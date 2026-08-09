@@ -10,7 +10,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anzaihome.mahjongapp",
-      "associatedDomains": ["applinks:anzai-home.com"]
+      "associatedDomains": [
+        "applinks:anzai-home.com",
+        "applinks:anzai-home.com"
+      ],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -32,15 +38,22 @@
               "pathPrefix": "/mahjong"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
-
     "web": {
       "favicon": "./assets/mahjong_favicon.png"
     },
-    "plugins": ["expo-router", "expo-localization", "expo-secure-store", "expo-splash-screen"],
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-secure-store",
+      "expo-splash-screen"
+    ],
     "extra": {
       "router": {},
       "eas": {
