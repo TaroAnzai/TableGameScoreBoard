@@ -176,8 +176,6 @@ const ColIndexCell = ({ children, fixed = false, underline = false }: ColIndexCe
       className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
     >
       <Text
-        numberOfLines={1}
-        ellipsizeMode="tail"
         className={[
           'text-center text-[13px] font-bold leading-[18px] text-on-surface',
           underline ? 'underline' : '',

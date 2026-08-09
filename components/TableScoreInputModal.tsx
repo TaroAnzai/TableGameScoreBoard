@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWindowDimensions, View } from 'react-native';
+import { type LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { Button } from '@/components/ui/button';
@@ -50,6 +50,7 @@ const TableScoreInputModal = ({
       }),
     ),
   );
+  const [headerHeight, setHeaderHeight] = useState<number>(mahjong.tableHeaderHeight);
 
   const total = useMemo(
     () =>
@@ -101,13 +102,10 @@ const TableScoreInputModal = ({
           <View>
             {/* Index */}
             <View
-              style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.gameColumnWidth }}
+              style={{ height: headerHeight, width: mahjong.gameColumnWidth }}
               className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
             >
-              <Text
-                className="text-center text-[13px] font-bold leading-[18px] text-on-surface"
-                numberOfLines={1}
-              >
+              <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface">
                 {t('scoreBoard.gameTitle')}
               </Text>
             </View>
@@ -125,17 +123,19 @@ const TableScoreInputModal = ({
           <ScrollView horizontal className="min-w-0 flex-1 " showsHorizontalScrollIndicator>
             <View>
               {/* Header */}
-              <View className="flex-row">
+              <View
+                className="flex-row"
+                onLayout={(event: LayoutChangeEvent) => {
+                  setHeaderHeight(event.nativeEvent.layout.height);
+                }}
+              >
                 {inputPlayers.map((player) => (
                   <View
                     key={player.id}
                     style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.scoreCellWidth }}
                     className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
                   >
-                    <Text
-                      className="text-center text-[13px] font-bold leading-[18px] text-on-surface"
-                      numberOfLines={1}
-                    >
+                    <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface">
                       {player.name}
                     </Text>
                   </View>

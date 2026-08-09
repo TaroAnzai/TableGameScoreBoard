@@ -47,6 +47,15 @@
           "description": "常に暗いテーマで表示します。"
         }
       }
+    },
+    "language": {
+      "title": "言語",
+      "description": "アプリで表示する言語を選択します。",
+      "options": {
+        "system": "端末設定に従う",
+        "ja": "日本語",
+        "en": "English"
+      }
     }
   },
   "groupPage": {
@@ -123,12 +132,12 @@
     "alertChipTableScoreDescription": "チップ記録表にスコアデータが存在します。大会を削除するとチップ記録表とそのスコアデータも削除されます。本当に削除してよいですか？",
 
     "alertDeleteTournamentTitle": "Delete Tournament",
-    "alertDeleteTournamentDescription": "大会を削除してよいですか?",
-    "scoreSheetTitle": "{{tableName}}記録表"
+    "alertDeleteTournamentDescription": "大会を削除してよいですか?"
   },
   "tablePage": {
     "errorInvalidTableKey": "不正なアクセスです（卓キーが指定されていません）",
     "errorTableNotFound": "卓が見つかりませんでした",
+    "scoreSheetTitle": "{{tableName}}記録表",
 
     "buttonAddPlayer": "参加者を追加",
     "buttonDeletePlayer": "参加者を削除",

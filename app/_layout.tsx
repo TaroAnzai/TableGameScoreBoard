@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { AlertDialogProvider } from '@/components/common/AlertDialogProvider';
+import { LanguageProvider } from '@/src/providers/LanguageProvider';
 import { ThemeProvider, useTheme } from '@/src/providers/ThemeProvider';
 
 export {
@@ -38,7 +39,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <RootContent />
+          <LanguageProvider>
+            <RootContent />
+          </LanguageProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

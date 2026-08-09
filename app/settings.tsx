@@ -8,13 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { type LanguageMode, useLanguage } from '@/src/providers/LanguageProvider';
 import { type ThemeMode, useTheme } from '@/src/providers/ThemeProvider';
 
 const themeModes: ThemeMode[] = ['system', 'light', 'dark'];
+const languageModes: LanguageMode[] = ['system', 'ja', 'en'];
 
 export default function SettingsPage() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { languageMode, setLanguageMode } = useLanguage();
   const { setThemeMode, themeMode } = useTheme();
 
   return (
@@ -62,6 +65,37 @@ export default function SettingsPage() {
                       {t(`settings.theme.options.${mode}.description`)}
                     </Text>
                   </View>
+                  {isSelected && (
+                    <Icon as={Check} className="text-on-primary-container" size={20} />
+                  )}
+                </Button>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        <Card className="gap-4 rounded-2xl py-5">
+          <CardHeader className="gap-1 px-5">
+            <CardTitle className="text-lg leading-6">{t('settings.language.title')}</CardTitle>
+            <Text className="text-sm leading-5 text-on-surface-variant">
+              {t('settings.language.description')}
+            </Text>
+          </CardHeader>
+          <CardContent className="gap-3 px-5">
+            {languageModes.map((mode) => {
+              const isSelected = languageMode === mode;
+
+              return (
+                <Button
+                  key={mode}
+                  accessibilityState={{ selected: isSelected }}
+                  className="h-auto min-h-14 w-full justify-between rounded-xl px-4 py-3"
+                  variant={isSelected ? 'secondary' : 'outline'}
+                  onPress={() => void setLanguageMode(mode)}
+                >
+                  <Text className="flex-1 text-base font-semibold">
+                    {t(`settings.language.options.${mode}`)}
+                  </Text>
                   {isSelected && (
                     <Icon as={Check} className="text-on-primary-container" size={20} />
                   )}

@@ -47,6 +47,15 @@
           "description": "Always use the dark theme."
         }
       }
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose the language used in the app.",
+      "options": {
+        "system": "Use device setting",
+        "ja": "日本語",
+        "en": "English"
+      }
     }
   },
   "groupPage": {
@@ -124,12 +133,12 @@
     "alertChipTableScoreDescription": "Chip score sheets contain data. Deleting the tournament will also delete the chip sheets and their scores. Are you sure you want to continue?",
 
     "alertDeleteTournamentTitle": "Delete Tournament",
-    "alertDeleteTournamentDescription": "Are you sure you want to delete this tournament?",
-    "scoreSheetTitle": "{{tableName}} Score Sheet"
+    "alertDeleteTournamentDescription": "Are you sure you want to delete this tournament?"
   },
   "tablePage": {
     "errorInvalidTableKey": "Invalid access (table key missing).",
     "errorTableNotFound": "Table not found.",
+    "scoreSheetTitle": "{{tableName}} Score Sheet",
 
     "buttonAddPlayer": "Add Player",
     "buttonDeletePlayer": "Remove Player",

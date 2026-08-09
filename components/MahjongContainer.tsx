@@ -10,7 +10,7 @@ type Props = PropsWithChildren<{
 const MahjongContainer = ({ children, className }: Props) => {
   return (
     <View className="flex-1 bg-background">
-      <View className={cn('w-full max-w-[720px] flex-1 self-center px-5 py-4', className)}>
+      <View className={cn('w-full max-w-[720px] flex-1 self-center px-2 py-4', className)}>
         {children}
       </View>
     </View>
