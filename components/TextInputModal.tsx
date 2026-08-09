@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -52,8 +52,15 @@ export const TextInputModal = ({
 }: TextInputModalProps) => {
   const { t } = useTranslation();
 
-  const [inputText, setInputText] = useState(value || '');
-  const [inputText2, setInputText2] = useState(twoValue || '');
+  const inputTextRef = useRef(value || '');
+  const inputText2Ref = useRef(twoValue || '');
+
+  useEffect(() => {
+    if (!open) return;
+
+    inputTextRef.current = value || '';
+    inputText2Ref.current = twoValue || '';
+  }, [open, twoValue, value]);
 
   return (
     <Dialog
@@ -75,8 +82,10 @@ export const TextInputModal = ({
           <View className="gap-3">
             <Label htmlFor="primaryInput">{InputLabel}</Label>
             <Input
-              value={inputText}
-              onChangeText={setInputText}
+              defaultValue={value}
+              onChangeText={(text) => {
+                inputTextRef.current = text;
+              }}
               keyboardType={getKeyboardType(inputType)}
               secureTextEntry={inputType === 'password'}
               autoCapitalize="none"
@@ -89,8 +98,10 @@ export const TextInputModal = ({
               <>
                 <Label htmlFor="twoInput">{twoInputLabel}</Label>
                 <Input
-                  defaultValue={inputText2}
-                  onChangeText={setInputText2}
+                  defaultValue={twoValue}
+                  onChangeText={(text) => {
+                    inputText2Ref.current = text;
+                  }}
                   keyboardType={getKeyboardType(twoInputType)}
                   secureTextEntry={twoInputType === 'password'}
                   className="h-auto min-h-12 rounded-xl bg-surface py-3"
@@ -105,7 +116,7 @@ export const TextInputModal = ({
           </Button>
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
-            onPress={() => onComfirm(inputText, inputText2)}
+            onPress={() => onComfirm(inputTextRef.current, inputText2Ref.current)}
           >
             <Text>OK</Text>
           </Button>
