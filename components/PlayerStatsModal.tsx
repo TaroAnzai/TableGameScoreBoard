@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
 import type { GroupPlayerStat } from '@/src/api/generated/mahjongApi.schemas';
-import { radius } from '@/src/lib/theme';
+import { componentSize, radius } from '@/src/lib/theme';
 
 import { Button } from './ui/button';
 import {
@@ -35,10 +35,19 @@ interface PlayerStatsModalProps {
 
 export const PlayerStatsModal = ({ open, onClose, playerStats }: PlayerStatsModalProps) => {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+
   if (!playerStats) return null;
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
+      <DialogContent
+        className="bg-surface"
+        style={{
+          borderRadius: radius.xl,
+          maxWidth: componentSize.dialogMaxWidth,
+          width: Math.min(width - 32, componentSize.dialogMaxWidth),
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t('statsPage.dialogTitle')}</DialogTitle>
           <DialogDescription>
@@ -55,7 +64,10 @@ export const PlayerStatsModal = ({ open, onClose, playerStats }: PlayerStatsModa
             }
 
             return (
-              <View key={key} className="min-h-11 flex-row items-center border-b border-outline px-3 py-2 last:border-b-0">
+              <View
+                key={key}
+                className="min-h-11 flex-row items-center border-b border-outline px-3 py-2 last:border-b-0"
+              >
                 <Text className="flex-1 text-sm text-on-surface">
                   {t(`statsPage.statsNameMap.${label}`)}
                 </Text>

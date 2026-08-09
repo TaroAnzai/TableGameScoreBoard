@@ -40,14 +40,19 @@ export const PlayerStatsTable = ({ playerStatsList }: PlayerStatsTableProps) => 
           </View>
 
           {playerStatsList.map((p) => (
-            <View key={p.player_id} className="min-h-11 flex-row items-center border-t border-outline">
+            <View
+              key={p.player_id}
+              className="min-h-11 flex-row items-center border-t border-outline"
+            >
               <View className="w-32 px-2 py-1">
                 <Button
                   onPress={() => setSelectedPlayerStats(p)}
                   className="h-auto min-h-12 w-full rounded-lg px-2 py-2"
                   variant="ghost"
                 >
-                  <Text className="text-center text-sm text-on-surface">{p.player_name}</Text>
+                  <Text className="text-center text-sm underline text-on-surface">
+                    {p.player_name}
+                  </Text>
                 </Button>
               </View>
 
