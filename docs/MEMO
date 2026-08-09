@@ -23,3 +23,15 @@ npx eas-cli@latest build --platform android --profile preview　--local
 
 USB接続している場合は、PCからインストール
 adb install app.apk
+
+ADBで実機にインストールされているアプリの パッケージ名（Application ID） を取得
+adb shell pm list packages
+
+アプリストレージを完全にクリアする
+adb shell pm clear package名
+
+デバイスを指定
+adb -s R58M123456A shell pm clear com.anzaihome.mahjongapp
+
+デバイスをリスト
+adb devices
