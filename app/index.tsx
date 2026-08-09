@@ -194,23 +194,31 @@ export default function Index() {
               </Card>
             ) : (
               <View className="gap-1">
-                {groups.map(
-                  (group) =>
-                    group && (
-                      <MahjongListItem
-                        key={group.id + getAccessLevelstring(group.group_links)}
-                        title={group.name}
-                        badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
-                        accessories={[
-                          group.created_at &&
-                            t('welcomPage.createdAt', {
-                              date: format(group.created_at, 'yyyy-MM-dd'),
-                            }),
-                          group.description && group.description,
-                        ]}
-                        onPress={() => handleEnterGroup(group)}
-                      />
-                    ),
+                {groups.length > 0 ? (
+                  groups.map(
+                    (group) =>
+                      group && (
+                        <MahjongListItem
+                          key={group.id + getAccessLevelstring(group.group_links)}
+                          title={group.name}
+                          badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
+                          accessories={[
+                            group.created_at &&
+                              t('welcomPage.createdAt', {
+                                date: format(group.created_at, 'yyyy-MM-dd'),
+                              }),
+                            group.description && group.description,
+                          ]}
+                          onPress={() => handleEnterGroup(group)}
+                        />
+                      ),
+                  )
+                ) : (
+                  <View className="items-center justify-center gap-3 p-8">
+                    <Text className="text-muted-foreground">
+                      {t('welcomPage.noRegisteredGroups')}
+                    </Text>
+                  </View>
                 )}
               </View>
             )}

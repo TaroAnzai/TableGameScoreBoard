@@ -251,6 +251,8 @@ const GroupPage = () => {
                 <ActivityIndicator size="large" />
                 <Text>{t('Common.loading')}</Text>
               </View>
+            ) : players?.length === 0 ? (
+              <Text>{t('groupPage.sectionMemberListEmpty')}</Text>
             ) : (
               <MahjongList columns={2}>
                 {players?.map((player) => (

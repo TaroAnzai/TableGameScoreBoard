@@ -314,8 +314,14 @@ const TournamentPage = () => {
             )
           }
         />
-        {isChipTableNonZero(scoreMap) && <Text>{t('tournamentPage.chipNotZeroWarning')}</Text>}
-        {scoreMap && <ScoreTable scoreMap={scoreMap} onClick={handleTableClick} />}
+        {players?.length === 0 ? (
+          <Text>{t('tournamentPage.sectionTournamentScoreEmpty')}</Text>
+        ) : (
+          <>
+            {isChipTableNonZero(scoreMap) && <Text>{t('tournamentPage.chipNotZeroWarning')}</Text>}
+            {scoreMap && <ScoreTable scoreMap={scoreMap} onClick={handleTableClick} />}
+          </>
+        )}
       </MahjongSection>
       <ButtonGridSection>
         <Button className="w-full" disabled={accessLevel === 'VIEW'} onPress={handleCreateTable}>

@@ -1,0 +1,4 @@
+appId: com.anonymous.mahjongmobile
+---
+- launchApp
+- assertVisible: '麻雀'

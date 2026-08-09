@@ -23,6 +23,7 @@
     "RemoveRegisteredGroup": "Remove a registered group",
     "SelectGroupToRemove": "Select a registered group to remove",
     "createdAt": "Created: {{date}}",
+    "noRegisteredGroups": "Create a new group using the \"Create new group\" button.",
     "pendingGroups": "Pending Groups",
     "expiresAt": "Expires: {{date}}"
   },
@@ -74,6 +75,7 @@
     "tabMemberList": "Member List",
 
     "sectionMemberList": "Member List",
+    "sectionMemberListEmpty": "Add a member using the + button.",
     "sectionTournamentListEmpty": "No tournaments found.",
     "rateLabel": "Rate: {{rate}}",
     "createdAt": "Created: {{date}}",
@@ -114,6 +116,7 @@
     "buttonDeleteTournament": "Delete Tournament",
 
     "sectionTournamentScore": "Tournament Results",
+    "sectionTournamentScoreEmpty": "Select participants using the + button.",
     "chipNotZeroWarning": "The total chip score is not zero.",
 
     "modalSelectPlayerTitle": "Select Participants",

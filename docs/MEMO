@@ -35,3 +35,6 @@ adb -s R58M123456A shell pm clear com.anzaihome.mahjongapp
 
 デバイスをリスト
 adb devices
+
+MaestroによるE2Eテスト実行
+maestro test .maestro/smoke-test.yaml

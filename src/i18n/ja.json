@@ -23,6 +23,7 @@
     "RemoveRegisteredGroup": "登録グループを削除",
     "SelectGroupToRemove": "削除する登録グループを選択",
     "createdAt": "作成日: {{date}}",
+    "noRegisteredGroups": "「新しいグループを作成」ボタンから新しいグループを作成してください。",
     "pendingGroups": "申請中のグループ",
     "expiresAt": "有効期限: {{date}}"
   },
@@ -74,7 +75,8 @@
     "tabMemberList": "メンバー一覧",
 
     "sectionMemberList": "メンバー一覧",
-    "sectionTournamentListEmpty": "大会がありません",
+    "sectionMemberListEmpty": "メンバーを＋ボタンから追加してください。",
+    "sectionTournamentListEmpty": "大会を＋ボタンから作成してください。",
     "rateLabel": "レート: {{rate}}",
     "createdAt": "作成日: {{date}}",
 
@@ -113,6 +115,7 @@
     "buttonDeleteTournament": "大会を削除",
 
     "sectionTournamentScore": "大会成績",
+    "sectionTournamentScoreEmpty": "参加メンバーを＋ボタンから選択してください。",
     "chipNotZeroWarning": "チップの合計が０になっていません。",
 
     "modalSelectPlayerTitle": "参加者を選択",
