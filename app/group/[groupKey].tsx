@@ -1,16 +1,17 @@
 import { format } from 'date-fns';
 import { router, useLocalSearchParams } from 'expo-router';
-import { SquarePlus, UserMinus, UserPlus } from 'lucide-react-native';
+import { SquareMinus, SquarePlus, UserMinus, UserPlus } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
-import { MahjongList, MahjongSubTitle } from '@/components/common/TextStyles';
+import { MahjongList } from '@/components/common/TextStyles';
 import MahjongContainer from '@/components/MahjongContainer';
 import { MahjongListItem } from '@/components/MahjongListItem';
 import MahjongSection from '@/components/MahjongSection';
+import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import SelectorModal from '@/components/SelectorModal';
 import { TextInputModal } from '@/components/TextInputModal';
@@ -19,11 +20,15 @@ import { Icon } from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { useGetApiGroupsGroupKey } from '@/src/api/generated/mahjongApi';
-import { Player } from '@/src/api/generated/mahjongApi.schemas';
+import { Player, Tournament } from '@/src/api/generated/mahjongApi.schemas';
 import { useUpdateGroup } from '@/src/hooks/useGroups';
 import { useCreatePlayer, useDeletePlayer, useGetPlayer } from '@/src/hooks/usePlayers';
 import { useCreateTable } from '@/src/hooks/useTables';
-import { useCreateTournament, useGetTournaments } from '@/src/hooks/useTournaments';
+import {
+  useCreateTournament,
+  useDeleteTournament,
+  useGetTournaments,
+} from '@/src/hooks/useTournaments';
 import { appStorage } from '@/src/storage/appStorage';
 import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 const GroupPage = () => {
@@ -32,16 +37,18 @@ const GroupPage = () => {
   const { alertDialog } = useAlertDialog();
 
   const { players, isLoadingPlayers, loadPlayers } = useGetPlayer(groupKey);
-  const { tournaments } = useGetTournaments(groupKey);
+  const { tournaments, loadTournaments } = useGetTournaments(groupKey);
   const { data: group, refetch: refetchGroup } = useGetApiGroupsGroupKey(groupKey);
   const { mutate: updateGroup } = useUpdateGroup(refetchGroup);
   const { mutate: createPlayer } = useCreatePlayer(loadPlayers);
   const { mutate: deletePlayer } = useDeletePlayer(loadPlayers);
   const { mutateAsync: createTournament } = useCreateTournament();
+  const { mutateAsync: deleteTournament } = useDeleteTournament();
   const { mutateAsync: createChipTable } = useCreateTable();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTournamentModal, setShowTournamentModal] = useState(false);
+  const [showDeleteTournamentModal, setShowDeleteTournamentModal] = useState(false);
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isCreatePlayerModalOpen, setIsCreatePlayerModalOpen] = useState(false);
   const [isGroupRegistered, setIsGroupRegistered] = useState<boolean | null>(null);
@@ -103,6 +110,27 @@ const GroupPage = () => {
     router.push(`/tournament/${data.edit_link}`);
   };
 
+  const handleDeleteTournament = async (tournament: Tournament) => {
+    setShowDeleteTournamentModal(false);
+    const tournamentKey = tournament.edit_link ?? tournament.owner_link;
+    if (!tournamentKey) return;
+
+    const confirmed = await alertDialog({
+      title: t('groupPage.alertDeleteTournamentTitle'),
+      description: t('groupPage.alertDeleteTournamentDescription', {
+        tournamentName: tournament.name,
+      }),
+    });
+    if (!confirmed) return;
+
+    try {
+      await deleteTournament({ tournamentKey });
+      await loadTournaments();
+    } catch {
+      // The mutation hook displays the API error dialog.
+    }
+  };
+
   if (players === undefined || isLoadingPlayers) {
     return;
   }
@@ -137,21 +165,33 @@ const GroupPage = () => {
         <TabsContent value="tournament" className="min-h-0 w-full flex-1">
           {/* Tournament List */}
           <MahjongSection className="min-h-0 justify-start">
-            <View className="w-full relative mb-4 h-10 items-center justify-center">
-              <MahjongSubTitle className="mb-4">
-                {t('groupPage.buttonSelectTournament')}
-              </MahjongSubTitle>
-              {accessLevel !== 'VIEW' && (
-                <View className="absolute inset-y-0 right-0 flex-row items-center gap-1">
-                  <Pressable
-                    className="h-10 w-10 items-center justify-center"
-                    onPress={() => setIsCreateTournamentModalOpen(true)}
-                  >
-                    <Icon as={SquarePlus} className="text-on-surface" size={24} />
-                  </Pressable>
-                </View>
-              )}
-            </View>
+            <MahjongSectionHeader
+              title={t('groupPage.buttonSelectTournament')}
+              actions={
+                accessLevel !== 'VIEW' && (
+                  <>
+                    <Button
+                      accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
+                      className="h-10 w-10 rounded-full p-0"
+                      size="icon"
+                      variant="ghost"
+                      onPress={() => setIsCreateTournamentModalOpen(true)}
+                    >
+                      <Icon as={SquarePlus} className="text-on-surface" size={24} />
+                    </Button>
+                    <Button
+                      accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
+                      className="h-10 w-10 rounded-full p-0"
+                      size="icon"
+                      variant="ghost"
+                      onPress={() => setShowDeleteTournamentModal(true)}
+                    >
+                      <Icon as={SquareMinus} className="text-error" size={24} />
+                    </Button>
+                  </>
+                )
+              }
+            />
 
             {tournaments?.length === 0 ? (
               <Text>{t('groupPage.sectionTournamentListEmpty')}</Text>
@@ -179,26 +219,34 @@ const GroupPage = () => {
         <TabsContent value="member" className="min-h-0 w-full flex-1">
           {/* Member List */}
           <MahjongSection className="min-h-0 justify-start">
-            <View className="w-full relative mb-4 h-10 items-center justify-center">
-              <MahjongSubTitle>{t('groupPage.sectionMemberList')}</MahjongSubTitle>
-              {accessLevel !== 'VIEW' && (
-                <View className="absolute right-0 flex-row items-center gap-1">
-                  <Pressable
-                    className="h-10 w-10 items-center justify-center"
-                    onPress={() => setIsCreatePlayerModalOpen(true)}
-                  >
-                    <Icon as={UserPlus} className="text-on-surface" size={24} />
-                  </Pressable>
+            <MahjongSectionHeader
+              title={t('groupPage.sectionMemberList')}
+              actions={
+                accessLevel !== 'VIEW' && (
+                  <>
+                    <Button
+                      accessibilityLabel={t('groupPage.modalCreatePlayerTitle')}
+                      className="h-10 w-10 rounded-full p-0"
+                      size="icon"
+                      variant="ghost"
+                      onPress={() => setIsCreatePlayerModalOpen(true)}
+                    >
+                      <Icon as={UserPlus} className="text-on-surface" size={24} />
+                    </Button>
 
-                  <Pressable
-                    className="h-10 w-10 items-center justify-center"
-                    onPress={() => setShowDeleteModal(true)}
-                  >
-                    <Icon as={UserMinus} className="text-error" size={24} />
-                  </Pressable>
-                </View>
-              )}
-            </View>
+                    <Button
+                      accessibilityLabel={t('groupPage.modalDeletePlayerTitle')}
+                      className="h-10 w-10 rounded-full p-0"
+                      size="icon"
+                      variant="ghost"
+                      onPress={() => setShowDeleteModal(true)}
+                    >
+                      <Icon as={UserMinus} className="text-error" size={24} />
+                    </Button>
+                  </>
+                )
+              }
+            />
 
             {isLoadingPlayers ? (
               <View className=" items-center justify-center gap-2">
@@ -249,6 +297,16 @@ const GroupPage = () => {
           }}
           onClose={() => setShowTournamentModal(false)}
           emptyMessage={t('groupPage.modalSelectTournamentEmpty')}
+        />
+      )}
+      {showDeleteTournamentModal && (
+        <SelectorModal
+          title={t('groupPage.modalDeleteTournamentTitle')}
+          open={showDeleteTournamentModal}
+          items={tournaments}
+          onSelect={handleDeleteTournament}
+          onClose={() => setShowDeleteTournamentModal(false)}
+          emptyMessage={t('groupPage.modalDeleteTournamentEmpty')}
         />
       )}
       <TextInputModal

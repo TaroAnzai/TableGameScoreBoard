@@ -74,7 +74,11 @@
     "modalCreatePlayerDescription": "メンバー名を入力してください",
 
     "modalCreateTournamentTitle": "大会新規作成",
-    "modalCreateTournamentDescription": "大会名を入力してください"
+    "modalCreateTournamentDescription": "大会名を入力してください",
+    "modalDeleteTournamentTitle": "削除する大会を選択",
+    "modalDeleteTournamentEmpty": "削除できる大会がありません。",
+    "alertDeleteTournamentTitle": "大会を削除",
+    "alertDeleteTournamentDescription": "「{{tournamentName}}」を削除してよいですか？"
   },
   "tournamentPage": {
     "tournamentKeyMissing": "大会キーが指定されていません",

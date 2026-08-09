@@ -74,7 +74,11 @@
     "modalCreatePlayerDescription": "Please enter the member name",
 
     "modalCreateTournamentTitle": "Create Tournament",
-    "modalCreateTournamentDescription": "Please enter the tournament name"
+    "modalCreateTournamentDescription": "Please enter the tournament name",
+    "modalDeleteTournamentTitle": "Select a Tournament to Delete",
+    "modalDeleteTournamentEmpty": "There are no tournaments to delete.",
+    "alertDeleteTournamentTitle": "Delete Tournament",
+    "alertDeleteTournamentDescription": "Are you sure you want to delete \"{{tournamentName}}\"?"
   },
 
   "tournamentPage": {

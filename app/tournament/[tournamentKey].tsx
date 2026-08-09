@@ -1,6 +1,6 @@
 // src/pages/TournamentPage.jsx
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
 
@@ -9,6 +9,7 @@ import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import EditTournamentModal from '@/components/EditTournamentModal';
 import MahjongContainer from '@/components/MahjongContainer';
 import MahjongSection from '@/components/MahjongSection';
+import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import MultiSelectorModal from '@/components/MultiSelectorModal';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import ScoreTable from '@/components/ScoreTable';
@@ -175,7 +176,7 @@ const TournamentPage = () => {
     const result = updateTournament({ tournamentKey: tournamentKey!, tournament: updates });
     setShowEditModal(false);
   };
-  const handleRateCange = (newRate: number) => {
+  const handleRateChange = (newRate: number) => {
     updateTournament({
       tournamentKey: tournamentKey!,
       tournament: { rate: newRate },
@@ -242,12 +243,17 @@ const TournamentPage = () => {
         TitleComponent={TitleWithModal}
         parentUrl={parentPageUrl}
       />
-      <View className="flex-row items-center justify-center">
-        <EditableRate
-          rate={tournament?.rate}
-          label={t('tournamentPage.rate')}
-          onChange={handleRateCange}
-        />
+      <View className="flex-row items-center justify-center mb-2">
+        {tournament ? (
+          <EditableRate
+            key={`${tournament.id}-${tournament.rate}`}
+            rate={tournament.rate}
+            label={t('tournamentPage.rate')}
+            onChange={handleRateChange}
+          />
+        ) : (
+          <ActivityIndicator />
+        )}
       </View>
       <ButtonGridSection>
         <Button
@@ -277,7 +283,7 @@ const TournamentPage = () => {
       </ButtonGridSection>
 
       <MahjongSection className="justify-start">
-        <Text>{t('tournamentPage.sectionTournamentScore')}</Text>
+        <MahjongSectionHeader title={t('tournamentPage.sectionTournamentScore')} />
         {isChipTableNonZero(scoreMap) && <Text>{t('tournamentPage.chipNotZeroWarning')}</Text>}
         {scoreMap ? (
           <ScoreTable scoreMap={scoreMap} onClick={handleTableClick} />
@@ -325,11 +331,11 @@ const EditableRate = ({
   label,
   onChange,
 }: {
-  rate?: number;
+  rate: number;
   label: string;
   onChange: (rate: number) => void;
 }) => {
-  const [editedRate, setEditedRate] = useState<number | ''>(rate ?? 1);
+  const [editedRate, setEditedRate] = useState<number | ''>(rate);
   const submittedRef = useRef(false);
 
   const handleRateChange = (text: string) => {
@@ -347,7 +353,7 @@ const EditableRate = ({
   const handleRateSubmit = () => {
     submittedRef.current = true;
     if (editedRate === '' || Number(editedRate) <= 0) {
-      setEditedRate(rate ?? 1);
+      setEditedRate(rate);
       return;
     }
     if (editedRate === rate) {
@@ -361,7 +367,7 @@ const EditableRate = ({
       submittedRef.current = false;
       return;
     }
-    setEditedRate(rate ?? 1);
+    setEditedRate(rate);
   };
   return (
     <Pressable className="w-full items-center" onPress={Keyboard.dismiss}>

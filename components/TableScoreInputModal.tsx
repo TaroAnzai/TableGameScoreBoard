@@ -92,7 +92,7 @@ const TableScoreInputModal = ({
           borderRadius: radius.xl,
           width: Math.min(width - 32, componentSize.dialogMaxWidth),
         }}
-        className="bg-surface"
+        className="bg-surface -translate-y-20"
       >
         <DialogHeader>
           <DialogTitle>{t('scoreBoard.inputTitle', { game: title })}</DialogTitle>
@@ -104,7 +104,10 @@ const TableScoreInputModal = ({
               style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.gameColumnWidth }}
               className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
             >
-              <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface" numberOfLines={1}>
+              <Text
+                className="text-center text-[13px] font-bold leading-[18px] text-on-surface"
+                numberOfLines={1}
+              >
                 {t('scoreBoard.gameTitle')}
               </Text>
             </View>
@@ -129,7 +132,10 @@ const TableScoreInputModal = ({
                     style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.scoreCellWidth }}
                     className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
                   >
-                    <Text className="text-center text-[13px] font-bold leading-[18px] text-on-surface" numberOfLines={1}>
+                    <Text
+                      className="text-center text-[13px] font-bold leading-[18px] text-on-surface"
+                      numberOfLines={1}
+                    >
                       {player.name}
                     </Text>
                   </View>
@@ -167,9 +173,7 @@ const TableScoreInputModal = ({
           {t('scoreBoard.totalLabel')}: {total.toLocaleString()}
         </Text>
         {tableType === 'NORMAL' && total !== 0 && (
-          <Text className="text-right text-sm text-warning">
-            {t('scoreBoard.totalMustBeZero')}
-          </Text>
+          <Text className="text-right text-sm text-warning">{t('scoreBoard.totalMustBeZero')}</Text>
         )}
 
         <DialogFooter>

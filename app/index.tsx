@@ -18,6 +18,7 @@ import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import MahjongContainer from '@/components/MahjongContainer';
 import { MahjongListItem } from '@/components/MahjongListItem';
 import MahjongSection from '@/components/MahjongSection';
+import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import SelectorModal from '@/components/SelectorModal';
 import { TextInputModal } from '@/components/TextInputModal';
 import { Button } from '@/components/ui/button';
@@ -167,20 +168,22 @@ export default function Index() {
 
           {/* Registered Groups */}
           <MahjongSection>
-            <View className="relative h-10 w-full flex-row items-center justify-center">
-              <Text className="text-lg font-semibold">{t('welcomPage.RegisteredGroups')}</Text>
-              {groups.length > 0 && (
-                <Button
-                  accessibilityLabel={t('welcomPage.RemoveRegisteredGroup')}
-                  className="absolute right-0 h-10 w-10 rounded-full p-0"
-                  size="icon"
-                  variant="ghost"
-                  onPress={() => setIsRemoveGroupModalOpen(true)}
-                >
-                  <Icon as={SquareMinus} className="text-error" size={24} />
-                </Button>
-              )}
-            </View>
+            <MahjongSectionHeader
+              title={t('welcomPage.RegisteredGroups')}
+              actions={
+                groups.length > 0 && (
+                  <Button
+                    accessibilityLabel={t('welcomPage.RemoveRegisteredGroup')}
+                    className="h-10 w-10 rounded-full p-0"
+                    size="icon"
+                    variant="ghost"
+                    onPress={() => setIsRemoveGroupModalOpen(true)}
+                  >
+                    <Icon as={SquareMinus} className="text-error" size={24} />
+                  </Button>
+                )
+              }
+            />
 
             {isLoading ? (
               <Card className="rounded-2xl">

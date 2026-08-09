@@ -1,6 +1,6 @@
 // src/components/PageTitleBar.tsx
 import { usePathname, useRouter } from 'expo-router';
-import { ChevronLeft, ChevronsUp, Share2 } from 'lucide-react-native';
+import { ChevronLeft, Share2 } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -89,7 +89,7 @@ export default function PageTitleBar({
   };
 
   return (
-    <View className="relative min-h-12 flex-row items-center justify-center border-b border-outline bg-surface py-2">
+    <View className="relative min-h-12 flex-row items-center justify-center border-b border-outline bg-surface py-2 mb-2">
       <View className="absolute left-0 flex-row items-center">
         {parentUrl !== null && parentUrl !== undefined && (
           <Button

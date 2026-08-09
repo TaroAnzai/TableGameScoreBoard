@@ -44,7 +44,7 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   };
 
   return (
-    <View className="mt-4 min-h-0 flex-1 self-stretch overflow-hidden rounded-xl border border-outline bg-surface">
+    <View className="min-h-0 flex-1 self-stretch overflow-hidden rounded-xl border border-outline bg-surface">
       {/* ヘッダー */}
       <View className="flex-row">
         <ColIndexCell fixed>{t('scoreTable.columnParticipant')}</ColIndexCell>
