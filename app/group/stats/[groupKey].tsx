@@ -22,7 +22,7 @@ const GroupPlayerStatsPage = () => {
       ></PageTitleBar>
       <MahjongSection>
         {isLoadingPlayerStats || !playerStats?.players ? (
-          <Text>Loading...</Text>
+          <Text>{t('Common.loading')}</Text>
         ) : (
           <PlayerStatsTable playerStatsList={playerStats.players} />
         )}

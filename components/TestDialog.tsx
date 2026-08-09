@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
@@ -19,31 +20,32 @@ interface TextInputModalProps {
   onclose: () => void;
 }
 export const DialogPreview = ({ open, onclose }: TextInputModalProps) => {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onclose}>
       <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
-          <DialogDescription>Make</DialogDescription>
+          <DialogTitle>{t('dialogPreview.title')}</DialogTitle>
+          <DialogDescription>{t('dialogPreview.description')}</DialogDescription>
         </DialogHeader>
         <View className="grid gap-4 ">
           <View className="grid gap-3">
-            <Label htmlFor="name-1">Name</Label>
+            <Label htmlFor="name-1">{t('dialogPreview.name')}</Label>
             <Input id="name-1" defaultValue="Pedro Duarte" />
           </View>
           <View className="grid gap-3">
-            <Label htmlFor="username-1">Username</Label>
+            <Label htmlFor="username-1">{t('dialogPreview.username')}</Label>
             <Input id="username-1" defaultValue="@peduarte" />
           </View>
         </View>
         <DialogFooter>
           <DialogClose asChild>
             <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline">
-              <Text>Cancel</Text>
+              <Text>{t('Common.Cancel')}</Text>
             </Button>
           </DialogClose>
           <Button className="h-auto min-h-12 rounded-xl py-3">
-            <Text>Save changes</Text>
+            <Text>{t('dialogPreview.saveChanges')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

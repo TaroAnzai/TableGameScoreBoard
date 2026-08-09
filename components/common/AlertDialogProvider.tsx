@@ -1,7 +1,7 @@
 // src/components/common/AlertDialogProvider.tsx
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import {
   AlertDialog,
@@ -33,6 +33,7 @@ type AlertDialogContextType = {
 const AlertDialogContext = createContext<AlertDialogContextType | undefined>(undefined);
 
 export const AlertDialogProvider = ({ children }: { children: React.ReactNode }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<AlertDialogOptions>({});
   const [resolver, setResolver] = useState<(value: boolean) => void>(() => () => {});
@@ -64,7 +65,7 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{options.title ?? '確認'}</AlertDialogTitle>
+            <AlertDialogTitle>{options.title ?? t('Common.Confirm')}</AlertDialogTitle>
 
             <AlertDialogDescription>
               {[options.description, options.text1, options.text2, options.text3]
@@ -76,12 +77,12 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
           <AlertDialogFooter>
             {options.showCancelButton !== false && (
               <AlertDialogCancel onPress={handleCancel}>
-                <Text>{options.cancelText ?? 'キャンセル'}</Text>
+                <Text>{options.cancelText ?? t('Common.Cancel')}</Text>
               </AlertDialogCancel>
             )}
 
             <AlertDialogAction onPress={handleConfirm}>
-              <Text>{options.confirmText ?? 'OK'}</Text>
+              <Text>{options.confirmText ?? t('Common.ok')}</Text>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

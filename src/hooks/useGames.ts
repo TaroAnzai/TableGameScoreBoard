@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -12,6 +13,7 @@ import {
 import type { GameCreate, GameUpdate } from '@/src/api/generated/mahjongApi.schemas';
 
 export const useCreateGame = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const queryClient = useQueryClient();
   return useMutation({
@@ -21,7 +23,7 @@ export const useCreateGame = () => {
     onSuccess: (data, variables) => {
       Toast.show({
         type: 'success',
-        text1: 'New game created successfully',
+        text1: t('notifications.game.createSuccess'),
         position: 'bottom',
       });
       const queryKey = getGetApiTablesTableKeyGamesQueryKey(variables.tableKey);
@@ -33,9 +35,9 @@ export const useCreateGame = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error creating game',
+        title: t('notifications.game.createErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -47,6 +49,7 @@ export const useGetTableGames = (tableKey: string, optins?: object) => {
   return { games, isLoadingGames };
 };
 export const useUpdateGame = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const queryClient = useQueryClient();
   return useMutation({
@@ -56,7 +59,7 @@ export const useUpdateGame = () => {
     onSuccess: (data, variables) => {
       Toast.show({
         type: 'success',
-        text1: 'Game updated successfully',
+        text1: t('notifications.game.updateSuccess'),
         position: 'bottom',
       });
       const queryKey = getGetApiTablesTableKeyGamesQueryKey(variables.tableKey);
@@ -69,9 +72,9 @@ export const useUpdateGame = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error updating game',
+        title: t('notifications.game.updateErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -80,6 +83,7 @@ export const useUpdateGame = () => {
 };
 
 export const useDeleteGame = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const queryClient = useQueryClient();
   return useMutation({
@@ -89,7 +93,7 @@ export const useDeleteGame = () => {
     onSuccess: (data, variables) => {
       Toast.show({
         type: 'success',
-        text1: 'Game deleted successfully',
+        text1: t('notifications.game.deleteSuccess'),
         position: 'bottom',
       });
       const queryKey = getGetApiTablesTableKeyGamesQueryKey(variables.tableKey);
@@ -101,9 +105,9 @@ export const useDeleteGame = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error deleting game',
+        title: t('notifications.game.deleteErrorTitle'),
         description: message,
         showCancelButton: false,
       });

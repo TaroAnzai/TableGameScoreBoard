@@ -67,7 +67,7 @@ const ShareModal = ({ groupName, open, shareUrl, typeName, onClose }: ShareModal
           <Text>{shareUrl}</Text>
           <QRCode value={shareUrl} size={200} />
           <Button onPress={sendShare}>
-            <Text>Send by Other</Text>
+            <Text>{t('shareModal.sendByOther')}</Text>
           </Button>
         </View>
       </DialogContent>

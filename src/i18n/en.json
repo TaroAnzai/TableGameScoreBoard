@@ -6,7 +6,11 @@
     "chip": "Chip",
     "Select": "Please select",
     "close": "Close",
-    "emptyMessage": "No items found."
+    "emptyMessage": "No items found.",
+    "loading": "Loading...",
+    "ok": "OK",
+    "save": "Save",
+    "accessLevel": { "VIEW": "View", "EDIT": "Edit", "OWNER": "Owner" }
   },
   "welcomPage": {
     "pageTitle": "Table Game Scoreboard",
@@ -17,7 +21,10 @@
     "GroupName": "Group name",
     "Email": "Email",
     "RemoveRegisteredGroup": "Remove a registered group",
-    "SelectGroupToRemove": "Select a registered group to remove"
+    "SelectGroupToRemove": "Select a registered group to remove",
+    "createdAt": "Created: {{date}}",
+    "pendingGroups": "Pending Groups",
+    "expiresAt": "Expires: {{date}}"
   },
   "settings": {
     "open": "Open settings",
@@ -58,6 +65,9 @@
     "tabMemberList": "Member List",
 
     "sectionMemberList": "Member List",
+    "sectionTournamentListEmpty": "No tournaments found.",
+    "rateLabel": "Rate: {{rate}}",
+    "createdAt": "Created: {{date}}",
 
     "dialogAddGroupTitle": "Add Group to Browser",
     "dialogAddGroupDescription": "Do you want to add {{groupName}} to your registered groups?\n\nIt will be saved in your browser.\nIf you change devices or browsers, it will not be transferred. Please save the URL if you want to keep access.",
@@ -104,6 +114,7 @@
     "alertNoPlayersToDelete": "No participants available for deletion",
 
     "alertDeletePlayerTitle": "Delete Participant",
+    "alertDeletePlayerErrorTitle": "Error Deleting Participant",
     "alertDeletePlayerDescription": "Are you sure you want to remove {{playerName}}?",
 
     "alertDeleteTournamentErrorTitle": "Error Deleting Tournament",
@@ -113,7 +124,8 @@
     "alertChipTableScoreDescription": "Chip score sheets contain data. Deleting the tournament will also delete the chip sheets and their scores. Are you sure you want to continue?",
 
     "alertDeleteTournamentTitle": "Delete Tournament",
-    "alertDeleteTournamentDescription": "Are you sure you want to delete this tournament?"
+    "alertDeleteTournamentDescription": "Are you sure you want to delete this tournament?",
+    "scoreSheetTitle": "{{tableName}} Score Sheet"
   },
   "tablePage": {
     "errorInvalidTableKey": "Invalid access (table key missing).",
@@ -195,6 +207,67 @@
     "sending": "Sending...",
     "success": "Your message has been sent. We will reply within 24 hours.",
     "error": "Failed to send your message. Please try again."
+  },
+  "groupCreatePage": {
+    "creating": "Creating group...",
+    "invalidTokenTitle": "Error",
+    "invalidTokenDescription": "Invalid token"
+  },
+  "editTournamentModal": {
+    "title": "Edit Tournament",
+    "name": "Tournament Name",
+    "memo": "Memo",
+    "startDate": "Start Date",
+    "datePlaceholder": "YYYY-MM-DD"
+  },
+  "shareModal": { "sendByOther": "Send by Other" },
+  "dialogPreview": {
+    "title": "Edit profile",
+    "description": "Change your profile information",
+    "name": "Name",
+    "username": "Username",
+    "saveChanges": "Save changes"
+  },
+  "notifications": {
+    "common": { "unknownError": "Unknown error" },
+    "game": {
+      "createSuccess": "Game created successfully",
+      "updateSuccess": "Game updated successfully",
+      "deleteSuccess": "Game deleted successfully",
+      "createErrorTitle": "Error creating game",
+      "updateErrorTitle": "Error updating game",
+      "deleteErrorTitle": "Error deleting game"
+    },
+    "player": {
+      "createSuccess": "Player created successfully",
+      "deleteSuccess": "Player deleted successfully",
+      "createErrorTitle": "Error creating player",
+      "deleteErrorTitle": "Error deleting player"
+    },
+    "table": {
+      "createSuccess": "Table created successfully",
+      "updateSuccess": "Table updated successfully",
+      "deleteSuccess": "Table deleted successfully",
+      "addPlayersSuccess": "Players added to table successfully",
+      "removePlayersSuccess": "Players removed from table successfully",
+      "createErrorTitle": "Error creating table",
+      "updateErrorTitle": "Error updating table",
+      "deleteErrorTitle": "Error deleting table",
+      "addPlayersErrorTitle": "Error adding players to table",
+      "removePlayersErrorTitle": "Error removing players from table"
+    },
+    "tournament": {
+      "createSuccess": "Tournament created successfully",
+      "updateSuccess": "Tournament updated successfully",
+      "deleteSuccess": "Tournament deleted successfully",
+      "addPlayerSuccess": "Player added successfully",
+      "deletePlayerSuccess": "Player deleted successfully",
+      "createErrorTitle": "Error creating tournament",
+      "updateErrorTitle": "Error updating tournament",
+      "deleteErrorTitle": "Error deleting tournament",
+      "addPlayerErrorTitle": "Error adding player to tournament",
+      "deletePlayerErrorTitle": "Error deleting player from tournament"
+    }
   },
   "hooks": {
     "groupRequest": {

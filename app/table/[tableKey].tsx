@@ -132,8 +132,8 @@ export default function TablePage() {
   };
   const handleDeleteGame = async (game: { id: number }) => {
     const confirmed = await alertDialog({
-      title: 'Delete Game',
-      description: 'Are you sure you want to delete this game?',
+      title: t('tablePage.alertDeleteGameTitle'),
+      description: t('tablePage.alertDeleteGameDescription'),
     });
     if (confirmed) deleteGame({ tableKey: tableKey!, gameId: game.id! });
     setShowDeleteGameModal(false);
@@ -150,7 +150,9 @@ export default function TablePage() {
 
       <MahjongSection>
         <MahjongSectionHeader
-          title={table ? table.name + '記録表' : t('Common.loading')}
+          title={
+            table ? t('tablePage.scoreSheetTitle', { tableName: table.name }) : t('Common.loading')
+          }
           actions={
             accessLevel !== 'VIEW' && (
               <>
@@ -180,7 +182,7 @@ export default function TablePage() {
         />
         {!table || isLoadingGames || isLoadingTablePlayers ? (
           <View className="flex items-center justify-center gap-2">
-            <ActivityIndicator accessibilityLabel="Loading..." size="large" />
+            <ActivityIndicator accessibilityLabel={t('Common.loading')} size="large" />
           </View>
         ) : (
           <TableScoreBoard

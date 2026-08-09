@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -33,6 +34,7 @@ export const useGetTables = (tournamentKey: string) => {
 };
 
 export const useCreateTable = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; tableCreate: TableCreate }) => {
@@ -41,7 +43,7 @@ export const useCreateTable = () => {
     onSuccess: (data) => {
       Toast.show({
         type: 'success',
-        text1: 'Table created successfully',
+        text1: t('notifications.table.createSuccess'),
         position: 'bottom',
       });
       // 遷移
@@ -53,9 +55,9 @@ export const useCreateTable = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error creating table',
+        title: t('notifications.table.createErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -64,6 +66,7 @@ export const useCreateTable = () => {
 };
 
 export const useUpdateTable = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const queryClient = useQueryClient();
   return useMutation({
@@ -73,7 +76,7 @@ export const useUpdateTable = () => {
     onSuccess: (data, variables) => {
       Toast.show({
         type: 'success',
-        text1: 'Table updated successfully',
+        text1: t('notifications.table.updateSuccess'),
         position: 'bottom',
       });
       // キャッシュ更新
@@ -86,9 +89,9 @@ export const useUpdateTable = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error updating table',
+        title: t('notifications.table.updateErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -106,6 +109,7 @@ export const useGetTable = (tableKey: string, optins?: object) => {
 };
 
 export const useDeleteTable = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   return useMutation({
     mutationFn: (data: { tableKey: string }) => {
@@ -114,7 +118,7 @@ export const useDeleteTable = () => {
     onSuccess: () => {
       Toast.show({
         type: 'success',
-        text1: 'Table deleted successfully',
+        text1: t('notifications.table.deleteSuccess'),
         position: 'bottom',
       });
     },
@@ -124,9 +128,9 @@ export const useDeleteTable = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error deleting table',
+        title: t('notifications.table.deleteErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -145,6 +149,7 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
 };
 
 export const useAddTablePlayer = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const queryClient = useQueryClient();
   return useMutation({
@@ -154,7 +159,7 @@ export const useAddTablePlayer = () => {
     onSuccess: (data, variables) => {
       Toast.show({
         type: 'success',
-        text1: 'Players added to table successfully',
+        text1: t('notifications.table.addPlayersSuccess'),
         position: 'bottom',
       });
       // キャッシュ更新
@@ -167,9 +172,9 @@ export const useAddTablePlayer = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error adding players to table',
+        title: t('notifications.table.addPlayersErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -178,6 +183,7 @@ export const useAddTablePlayer = () => {
 };
 
 export const useDeleteTablePlayer = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const queryClient = useQueryClient();
   return useMutation({
@@ -187,7 +193,7 @@ export const useDeleteTablePlayer = () => {
     onSuccess: (data, variables) => {
       Toast.show({
         type: 'success',
-        text1: 'Players removed from table successfully',
+        text1: t('notifications.table.removePlayersSuccess'),
         position: 'bottom',
       });
       // キャッシュ更新
@@ -200,9 +206,9 @@ export const useDeleteTablePlayer = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error removing players from table',
+        title: t('notifications.table.removePlayersErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -211,6 +217,7 @@ export const useDeleteTablePlayer = () => {
 };
 
 export const useDeleteChipTableWithScores = () => {
+  const { t } = useTranslation();
   // チップテーブルのスコアデータとテーブル自体を削除する。
   const { mutateAsync: deleteScores } = useDeleteGame();
 
@@ -230,7 +237,7 @@ export const useDeleteChipTableWithScores = () => {
     onSuccess: () => {
       Toast.show({
         type: 'success',
-        text1: 'Table deleted successfully',
+        text1: t('notifications.table.deleteSuccess'),
         position: 'bottom',
       });
     },
@@ -240,7 +247,7 @@ export const useDeleteChipTableWithScores = () => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       Toast.show({
         type: 'error',
         text1: message,

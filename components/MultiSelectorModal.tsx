@@ -63,9 +63,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
                     <View
                       className={[
                         'mr-3 h-6 w-6 items-center justify-center rounded border',
-                        selected
-                          ? 'border-primary bg-primary'
-                          : 'border-outline bg-transparent',
+                        selected ? 'border-primary bg-primary' : 'border-outline bg-transparent',
                       ].join(' ')}
                     >
                       {selected && <Text className="text-base font-bold text-on-primary">✓</Text>}
@@ -88,7 +86,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
             onPress={handleConfirm}
             disabled={selectedIds.length === 0}
           >
-            <Text>OK</Text>
+            <Text>{t('Common.ok')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

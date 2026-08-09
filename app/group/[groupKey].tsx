@@ -137,7 +137,7 @@ const GroupPage = () => {
   return (
     <MahjongContainer>
       <PageTitleBar
-        title={group ? group.name : 'Loading...'}
+        title={group ? group.name : t('Common.loading')}
         shareLinks={group ? group.group_links : []}
         onTitleChange={handleTitleChange}
         parentUrl="/"
@@ -191,10 +191,12 @@ const GroupPage = () => {
                   <MahjongListItem
                     key={tournament.id}
                     title={tournament.name}
-                    badge={'Rate:' + tournament.rate.toString()}
+                    badge={t('groupPage.rateLabel', { rate: tournament.rate })}
                     accessories={[
                       tournament.created_at &&
-                        '作成日' + format(new Date(tournament.created_at), 'yyyy-MM-dd'),
+                        t('groupPage.createdAt', {
+                          date: format(new Date(tournament.created_at), 'yyyy-MM-dd'),
+                        }),
                     ]}
                     onPress={() => {
                       const tournament_key = tournament.edit_link ?? tournament.view_link;
@@ -241,7 +243,7 @@ const GroupPage = () => {
             {isLoadingPlayers ? (
               <View className=" items-center justify-center gap-2">
                 <ActivityIndicator size="large" />
-                <Text>Loading...</Text>
+                <Text>{t('Common.loading')}</Text>
               </View>
             ) : (
               <MahjongList columns={2}>

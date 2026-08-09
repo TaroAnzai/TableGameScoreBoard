@@ -118,7 +118,7 @@ export const TextInputModal = ({
             className="h-auto min-h-12 rounded-xl py-3"
             onPress={() => onComfirm(inputTextRef.current, inputText2Ref.current)}
           >
-            <Text>OK</Text>
+            <Text>{t('Common.ok')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

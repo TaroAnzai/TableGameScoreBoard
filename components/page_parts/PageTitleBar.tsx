@@ -73,7 +73,9 @@ export default function PageTitleBar({
     const shortKey = shareLinks.find((l) => l.access_level === accessType)?.short_key;
     if (!shortKey) {
       alertDialog({
-        title: t('titleBar.noLink', { accessType }),
+        title: t('titleBar.noLink', {
+          accessType: t(`Common.accessLevel.${accessType}`),
+        }),
         showCancelButton: false,
       });
       return;

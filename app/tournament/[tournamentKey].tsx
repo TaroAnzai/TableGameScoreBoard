@@ -155,7 +155,7 @@ const TournamentPage = () => {
   const handleOpenDeletePlayerModal = () => {
     if (!players?.length) {
       alertDialog({
-        title: 'Error Delete Player',
+        title: t('tournamentPage.alertDeletePlayerErrorTitle'),
         description: t('tournamentPage.alertNoPlayersToDelete'),
       });
       return;
@@ -164,7 +164,7 @@ const TournamentPage = () => {
   };
   const handleDeletePlayer = async (player: Player) => {
     const confirmed = await alertDialog({
-      title: 'Delete Player',
+      title: t('tournamentPage.alertDeletePlayerTitle'),
       description: t('tournamentPage.alertDeletePlayerDescription', { playerName: player.name }),
     });
     //
@@ -204,7 +204,7 @@ const TournamentPage = () => {
     const nomalTables = tables?.filter((t) => t.type === TableType.NORMAL);
     if (nomalTables && nomalTables.length > 0) {
       alertDialog({
-        title: 'Error deleting tournament',
+        title: t('tournamentPage.alertDeleteTournamentErrorTitle'),
         description: t('tournamentPage.alertDeleteTournamentErrorDescription'),
         showCancelButton: false,
       });

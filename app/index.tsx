@@ -189,7 +189,7 @@ export default function Index() {
               <Card className="rounded-2xl">
                 <CardContent className="items-center justify-center gap-3 p-8">
                   <ActivityIndicator size="large" />
-                  <Text className="text-muted-foreground">Loading...</Text>
+                  <Text className="text-muted-foreground">{t('Common.loading')}</Text>
                 </CardContent>
               </Card>
             ) : (
@@ -200,9 +200,12 @@ export default function Index() {
                       <MahjongListItem
                         key={group.id + getAccessLevelstring(group.group_links)}
                         title={group.name}
-                        badge={getAccessLevelstring(group.group_links)}
+                        badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
                         accessories={[
-                          group.created_at && '作成日:' + format(group.created_at, 'yyyy-MM-dd'),
+                          group.created_at &&
+                            t('welcomPage.createdAt', {
+                              date: format(group.created_at, 'yyyy-MM-dd'),
+                            }),
                           group.description && group.description,
                         ]}
                         onPress={() => handleEnterGroup(group)}
@@ -213,13 +216,16 @@ export default function Index() {
             )}
             {pendingGroups.length > 0 && (
               <View className="gap-3 align-center">
-                <Text className="text-lg font-semibold">Pending Groups</Text>
+                <Text className="text-lg font-semibold">{t('welcomPage.pendingGroups')}</Text>
                 {pendingGroups.map((group) => (
                   <MahjongListItem
                     key={group.token}
                     title={group.groupName}
                     accessories={[
-                      group.expiresAt && '有効期限:' + format(group.expiresAt, 'yyyy-MM-dd'),
+                      group.expiresAt &&
+                        t('welcomPage.expiresAt', {
+                          date: format(group.expiresAt, 'yyyy-MM-dd'),
+                        }),
                     ]}
                   />
                 ))}

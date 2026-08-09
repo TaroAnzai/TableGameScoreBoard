@@ -1,12 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Text } from 'react-native';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
-import type { Group } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroup } from '@/src/hooks/useGroups';
 
 const GroupCreatePage = () => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const { mutateAsync: createGroupFromToken } = useCreateGroup();
   const hasRun = useRef(false);
@@ -18,8 +19,8 @@ const GroupCreatePage = () => {
     const createGroup = async () => {
       if (!token) {
         await alertDialog({
-          title: 'Error',
-          description: '無効なトークンです',
+          title: t('groupCreatePage.invalidTokenTitle'),
+          description: t('groupCreatePage.invalidTokenDescription'),
           showCancelButton: false,
         });
         router.push('/');
@@ -28,14 +29,14 @@ const GroupCreatePage = () => {
       try {
         const result = await createGroupFromToken({ token: token });
         router.push(`/group/${result.owner_link}`);
-      } catch (error) {
+      } catch {
         router.push('/');
       }
     };
     createGroup();
-  }, []);
+  }, [alertDialog, createGroupFromToken, t, token]);
 
-  return <View>Creating group...</View>;
+  return <Text>{t('groupCreatePage.creating')}</Text>;
 };
 
 export default GroupCreatePage;

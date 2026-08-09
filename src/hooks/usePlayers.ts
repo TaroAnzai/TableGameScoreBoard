@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -23,6 +24,7 @@ export const useGetPlayer = (groupKey: string) => {
   return { players, isLoadingPlayers, loadPlayers };
 };
 export const useCreatePlayer = (onAfterCreate?: () => void) => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   return useMutation({
     mutationFn: (data: { groupKey: string; player: PlayerCreate }) => {
@@ -31,7 +33,7 @@ export const useCreatePlayer = (onAfterCreate?: () => void) => {
     onSuccess: (data) => {
       Toast.show({
         type: 'success',
-        text1: 'Player created successfully',
+        text1: t('notifications.player.createSuccess'),
       });
       onAfterCreate?.();
     },
@@ -41,9 +43,9 @@ export const useCreatePlayer = (onAfterCreate?: () => void) => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error creating player',
+        title: t('notifications.player.createErrorTitle'),
         description: message,
         showCancelButton: false,
       });
@@ -51,6 +53,7 @@ export const useCreatePlayer = (onAfterCreate?: () => void) => {
   });
 };
 export const useDeletePlayer = (onAfterDelete?: () => void) => {
+  const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   return useMutation({
     mutationFn: (data: { groupKey: string; playerId: number }) => {
@@ -59,7 +62,7 @@ export const useDeletePlayer = (onAfterDelete?: () => void) => {
     onSuccess: (data) => {
       Toast.show({
         type: 'success',
-        text1: 'Player deleted successfully',
+        text1: t('notifications.player.deleteSuccess'),
       });
       onAfterDelete?.();
     },
@@ -69,9 +72,9 @@ export const useDeletePlayer = (onAfterDelete?: () => void) => {
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??
         error.statusText ??
-        'Unknown error';
+        t('notifications.common.unknownError');
       alertDialog({
-        title: 'Error deleting player',
+        title: t('notifications.player.deleteErrorTitle'),
         description: message,
         showCancelButton: false,
       });

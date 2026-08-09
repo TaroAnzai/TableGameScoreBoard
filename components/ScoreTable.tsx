@@ -26,7 +26,7 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   if (!scoreMap) {
     return (
       <Text className="py-8 text-center text-sm text-on-surface-variant">
-        {t('Common.noScoreData')}
+        {t('scoreTable.noScoreData')}
       </Text>
     );
   }
