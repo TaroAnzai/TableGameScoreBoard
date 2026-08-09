@@ -143,16 +143,6 @@ const GroupPage = () => {
         parentUrl="/"
       />
 
-      <ButtonGridSection>
-        {isGroupRegistered === false && (
-          <Button onPress={handleAddGroup} className="w-full">
-            <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
-          </Button>
-        )}
-        <Button onPress={() => router.push(`/group/stats/${groupKey}`)} className="w-full">
-          <Text>{t('groupPage.buttonStats')}</Text>
-        </Button>
-      </ButtonGridSection>
       <Tabs value={value} onValueChange={setValue} className="min-h-0 w-full flex-1">
         <TabsList className="h-11">
           <TabsTrigger value="tournament">
@@ -262,6 +252,16 @@ const GroupPage = () => {
             )}
           </MahjongSection>
         </TabsContent>
+        <ButtonGridSection>
+          {isGroupRegistered === false && (
+            <Button onPress={handleAddGroup} className="w-full">
+              <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
+            </Button>
+          )}
+          <Button onPress={() => router.push(`/group/stats/${groupKey}`)} className="w-full">
+            <Text>{t('groupPage.buttonStats')}</Text>
+          </Button>
+        </ButtonGridSection>
       </Tabs>
 
       {showDeleteModal && (

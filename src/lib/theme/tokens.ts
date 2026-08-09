@@ -83,10 +83,10 @@ export const componentSize = {
 } as const;
 
 export const mahjong = {
-  scoreCellWidth: 88,
-  scoreCellMinWidth: 80,
-  gameColumnWidth: 80,
-  playerColumnWidth: 104,
+  scoreCellWidth: 70,
+  scoreCellMinWidth: 70,
+  gameColumnWidth: 60,
+  playerColumnWidth: 70,
   totalColumnWidth: 104,
   tableHeaderHeight: 44,
   scoreInputHeight: 40,

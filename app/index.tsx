@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { router, useFocusEffect } from 'expo-router';
-import { Minus, Settings, SquareMinus } from 'lucide-react-native';
+import { Settings, SquareMinus } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {

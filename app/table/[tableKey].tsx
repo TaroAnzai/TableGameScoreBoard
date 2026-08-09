@@ -1,14 +1,15 @@
 // React 関連
 import { router, useLocalSearchParams } from 'expo-router';
-import { Accessibility } from 'lucide-react-native';
+import { Accessibility, UserMinus, UserPlus } from 'lucide-react-native';
 import React, { use, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import MahjongContainer from '@/components/MahjongContainer';
 import MahjongSection from '@/components/MahjongSection';
+import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import MultiSelectorModal from '@/components/MultiSelectorModal';
 // API 関連a
 // コンポーネント
@@ -16,6 +17,7 @@ import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import SelectorModal from '@/components/SelectorModal';
 import TableScoreBoard from '@/components/TableScoreBoard';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import {
   useCreateGame,
@@ -145,24 +147,53 @@ export default function TablePage() {
         shareLinks={table ? table.table_links : []}
         parentUrl={parentUrl}
       />
+
+      <MahjongSection>
+        <MahjongSectionHeader
+          title={table ? table.name + '記録表' : t('Common.loading')}
+          actions={
+            accessLevel !== 'VIEW' && (
+              <>
+                <Button
+                  accessibilityLabel={t('tablePage.buttonAddPlayer')}
+                  className="h-10 w-10 rounded-full p-0"
+                  size="icon"
+                  variant="ghost"
+                  onPress={() => {
+                    setShowAddPlayerModal(true);
+                  }}
+                >
+                  <Icon as={UserPlus} className="text-on-surface" size={24} />
+                </Button>
+                <Button
+                  accessibilityLabel={t('tablePage.buttonDeletePlayer')}
+                  className="h-10 w-10 rounded-full p-0"
+                  size="icon"
+                  variant="ghost"
+                  onPress={() => setShowDeletePlayerModal(true)}
+                >
+                  <Icon as={UserMinus} className="text-error" size={24} />
+                </Button>
+              </>
+            )
+          }
+        />
+        {!table || isLoadingGames || isLoadingTablePlayers ? (
+          <View className="flex items-center justify-center gap-2">
+            <ActivityIndicator accessibilityLabel="Loading..." size="large" />
+          </View>
+        ) : (
+          <TableScoreBoard
+            table={table}
+            players={tablePlayers ?? []}
+            games={games ?? []}
+            onUpdateGame={handleUpdateGame}
+            disabled={accessLevel === 'VIEW'}
+          />
+        )}
+      </MahjongSection>
       {!isChipTable && (
         <ButtonGridSection>
-          <Button
-            className="w-full"
-            disabled={accessLevel === 'VIEW'}
-            onPress={() => {
-              setShowAddPlayerModal(true);
-            }}
-          >
-            <Text>{t('tablePage.buttonAddPlayer')}</Text>
-          </Button>
-          <Button
-            className="w-full"
-            disabled={accessLevel === 'VIEW'}
-            onPress={() => setShowDeletePlayerModal(true)}
-          >
-            <Text>{t('tablePage.buttonDeletePlayer')}</Text>
-          </Button>
           <Button
             className="w-full"
             disabled={accessLevel === 'VIEW'}
@@ -175,21 +206,6 @@ export default function TablePage() {
           </Button>
         </ButtonGridSection>
       )}
-      <MahjongSection>
-        {!table || isLoadingGames || isLoadingTablePlayers ? (
-          <View className="flex items-center justify-center gap-2">
-            <Text>{t('Common.loading')}</Text>
-          </View>
-        ) : (
-          <TableScoreBoard
-            table={table}
-            players={tablePlayers ?? []}
-            games={games ?? []}
-            onUpdateGame={handleUpdateGame}
-            disabled={accessLevel === 'VIEW'}
-          />
-        )}
-      </MahjongSection>
       {showAddPlayerModal && (
         <MultiSelectorModal
           open={showAddPlayerModal}
