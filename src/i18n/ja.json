@@ -8,6 +8,7 @@
     "close": "閉じる",
     "emptyMessage": "項目がありません",
     "loading": "読み込み中...",
+    "invalidEmail": "正しい形式のメールアドレスを入力してください。",
     "ok": "OK",
     "save": "保存",
     "accessLevel": { "VIEW": "閲覧", "EDIT": "編集", "OWNER": "所有者" }
@@ -290,6 +291,7 @@
       "emailSentBodyExpire": "⚠️ このリンクは発行から30分間有効です。（{{expire_at}}まで）",
       "emailSentBodyNote": "期限を過ぎると無効になりますので、お早めに手続きをお願いします。",
       "createErrorTitle": "グループ作成時にエラーが発生しました",
+      "invalidEmail": "不正なメールアドレスです。",
       "unknownError": "不明なエラー"
     },
     "group": {

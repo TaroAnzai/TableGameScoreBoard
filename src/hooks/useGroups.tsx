@@ -13,13 +13,13 @@ import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import type {
+  DefaultErrorResponse,
+  ErrorResponse,
   Group,
   GroupCreate,
   GroupRequest,
   GroupResponse,
   GroupUpdate,
-  DefaultErrorResponse,
-  ErrorResponse,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { appStorage, PendingGroup } from '@/src/storage/appStorage';
 import { syncPendingGroups } from '@/src/utils/groupSync';
@@ -77,10 +77,12 @@ export const useCreateGroupRequest = () => {
     },
     onError: (error: any) => {
       const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('hooks.groupRequest.unknownError');
+        error.status === 422
+          ? t('hooks.groupRequest.invalidEmail')
+          : (error.body?.errors?.json?.message?.[0] ??
+            error.body?.message ??
+            error.statusText ??
+            t('hooks.groupRequest.unknownError'));
       alertDialog({
         title: t('hooks.groupRequest.createErrorTitle'),
         description: message,

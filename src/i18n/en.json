@@ -8,6 +8,7 @@
     "close": "Close",
     "emptyMessage": "No items found.",
     "loading": "Loading...",
+    "invalidEmail": "Enter a valid email address.",
     "ok": "OK",
     "save": "Save",
     "accessLevel": { "VIEW": "View", "EDIT": "Edit", "OWNER": "Owner" }
@@ -289,6 +290,7 @@
       "emailSentBodyExpire": "⚠️ The link is valid for 30 minutes after issuance. (until {{expire_at}})",
       "emailSentBodyNote": "The link will expire after that time, so please complete the process as soon as possible.",
       "createErrorTitle": "Error creating group",
+      "invalidEmail": "Invalid email address.",
       "unknownError": "Unknown error"
     },
     "group": {

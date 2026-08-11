@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -36,6 +36,8 @@ const getKeyboardType = (type: TextInputModalProps['inputType']) => {
   return 'default';
 };
 
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
 export const TextInputModal = ({
   open,
   onComfirm,
@@ -54,6 +56,16 @@ export const TextInputModal = ({
 
   const inputTextRef = useRef(value || '');
   const inputText2Ref = useRef(twoValue || '');
+  const [inputError, setInputError] = useState(false);
+  const [input2Error, setInput2Error] = useState(false);
+  const resetKey = `${open}-${value ?? ''}-${twoValue}`;
+  const [previousResetKey, setPreviousResetKey] = useState(resetKey);
+
+  if (resetKey !== previousResetKey) {
+    setPreviousResetKey(resetKey);
+    setInputError(false);
+    setInput2Error(false);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -61,6 +73,18 @@ export const TextInputModal = ({
     inputTextRef.current = value || '';
     inputText2Ref.current = twoValue || '';
   }, [open, twoValue, value]);
+
+  const handleConfirm = () => {
+    const hasInputError = inputType === 'email' && !isValidEmail(inputTextRef.current);
+    const hasInput2Error =
+      twoInput && twoInputType === 'email' && !isValidEmail(inputText2Ref.current);
+
+    setInputError(hasInputError);
+    setInput2Error(hasInput2Error);
+    if (hasInputError || hasInput2Error) return;
+
+    onComfirm(inputTextRef.current, inputText2Ref.current);
+  };
 
   return (
     <Dialog
@@ -85,13 +109,18 @@ export const TextInputModal = ({
               defaultValue={value}
               onChangeText={(text) => {
                 inputTextRef.current = text;
+                if (inputError) setInputError(false);
               }}
               keyboardType={getKeyboardType(inputType)}
               secureTextEntry={inputType === 'password'}
               autoCapitalize="none"
               autoCorrect={false}
+              aria-invalid={inputError}
               className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
+            {inputError && (
+              <Text className="text-sm text-destructive">{t('Common.invalidEmail')}</Text>
+            )}
           </View>
           <View className="gap-3">
             {twoInput && (
@@ -101,11 +130,18 @@ export const TextInputModal = ({
                   defaultValue={twoValue}
                   onChangeText={(text) => {
                     inputText2Ref.current = text;
+                    if (input2Error) setInput2Error(false);
                   }}
                   keyboardType={getKeyboardType(twoInputType)}
                   secureTextEntry={twoInputType === 'password'}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  aria-invalid={input2Error}
                   className="h-auto min-h-12 rounded-xl bg-surface py-3"
                 />
+                {input2Error && (
+                  <Text className="text-sm text-destructive">{t('Common.invalidEmail')}</Text>
+                )}
               </>
             )}
           </View>
@@ -114,10 +150,7 @@ export const TextInputModal = ({
           <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button
-            className="h-auto min-h-12 rounded-xl py-3"
-            onPress={() => onComfirm(inputTextRef.current, inputText2Ref.current)}
-          >
+          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={handleConfirm}>
             <Text>{t('Common.ok')}</Text>
           </Button>
         </DialogFooter>
