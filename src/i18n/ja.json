@@ -230,7 +230,11 @@
     "name": "大会名",
     "memo": "メモ",
     "startDate": "開始日",
-    "datePlaceholder": "YYYY-MM-DD"
+    "datePlaceholder": "YYYY-MM-DD",
+    "selectDate": "開始日を選択",
+    "clearDate": "開始日をクリア",
+    "invalidDateTitle": "日付形式が正しくありません",
+    "invalidDateDescription": "開始日はYYYY-MM-DD形式の実在する日付で入力してください。"
   },
   "shareModal": {
     "sendByOther": "ほかの方法で送信"

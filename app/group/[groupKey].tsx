@@ -142,7 +142,7 @@ const GroupPage = () => {
       <PageTitleBar
         title={group ? group.name : t('Common.loading')}
         shareLinks={group ? group.group_links : []}
-        onTitleChange={handleTitleChange}
+        onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
         parentUrl="/"
       />
 

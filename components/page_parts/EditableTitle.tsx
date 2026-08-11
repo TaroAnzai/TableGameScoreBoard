@@ -28,19 +28,23 @@ const EditableTitle = ({ value, onChange, className = '' }: EditableTitleProps) 
 
   return (
     <View>
-      <Pressable onPress={handleStartEdit} className={className}>
-        {editing ? (
-          <Input
-            value={tempValue}
-            onChangeText={setTempValue}
-            onBlur={handleFinishEdit}
-            onSubmitEditing={handleFinishEdit}
-            autoFocus
-          />
-        ) : (
-          <Text>{value}</Text>
-        )}
-      </Pressable>
+      {onChange ? (
+        <Pressable onPress={handleStartEdit} className={className}>
+          {editing ? (
+            <Input
+              value={tempValue}
+              onChangeText={setTempValue}
+              onBlur={handleFinishEdit}
+              onSubmitEditing={handleFinishEdit}
+              autoFocus
+            />
+          ) : (
+            <Text>{value}</Text>
+          )}
+        </Pressable>
+      ) : (
+        <Text className={className}>{value}</Text>
+      )}
     </View>
   );
 };

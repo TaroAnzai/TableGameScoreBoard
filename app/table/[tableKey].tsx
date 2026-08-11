@@ -142,7 +142,7 @@ export default function TablePage() {
     <MahjongContainer>
       <PageTitleBar
         title={table ? table.name : t('Common.loading')}
-        onTitleChange={handleTableNameChange}
+        onTitleChange={accessLevel === 'VIEW' ? undefined : handleTableNameChange}
         shareLinks={table ? table.table_links : []}
         parentUrl={parentUrl}
       />

@@ -198,9 +198,13 @@ const TournamentPage = () => {
     router.push(`/table/${table_key}`);
   };
   const TitleWithModal = ({ onPress }: { onPress?: () => void }) => (
-    <Pressable className="mahjong-editable-title" onPress={onPress}>
+    onPress ? (
+      <Pressable className="mahjong-editable-title" onPress={onPress}>
+        <Text>{tournament?.name}</Text>
+      </Pressable>
+    ) : (
       <Text>{tournament?.name}</Text>
-    </Pressable>
+    )
   );
   const handleDeleteTournament = async () => {
     //テーブルがあればエラーにする。
@@ -259,8 +263,8 @@ const TournamentPage = () => {
       <PageTitleBar
         title={tournament?.name ?? ''}
         shareLinks={tournament?.tournament_links}
-        onTitleClick={() => setShowEditModal(true)}
-        onTitleChange={handleTitleChange}
+        onTitleClick={accessLevel === 'VIEW' ? undefined : () => setShowEditModal(true)}
+        onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
         TitleComponent={TitleWithModal}
         parentUrl={parentPageUrl}
       />
@@ -270,7 +274,7 @@ const TournamentPage = () => {
             key={`${tournament.id}-${tournament.rate}`}
             rate={tournament.rate}
             label={t('tournamentPage.rate')}
-            onChange={handleRateChange}
+            onChange={accessLevel === 'VIEW' ? undefined : handleRateChange}
           />
         )}
       </View>
@@ -355,7 +359,7 @@ const EditableRate = ({
 }: {
   rate: number;
   label: string;
-  onChange: (rate: number) => void;
+  onChange?: (rate: number) => void;
 }) => {
   const [editedRate, setEditedRate] = useState<number | ''>(rate);
   const submittedRef = useRef(false);
@@ -382,7 +386,7 @@ const EditableRate = ({
       return;
     }
     const newRate = Number(editedRate);
-    onChange(newRate);
+    onChange?.(newRate);
   };
   const handleRateBlur = () => {
     if (submittedRef.current) {
@@ -395,17 +399,21 @@ const EditableRate = ({
     <Pressable className="w-full items-center" onPress={Keyboard.dismiss}>
       <View className="flex-row items-center gap-2">
         <Text>{label}:</Text>
-        <Input
-          className="w-20 text-right"
-          keyboardType="numeric"
-          value={editedRate.toString()}
-          onChangeText={handleRateChange}
-          onBlur={() => {
-            handleRateBlur();
-          }}
-          onSubmitEditing={handleRateSubmit}
-          submitBehavior="blurAndSubmit"
-        />
+        {onChange ? (
+          <Input
+            className="w-20 text-right"
+            keyboardType="numeric"
+            value={editedRate.toString()}
+            onChangeText={handleRateChange}
+            onBlur={() => {
+              handleRateBlur();
+            }}
+            onSubmitEditing={handleRateSubmit}
+            submitBehavior="blurAndSubmit"
+          />
+        ) : (
+          <Text>{rate.toLocaleString()}</Text>
+        )}
       </View>
     </Pressable>
   );

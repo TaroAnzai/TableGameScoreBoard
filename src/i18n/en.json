@@ -231,7 +231,11 @@
     "name": "Tournament Name",
     "memo": "Memo",
     "startDate": "Start Date",
-    "datePlaceholder": "YYYY-MM-DD"
+    "datePlaceholder": "YYYY-MM-DD",
+    "selectDate": "Select start date",
+    "clearDate": "Clear start date",
+    "invalidDateTitle": "Invalid date",
+    "invalidDateDescription": "Enter an existing start date in YYYY-MM-DD format."
   },
   "shareModal": { "sendByOther": "Send by Other" },
   "dialogPreview": {
