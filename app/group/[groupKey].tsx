@@ -3,7 +3,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SquareMinus, SquarePlus, UserMinus, UserPlus } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -37,8 +36,12 @@ const GroupPage = () => {
   const { alertDialog } = useAlertDialog();
 
   const { players, isLoadingPlayers, loadPlayers } = useGetPlayer(groupKey);
-  const { tournaments, loadTournaments } = useGetTournaments(groupKey);
-  const { data: group, refetch: refetchGroup } = useGetApiGroupsGroupKey(groupKey);
+  const { tournaments, isLoadingTournaments, loadTournaments } = useGetTournaments(groupKey);
+  const {
+    data: group,
+    isLoading: isLoadingGroup,
+    refetch: refetchGroup,
+  } = useGetApiGroupsGroupKey(groupKey);
   const { mutate: updateGroup } = useUpdateGroup(refetchGroup);
   const { mutate: createPlayer } = useCreatePlayer(loadPlayers);
   const { mutate: deletePlayer } = useDeletePlayer(loadPlayers);
@@ -134,9 +137,6 @@ const GroupPage = () => {
     }
   };
 
-  if (players === undefined || isLoadingPlayers) {
-    return;
-  }
   return (
     <MahjongContainer>
       <PageTitleBar
@@ -157,7 +157,10 @@ const GroupPage = () => {
         </TabsList>
         <TabsContent value="tournament" className="min-h-0 w-full flex-1">
           {/* Tournament List */}
-          <MahjongSection className="min-h-0 justify-start">
+          <MahjongSection
+            className="min-h-0 justify-start"
+            isLoading={isLoadingGroup || isLoadingTournaments}
+          >
             <MahjongSectionHeader
               title={t('groupPage.buttonSelectTournament')}
               actions={
@@ -216,7 +219,10 @@ const GroupPage = () => {
         </TabsContent>
         <TabsContent value="member" className="min-h-0 w-full flex-1">
           {/* Member List */}
-          <MahjongSection className="min-h-0 justify-start">
+          <MahjongSection
+            className="min-h-0 justify-start"
+            isLoading={isLoadingGroup || isLoadingPlayers}
+          >
             <MahjongSectionHeader
               title={t('groupPage.sectionMemberList')}
               actions={
@@ -246,12 +252,7 @@ const GroupPage = () => {
               }
             />
 
-            {isLoadingPlayers ? (
-              <View className=" items-center justify-center gap-2">
-                <ActivityIndicator size="large" />
-                <Text>{t('Common.loading')}</Text>
-              </View>
-            ) : players?.length === 0 ? (
+            {players?.length === 0 ? (
               <Text>{t('groupPage.sectionMemberListEmpty')}</Text>
             ) : (
               <MahjongList columns={2}>

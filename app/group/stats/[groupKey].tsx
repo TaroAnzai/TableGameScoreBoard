@@ -1,6 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
 
 import MahjongContainer from '@/components/MahjongContainer';
 import MahjongSection from '@/components/MahjongSection';
@@ -20,12 +19,8 @@ const GroupPlayerStatsPage = () => {
         title={t('statsPage.pageTitle')}
         parentUrl={`/group/${groupKey}`}
       ></PageTitleBar>
-      <MahjongSection>
-        {isLoadingPlayerStats || !playerStats?.players ? (
-          <Text>{t('Common.loading')}</Text>
-        ) : (
-          <PlayerStatsTable playerStatsList={playerStats.players} />
-        )}
+      <MahjongSection isLoading={isLoadingPlayerStats || !playerStats?.players}>
+        {playerStats?.players && <PlayerStatsTable playerStatsList={playerStats.players} />}
       </MahjongSection>
     </MahjongContainer>
   );

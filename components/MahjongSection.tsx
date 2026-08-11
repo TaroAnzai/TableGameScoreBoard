@@ -1,14 +1,16 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
+import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { cn } from '@/lib/utils';
 
-type Props = {
+export type MahjongSectionProps = {
   children: ReactNode;
   className?: string;
+  isLoading?: boolean;
 };
 
-const MahjongSection = ({ children, className }: Props) => {
+const MahjongSection = ({ children, className, isLoading = false }: MahjongSectionProps) => {
   return (
     <View
       className={cn(
@@ -16,7 +18,7 @@ const MahjongSection = ({ children, className }: Props) => {
         className,
       )}
     >
-      {children}
+      {isLoading ? <LoadingIndicator /> : children}
     </View>
   );
 };

@@ -3,7 +3,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Accessibility, UserMinus, UserPlus } from 'lucide-react-native';
 import React, { use, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -148,7 +147,14 @@ export default function TablePage() {
         parentUrl={parentUrl}
       />
 
-      <MahjongSection>
+      <MahjongSection
+        isLoading={
+          isLoadingTable ||
+          isLoadingGames ||
+          isLoadingTablePlayers ||
+          (!!tournamentKey && isLoadingPlayers)
+        }
+      >
         <MahjongSectionHeader
           title={
             table ? t('tablePage.scoreSheetTitle', { tableName: table.name }) : t('Common.loading')
@@ -180,11 +186,7 @@ export default function TablePage() {
             )
           }
         />
-        {!table || isLoadingGames || isLoadingTablePlayers ? (
-          <View className="flex items-center justify-center gap-2">
-            <ActivityIndicator accessibilityLabel={t('Common.loading')} size="large" />
-          </View>
-        ) : (
+        {table && (
           <TableScoreBoard
             table={table}
             players={tablePlayers ?? []}

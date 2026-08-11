@@ -3,15 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Settings, SquareMinus } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  AppState,
-  AppStateStatus,
-  Keyboard,
-  RefreshControl,
-  ScrollView,
-  View,
-} from 'react-native';
+import { AppState, AppStateStatus, Keyboard, RefreshControl, ScrollView, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -22,7 +14,6 @@ import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import SelectorModal from '@/components/SelectorModal';
 import { TextInputModal } from '@/components/TextInputModal';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Group } from '@/src/api/generated/mahjongApi.schemas';
@@ -167,7 +158,7 @@ export default function Index() {
           </ButtonGridSection>
 
           {/* Registered Groups */}
-          <MahjongSection>
+          <MahjongSection isLoading={isLoading}>
             <MahjongSectionHeader
               title={t('welcomPage.RegisteredGroups')}
               actions={
@@ -185,43 +176,34 @@ export default function Index() {
               }
             />
 
-            {isLoading ? (
-              <Card className="rounded-2xl">
-                <CardContent className="items-center justify-center gap-3 p-8">
-                  <ActivityIndicator size="large" />
-                  <Text className="text-muted-foreground">{t('Common.loading')}</Text>
-                </CardContent>
-              </Card>
-            ) : (
-              <View className="gap-1">
-                {groups.length > 0 ? (
-                  groups.map(
-                    (group) =>
-                      group && (
-                        <MahjongListItem
-                          key={group.id + getAccessLevelstring(group.group_links)}
-                          title={group.name}
-                          badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
-                          accessories={[
-                            group.created_at &&
-                              t('welcomPage.createdAt', {
-                                date: format(group.created_at, 'yyyy-MM-dd'),
-                              }),
-                            group.description && group.description,
-                          ]}
-                          onPress={() => handleEnterGroup(group)}
-                        />
-                      ),
-                  )
-                ) : (
-                  <View className="items-center justify-center gap-3 p-8">
-                    <Text className="text-muted-foreground">
-                      {t('welcomPage.noRegisteredGroups')}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+            <View className="gap-1">
+              {groups.length > 0 ? (
+                groups.map(
+                  (group) =>
+                    group && (
+                      <MahjongListItem
+                        key={group.id + getAccessLevelstring(group.group_links)}
+                        title={group.name}
+                        badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
+                        accessories={[
+                          group.created_at &&
+                            t('welcomPage.createdAt', {
+                              date: format(group.created_at, 'yyyy-MM-dd'),
+                            }),
+                          group.description && group.description,
+                        ]}
+                        onPress={() => handleEnterGroup(group)}
+                      />
+                    ),
+                )
+              ) : (
+                <View className="items-center justify-center gap-3 p-8">
+                  <Text className="text-muted-foreground">
+                    {t('welcomPage.noRegisteredGroups')}
+                  </Text>
+                </View>
+              )}
+            </View>
             {pendingGroups.length > 0 && (
               <View className="gap-3 align-center">
                 <Text className="text-lg font-semibold">{t('welcomPage.pendingGroups')}</Text>

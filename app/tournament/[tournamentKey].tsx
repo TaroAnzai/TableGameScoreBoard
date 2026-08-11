@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { UserMinus, UserPlus } from 'lucide-react-native';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
+import { Keyboard, Pressable, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -254,17 +254,6 @@ const TournamentPage = () => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <MahjongContainer>
-        <View className="flex-1 items-center justify-center gap-3">
-          <ActivityIndicator accessibilityLabel={t('tournamentPage.loading')} size="large" />
-          <Text>{t('tournamentPage.loading')}</Text>
-        </View>
-      </MahjongContainer>
-    );
-  }
-
   return (
     <MahjongContainer>
       <PageTitleBar
@@ -286,7 +275,7 @@ const TournamentPage = () => {
         )}
       </View>
 
-      <MahjongSection className="justify-start">
+      <MahjongSection className="justify-start" isLoading={isLoading}>
         <MahjongSectionHeader
           title={t('tournamentPage.sectionTournamentScore')}
           actions={
