@@ -56,9 +56,19 @@ export const useGetTournaments = (groupKey: string) => {
   const {
     data: tournaments,
     isLoading: isLoadingTournaments,
+    isError: isErrorTournaments,
+    isFetching: isFetchingTournaments,
+    error: tournamentsError,
     refetch: loadTournaments,
   } = useGetApiGroupsGroupKeyTournaments(groupKey);
-  return { tournaments, isLoadingTournaments, loadTournaments };
+  return {
+    tournaments,
+    isLoadingTournaments,
+    isErrorTournaments,
+    isFetchingTournaments,
+    tournamentsError,
+    loadTournaments,
+  };
 };
 export const useUpdateTournament = () => {
   const { t } = useTranslation();
@@ -130,19 +140,39 @@ export const useGetTournament = (tournamentKey: string) => {
   const {
     data: tournament,
     isLoading: isLoadingTournament,
+    isError: isErrorTournament,
+    isFetching: isFetchingTournament,
+    error: tournamentError,
     refetch: loadTournament,
   } = useGetApiTournamentsTournamentKey(tournamentKey);
-  return { tournament, isLoadingTournament, loadTournament };
+  return {
+    tournament,
+    isLoadingTournament,
+    isErrorTournament,
+    isFetchingTournament,
+    tournamentError,
+    loadTournament,
+  };
 };
 
 export const useGetTournamentPlayers = (tournamentKey: string, options?: object) => {
   const {
     data,
     isLoading: isLoadingPlayers,
+    isError: isErrorPlayers,
+    isFetching: isFetchingPlayers,
+    error: playersError,
     refetch: loadPlayers,
   } = useGetApiTournamentsTournamentKeyParticipants(tournamentKey, options);
   const players = data?.participants;
-  return { players, isLoadingPlayers, loadPlayers };
+  return {
+    players,
+    isLoadingPlayers,
+    isErrorPlayers,
+    isFetchingPlayers,
+    playersError,
+    loadPlayers,
+  };
 };
 
 export const useAddTournamentPlayer = () => {

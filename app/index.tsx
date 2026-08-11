@@ -25,7 +25,8 @@ type RemovableGroup = Omit<Group, 'id'> & { id: string | number };
 
 export default function Index() {
   const { t } = useTranslation();
-  const { groups, pendingGroups, isLoading, isRefreshing, refetch, refresh } = useGroupQueries();
+  const { groups, pendingGroups, isLoading, isFetching, isError, isRefreshing, refetch, refresh } =
+    useGroupQueries();
   const { mutate: createGroup } = useCreateGroupRequest();
   const { alertDialog } = useAlertDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -158,7 +159,12 @@ export default function Index() {
           </ButtonGridSection>
 
           {/* Registered Groups */}
-          <MahjongSection isLoading={isLoading}>
+          <MahjongSection
+            isLoading={isLoading}
+            isError={isError}
+            isRetrying={isError && (isFetching || isRefreshing)}
+            onRetry={() => void safeRefetch()}
+          >
             <MahjongSectionHeader
               title={t('welcomPage.RegisteredGroups')}
               actions={

@@ -8,6 +8,9 @@
     "close": "Close",
     "emptyMessage": "No items found.",
     "loading": "Loading...",
+    "loadError": "Unable to load data. Check your connection and try again.",
+    "retry": "Retry",
+    "retrying": "Retrying...",
     "invalidEmail": "Enter a valid email address.",
     "ok": "OK",
     "save": "Save",
@@ -190,6 +193,7 @@
   "statsPage": {
     "errorInvalidGroupKey": "Invalid access (group key is missing).",
     "pageTitle": "Group Member Statistics",
+    "empty": "No statistics are available.",
     "tableTitle": "Player Statistics",
     "thName": "Name",
     "thGamesPlayed": "Games Played",

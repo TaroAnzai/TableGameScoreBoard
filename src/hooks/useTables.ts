@@ -28,9 +28,19 @@ export const useGetTables = (tournamentKey: string) => {
   const {
     data: tables,
     isLoading: isLoadingTables,
+    isError: isErrorTables,
+    isFetching: isFetchingTables,
+    error: tablesError,
     refetch: loadTables,
   } = useGetApiTournamentsTournamentKeyTables(tournamentKey);
-  return { tables, isLoadingTables, loadTables };
+  return {
+    tables,
+    isLoadingTables,
+    isErrorTables,
+    isFetchingTables,
+    tablesError,
+    loadTables,
+  };
 };
 
 export const useCreateTable = () => {
@@ -103,9 +113,19 @@ export const useGetTable = (tableKey: string, optins?: object) => {
   const {
     data: table,
     isLoading: isLoadingTable,
+    isError: isErrorTable,
+    isFetching: isFetchingTable,
+    error: tableError,
     refetch: loadTable,
   } = useGetApiTablesTableKey(tableKey, optins);
-  return { table, isLoadingTable, loadTable };
+  return {
+    table,
+    isLoadingTable,
+    isErrorTable,
+    isFetchingTable,
+    tableError,
+    loadTable,
+  };
 };
 
 export const useDeleteTable = () => {
@@ -142,10 +162,20 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
   const {
     data,
     isLoading: isLoadingPlayers,
+    isError: isErrorPlayers,
+    isFetching: isFetchingPlayers,
+    error: playersError,
     refetch: loadPlayers,
   } = useGetApiTablesTableKeyPlayers(tableKey, optins);
   const players = data?.table_players;
-  return { players, isLoadingPlayers, loadPlayers };
+  return {
+    players,
+    isLoadingPlayers,
+    isErrorPlayers,
+    isFetchingPlayers,
+    playersError,
+    loadPlayers,
+  };
 };
 
 export const useAddTablePlayer = () => {

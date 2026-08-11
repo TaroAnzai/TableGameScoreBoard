@@ -2,15 +2,28 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { SectionErrorState } from '@/components/SectionErrorState';
 import { cn } from '@/lib/utils';
 
 export type MahjongSectionProps = {
   children: ReactNode;
   className?: string;
   isLoading?: boolean;
+  isError?: boolean;
+  isRetrying?: boolean;
+  errorMessage?: string;
+  onRetry?: () => void;
 };
 
-const MahjongSection = ({ children, className, isLoading = false }: MahjongSectionProps) => {
+const MahjongSection = ({
+  children,
+  className,
+  isLoading = false,
+  isError = false,
+  isRetrying = false,
+  errorMessage,
+  onRetry,
+}: MahjongSectionProps) => {
   return (
     <View
       className={cn(
@@ -18,7 +31,13 @@ const MahjongSection = ({ children, className, isLoading = false }: MahjongSecti
         className,
       )}
     >
-      {isLoading ? <LoadingIndicator /> : children}
+      {isLoading ? (
+        <LoadingIndicator />
+      ) : isError ? (
+        <SectionErrorState message={errorMessage} isRetrying={isRetrying} onRetry={onRetry} />
+      ) : (
+        children
+      )}
     </View>
   );
 };

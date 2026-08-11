@@ -19,9 +19,19 @@ export const useGetPlayer = (groupKey: string) => {
   const {
     data: players,
     isLoading: isLoadingPlayers,
+    isError: isErrorPlayers,
+    isFetching: isFetchingPlayers,
+    error: playersError,
     refetch: loadPlayers,
   } = useGetApiGroupsGroupKeyPlayers(groupKey);
-  return { players, isLoadingPlayers, loadPlayers };
+  return {
+    players,
+    isLoadingPlayers,
+    isErrorPlayers,
+    isFetchingPlayers,
+    playersError,
+    loadPlayers,
+  };
 };
 export const useCreatePlayer = (onAfterCreate?: () => void) => {
   const { t } = useTranslation();

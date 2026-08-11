@@ -35,11 +35,20 @@ const GroupPage = () => {
   const { groupKey } = useLocalSearchParams<{ groupKey: string }>();
   const { alertDialog } = useAlertDialog();
 
-  const { players, isLoadingPlayers, loadPlayers } = useGetPlayer(groupKey);
-  const { tournaments, isLoadingTournaments, loadTournaments } = useGetTournaments(groupKey);
+  const { players, isLoadingPlayers, isErrorPlayers, isFetchingPlayers, loadPlayers } =
+    useGetPlayer(groupKey);
+  const {
+    tournaments,
+    isLoadingTournaments,
+    isErrorTournaments,
+    isFetchingTournaments,
+    loadTournaments,
+  } = useGetTournaments(groupKey);
   const {
     data: group,
     isLoading: isLoadingGroup,
+    isError: isErrorGroup,
+    isFetching: isFetchingGroup,
     refetch: refetchGroup,
   } = useGetApiGroupsGroupKey(groupKey);
   const { mutate: updateGroup } = useUpdateGroup(refetchGroup);
@@ -160,6 +169,11 @@ const GroupPage = () => {
           <MahjongSection
             className="min-h-0 justify-start"
             isLoading={isLoadingGroup || isLoadingTournaments}
+            isError={isErrorGroup || isErrorTournaments}
+            isRetrying={
+              (isErrorGroup || isErrorTournaments) && (isFetchingGroup || isFetchingTournaments)
+            }
+            onRetry={() => void Promise.all([refetchGroup(), loadTournaments()])}
           >
             <MahjongSectionHeader
               title={t('groupPage.buttonSelectTournament')}
@@ -222,6 +236,9 @@ const GroupPage = () => {
           <MahjongSection
             className="min-h-0 justify-start"
             isLoading={isLoadingGroup || isLoadingPlayers}
+            isError={isErrorGroup || isErrorPlayers}
+            isRetrying={(isErrorGroup || isErrorPlayers) && (isFetchingGroup || isFetchingPlayers)}
+            onRetry={() => void Promise.all([refetchGroup(), loadPlayers()])}
           >
             <MahjongSectionHeader
               title={t('groupPage.sectionMemberList')}

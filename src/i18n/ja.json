@@ -8,6 +8,9 @@
     "close": "閉じる",
     "emptyMessage": "項目がありません",
     "loading": "読み込み中...",
+    "loadError": "データを取得できませんでした。通信状態を確認して再取得してください。",
+    "retry": "再取得",
+    "retrying": "再取得中...",
     "invalidEmail": "正しい形式のメールアドレスを入力してください。",
     "ok": "OK",
     "save": "保存",
@@ -189,6 +192,7 @@
   "statsPage": {
     "errorInvalidGroupKey": "不正なアクセスです（グループキーが指定されていません）",
     "pageTitle": "グループメンバー成績",
+    "empty": "統計データがありません。",
     "tableTitle": "プレイヤー統計",
     "thName": "名前",
     "thGamesPlayed": "参加回数",

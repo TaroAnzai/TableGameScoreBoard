@@ -226,6 +226,9 @@ export const useGroupQueries = () => {
   const combineGroupQueries = useCallback(
     (results: DefinedUseQueryResult<Group, ErrorResponse | DefaultErrorResponse>[]) => ({
       isLoading: results.some((query) => query.isLoading),
+      isFetching: results.some((query) => query.isFetching),
+      isError: results.some((query) => query.isError && !isNotFoundError(query.error)),
+      error: results.find((query) => query.isError && !isNotFoundError(query.error))?.error,
       groups: results.filter((query) => query.isSuccess).map((query) => query.data),
       notFoundKeys: results
         .map((query, index) => (isNotFoundError(query.error) ? groupKeys[index] : null))
@@ -234,7 +237,7 @@ export const useGroupQueries = () => {
     [groupKeys],
   );
 
-  const { isLoading, groups, notFoundKeys } = useQueries({
+  const { isLoading, isFetching, isError, error, groups, notFoundKeys } = useQueries({
     queries: groupQueryOptions,
     combine: combineGroupQueries,
   });
@@ -292,6 +295,9 @@ export const useGroupQueries = () => {
     groupKeys,
     pendingGroups,
     isLoading: isLoading || groupKeysQuery.isLoading,
+    isFetching: isFetching || groupKeysQuery.isFetching,
+    isError: isError || groupKeysQuery.isError,
+    error: groupKeysQuery.error ?? error,
     isRefreshing,
     groups,
     refetch,

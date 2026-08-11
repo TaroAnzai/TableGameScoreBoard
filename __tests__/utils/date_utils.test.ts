@@ -1,4 +1,4 @@
-import { parseUtcString } from './date_utils';
+import { parseUtcString } from '@/src/utils/date_utils';
 
 describe('parseUtcString', () => {
   it('ISO 8601形式のUTC文字列をDateに変換する', () => {

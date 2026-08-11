@@ -74,13 +74,33 @@ const TournamentPage = () => {
     parentGroupKey?: string;
   }>();
   //Query系フック設定
-  const { tournament, isLoadingTournament } = useGetTournament(tournamentKey);
+  const {
+    tournament,
+    isLoadingTournament,
+    isErrorTournament,
+    isFetchingTournament,
+    loadTournament,
+  } = useGetTournament(tournamentKey);
   const groupKey =
     tournament?.parent_group_link.edit_link ?? tournament?.parent_group_link.view_link ?? '';
-  const { players, isLoadingPlayers } = useGetTournamentPlayers(tournamentKey);
-  const { tables, isLoadingTables } = useGetTables(tournamentKey);
-  const { scoreMap, isLoadingScoreMap } = useGetTournamentScoreMap(tournamentKey);
-  const { players: groupPlayers, isLoadingPlayers: isLoadingGroupPlayers } = useGetPlayer(groupKey);
+  const {
+    players,
+    isLoadingPlayers,
+    isErrorPlayers,
+    isFetchingPlayers,
+    loadPlayers: loadTournamentPlayers,
+  } = useGetTournamentPlayers(tournamentKey);
+  const { tables, isLoadingTables, isErrorTables, isFetchingTables, loadTables } =
+    useGetTables(tournamentKey);
+  const { scoreMap, isLoadingScoreMap, isErrorScoreMap, isFetchingScoreMap, loadScoreMap } =
+    useGetTournamentScoreMap(tournamentKey);
+  const {
+    players: groupPlayers,
+    isLoadingPlayers: isLoadingGroupPlayers,
+    isErrorPlayers: isErrorGroupPlayers,
+    isFetchingPlayers: isFetchingGroupPlayers,
+    loadPlayers: loadGroupPlayers,
+  } = useGetPlayer(groupKey);
   //Mutation系フック
   const { mutateAsync: addTournamentPlayer } = useAddTournamentPlayer();
   const { mutateAsync: deleteTournamentPlayer } = useDeleteTounamentsPlayer();
@@ -110,6 +130,32 @@ const TournamentPage = () => {
     isLoadingTables ||
     isLoadingScoreMap ||
     (!!groupKey && isLoadingGroupPlayers);
+
+  const isError =
+    isErrorTournament ||
+    isErrorPlayers ||
+    isErrorTables ||
+    isErrorScoreMap ||
+    (!!groupKey && isErrorGroupPlayers);
+
+  const isRetrying =
+    isError &&
+    (isFetchingTournament ||
+      isFetchingPlayers ||
+      isFetchingTables ||
+      isFetchingScoreMap ||
+      (!!groupKey && isFetchingGroupPlayers));
+
+  const retrySection = async () => {
+    const requests: Promise<unknown>[] = [
+      loadTournament(),
+      loadTournamentPlayers(),
+      loadTables(),
+      loadScoreMap(),
+    ];
+    if (groupKey) requests.push(loadGroupPlayers());
+    await Promise.all(requests);
+  };
 
   const handleOpenAddPlayerModal = async () => {
     if (!groupPlayers || groupPlayers.length === 0) {
@@ -197,15 +243,14 @@ const TournamentPage = () => {
     const table_key = table.edit_link ?? table.view_link ?? '';
     router.push(`/table/${table_key}`);
   };
-  const TitleWithModal = ({ onPress }: { onPress?: () => void }) => (
+  const TitleWithModal = ({ onPress }: { onPress?: () => void }) =>
     onPress ? (
       <Pressable className="mahjong-editable-title" onPress={onPress}>
         <Text>{tournament?.name}</Text>
       </Pressable>
     ) : (
       <Text>{tournament?.name}</Text>
-    )
-  );
+    );
   const handleDeleteTournament = async () => {
     //テーブルがあればエラーにする。
     const nomalTables = tables?.filter((t) => t.type === TableType.NORMAL);
@@ -279,7 +324,13 @@ const TournamentPage = () => {
         )}
       </View>
 
-      <MahjongSection className="justify-start" isLoading={isLoading}>
+      <MahjongSection
+        className="justify-start"
+        isLoading={isLoading}
+        isError={isError}
+        isRetrying={isRetrying}
+        onRetry={() => void retrySection()}
+      >
         <MahjongSectionHeader
           title={t('tournamentPage.sectionTournamentScore')}
           actions={

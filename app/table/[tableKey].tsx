@@ -58,20 +58,32 @@ export default function TablePage() {
   const { mutate: deleteGame } = useDeleteGame();
   //Query系フック設定
   const { tableKey } = useLocalSearchParams<{ tableKey: string }>();
-  const { table, isLoadingTable, loadTable } = useGetTable(tableKey ?? '', { enabled: !!tableKey });
-  const { players: tablePlayers, isLoadingPlayers: isLoadingTablePlayers } = useGetTablePlayer(
+  const { table, isLoadingTable, isErrorTable, isFetchingTable, loadTable } = useGetTable(
     tableKey ?? '',
     { enabled: !!tableKey },
   );
-  const { games, isLoadingGames } = useGetTableGames(tableKey ?? '', { enabled: !!tableKey });
+  const {
+    players: tablePlayers,
+    isLoadingPlayers: isLoadingTablePlayers,
+    isErrorPlayers: isErrorTablePlayers,
+    isFetchingPlayers: isFetchingTablePlayers,
+    loadPlayers: loadTablePlayers,
+  } = useGetTablePlayer(tableKey ?? '', { enabled: !!tableKey });
+  const { games, isLoadingGames, isErrorGames, isFetchingGames, loadGames } = useGetTableGames(
+    tableKey ?? '',
+    { enabled: !!tableKey },
+  );
 
   const isChipTable = table?.type === 'CHIP';
   const tournamentKey =
     table?.parent_tournament_link.edit_link ?? table?.parent_tournament_link.view_link ?? undefined;
-  const { players: tournamentPlayers, isLoadingPlayers } = useGetTournamentPlayers(
-    tournamentKey ?? '',
-    { enabled: !!tournamentKey },
-  );
+  const {
+    players: tournamentPlayers,
+    isLoadingPlayers,
+    isErrorPlayers,
+    isFetchingPlayers,
+    loadPlayers: loadTournamentPlayers,
+  } = useGetTournamentPlayers(tournamentKey ?? '', { enabled: !!tournamentKey });
   const remainingPlayers = tournamentPlayers?.filter(
     (p) => !tablePlayers?.find((t) => t.id === p.id),
   );
@@ -87,15 +99,39 @@ export default function TablePage() {
   // Early retrurn
   // --- ① 不正URL対応 ---
   if (!tableKey) {
-    return <div>{t('tablePage.errorInvalidTableKey')}</div>;
+    return (
+      <MahjongContainer>
+        <Text>{t('tablePage.errorInvalidTableKey')}</Text>
+      </MahjongContainer>
+    );
   }
   const handleTableNameChange = (newTitle: string) => {
     updateTable({ tableKey: tableKey!, tableUpdate: { name: newTitle } });
   };
   // --- ④ データが存在しない ---
-  if (!table && !isLoadingTable) {
-    return <div>{t('tablePage.errorTableNotFound')}</div>;
+  if (!table && !isLoadingTable && !isErrorTable) {
+    return (
+      <MahjongContainer>
+        <Text>{t('tablePage.errorTableNotFound')}</Text>
+      </MahjongContainer>
+    );
   }
+
+  const isSectionError =
+    isErrorTable || isErrorTablePlayers || isErrorGames || (!!tournamentKey && isErrorPlayers);
+
+  const isSectionRetrying =
+    isSectionError &&
+    (isFetchingTable ||
+      isFetchingTablePlayers ||
+      isFetchingGames ||
+      (!!tournamentKey && isFetchingPlayers));
+
+  const retrySection = async () => {
+    const requests: Promise<unknown>[] = [loadTable(), loadTablePlayers(), loadGames()];
+    if (tournamentKey) requests.push(loadTournamentPlayers());
+    await Promise.all(requests);
+  };
   const handleAddPlayer = (selectedPlayers: Player[]) => {
     const plyerIds: TablePlayerItem[] = selectedPlayers.map((p) => ({ player_id: p.id }));
     addTablePlayer({ tableKey: tableKey!, tablePlayersItem: plyerIds });
@@ -154,6 +190,9 @@ export default function TablePage() {
           isLoadingTablePlayers ||
           (!!tournamentKey && isLoadingPlayers)
         }
+        isError={isSectionError}
+        isRetrying={isSectionRetrying}
+        onRetry={() => void retrySection()}
       >
         <MahjongSectionHeader
           title={
