@@ -8,7 +8,7 @@ import ja from './ja.json';
 export type SupportedLanguage = 'ja' | 'en';
 
 export const toSupportedLanguage = (languageCode: string | null | undefined): SupportedLanguage => {
-  return languageCode === 'en' ? 'en' : 'ja';
+  return languageCode === 'ja' ? 'ja' : 'en';
 };
 
 i18n.use(initReactI18next).init({
@@ -18,7 +18,7 @@ i18n.use(initReactI18next).init({
     en: { translation: en },
   },
   lng: toSupportedLanguage(getLocales()[0]?.languageCode),
-  fallbackLng: 'ja',
+  fallbackLng: 'en',
   interpolation: {
     escapeValue: false,
   },

@@ -57,8 +57,8 @@ export const LanguageProvider = ({ children }: PropsWithChildren) => {
   }, [resolvedLanguage]);
 
   const setLanguageMode = useCallback(async (mode: LanguageMode) => {
-    setLanguageModeState(mode);
     await AsyncStorage.setItem(LANGUAGE_MODE_STORAGE_KEY, mode);
+    setLanguageModeState(mode);
   }, []);
 
   const contextValue = useMemo(

@@ -51,8 +51,8 @@ export const ThemeProvider = ({ children }: PropsWithChildren) => {
     themeMode === 'system' ? (systemColorScheme === 'dark' ? 'dark' : 'light') : themeMode;
 
   const setThemeMode = useCallback(async (mode: ThemeMode) => {
-    setThemeModeState(mode);
     await AsyncStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
+    setThemeModeState(mode);
   }, []);
 
   const contextValue = useMemo(
