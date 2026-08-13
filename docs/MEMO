@@ -41,3 +41,6 @@ adb devices
 
 MaestroによるE2Eテスト実行
 maestro test .maestro/smoke-test.yaml
+
+apkのバージョンなどの情報を取得
+~/Android/Sdk/build-tools/<バージョン>/aapt dump badging app.apk

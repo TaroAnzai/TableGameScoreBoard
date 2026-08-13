@@ -1,42 +1,141 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { AlertCircle } from 'lucide-react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
-import { useAlertDialog } from '@/components/common/AlertDialogProvider';
+import MahjongContainer from '@/components/MahjongContainer';
+import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { Text } from '@/components/ui/text';
 import { useCreateGroup } from '@/src/hooks/useGroups';
+
+type PageState = 'creating' | 'error';
+
+type ApiError = {
+  body?: {
+    errors?: { json?: { message?: string[] } };
+    message?: string;
+  };
+  message?: string;
+  statusText?: string;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (!error || typeof error !== 'object') return fallback;
+
+  const apiError = error as ApiError;
+  return (
+    apiError.body?.errors?.json?.message?.[0] ??
+    apiError.body?.message ??
+    apiError.statusText ??
+    apiError.message ??
+    fallback
+  );
+};
 
 const GroupCreatePage = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
-  const { mutateAsync: createGroupFromToken } = useCreateGroup();
-  const hasRun = useRef(false);
-  const { token } = useLocalSearchParams<{ token: string }>();
+  const navigation = useNavigation();
+  const { mutateAsync: createGroupFromToken } = useCreateGroup(undefined, false);
+  const { token } = useLocalSearchParams<{ token?: string | string[] }>();
+  const invitationToken = Array.isArray(token) ? token[0] : token;
+  const [pageState, setPageState] = useState<PageState>('creating');
+  const [errorMessage, setErrorMessage] = useState('');
+  const isSubmitting = useRef(false);
+  const isMounted = useRef(true);
+  const allowNavigation = useRef(false);
+
+  const createGroup = useCallback(async () => {
+    if (isSubmitting.current) return;
+
+    if (!invitationToken) {
+      setErrorMessage(t('groupCreatePage.invalidTokenDescription'));
+      setPageState('error');
+      return;
+    }
+
+    isSubmitting.current = true;
+    setErrorMessage('');
+    setPageState('creating');
+
+    try {
+      const result = await createGroupFromToken({ token: invitationToken });
+      if (isMounted.current) {
+        allowNavigation.current = true;
+        router.replace(`/group/${result.owner_link}`);
+      }
+    } catch (error) {
+      if (isMounted.current) {
+        setErrorMessage(getErrorMessage(error, t('groupCreatePage.unknownError')));
+        setPageState('error');
+      }
+    } finally {
+      isSubmitting.current = false;
+    }
+  }, [createGroupFromToken, invitationToken, t]);
+
   useEffect(() => {
-    if (hasRun.current) return; // ← 2回目はスキップ
-    hasRun.current = true;
+    void Promise.resolve().then(createGroup);
+  }, [createGroup]);
 
-    const createGroup = async () => {
-      if (!token) {
-        await alertDialog({
-          title: t('groupCreatePage.invalidTokenTitle'),
-          description: t('groupCreatePage.invalidTokenDescription'),
-          showCancelButton: false,
-        });
-        router.push('/');
-        return null;
-      }
-      try {
-        const result = await createGroupFromToken({ token: token });
-        router.push(`/group/${result.owner_link}`);
-      } catch {
-        router.push('/');
-      }
-    };
-    createGroup();
-  }, [alertDialog, createGroupFromToken, t, token]);
+  useEffect(
+    () => () => {
+      isMounted.current = false;
+    },
+    [],
+  );
 
-  return <Text>{t('groupCreatePage.creating')}</Text>;
+  useEffect(() => {
+    if (pageState !== 'creating') return;
+
+    return navigation.addListener('beforeRemove', (event) => {
+      if (!allowNavigation.current) {
+        event.preventDefault();
+      }
+    });
+  }, [navigation, pageState]);
+
+  if (pageState === 'creating') {
+    return (
+      <MahjongContainer>
+        <View className="flex-1 items-center justify-center gap-4 p-8">
+          <ActivityIndicator
+            accessibilityLabel={t('groupCreatePage.creating')}
+            size="large"
+          />
+          <Text className="text-center text-lg font-semibold text-on-surface">
+            {t('groupCreatePage.creating')}
+          </Text>
+          <Text className="text-center text-sm text-on-surface-variant">
+            {t('groupCreatePage.cannotGoBack')}
+          </Text>
+        </View>
+      </MahjongContainer>
+    );
+  }
+
+  return (
+    <MahjongContainer>
+      <View className="flex-1 items-center justify-center gap-5 p-8">
+        <Icon as={AlertCircle} className="text-destructive" size={48} />
+        <View className="gap-2">
+          <Text className="text-center text-xl font-bold text-on-surface">
+            {t('groupCreatePage.createErrorTitle')}
+          </Text>
+          <Text className="text-center text-on-surface-variant">{errorMessage}</Text>
+        </View>
+        <View className="w-full max-w-sm gap-3">
+          <Button disabled={!invitationToken} onPress={() => void createGroup()}>
+            <Text>{t('groupCreatePage.retry')}</Text>
+          </Button>
+          <Button variant="outline" onPress={() => router.replace('/')}>
+            <Text>{t('groupCreatePage.backHome')}</Text>
+          </Button>
+        </View>
+      </View>
+    </MahjongContainer>
+  );
 };
 
 export default GroupCreatePage;

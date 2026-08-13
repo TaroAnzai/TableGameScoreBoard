@@ -232,9 +232,14 @@
     "error": "送信に失敗しました。再度お試しください。"
   },
   "groupCreatePage": {
-    "creating": "グループを作成中...",
+    "creating": "グループを登録しています",
+    "cannotGoBack": "登録が完了するまで、この画面のままお待ちください。",
+    "createErrorTitle": "グループを登録できませんでした",
+    "unknownError": "通信状況を確認して、もう一度お試しください。",
+    "retry": "再試行",
+    "backHome": "ホームへ戻る",
     "invalidTokenTitle": "エラー",
-    "invalidTokenDescription": "無効なトークンです"
+    "invalidTokenDescription": "招待リンクが無効です。リンクを確認して、もう一度開いてください。"
   },
   "editTournamentModal": {
     "title": "大会情報を編集",

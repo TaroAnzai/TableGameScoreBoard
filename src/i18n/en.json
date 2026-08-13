@@ -233,9 +233,14 @@
     "error": "Failed to send your message. Please try again."
   },
   "groupCreatePage": {
-    "creating": "Creating group...",
+    "creating": "Registering group",
+    "cannotGoBack": "Please stay on this screen until registration is complete.",
+    "createErrorTitle": "Could not register the group",
+    "unknownError": "Check your connection and try again.",
+    "retry": "Retry",
+    "backHome": "Back to home",
     "invalidTokenTitle": "Error",
-    "invalidTokenDescription": "Invalid token"
+    "invalidTokenDescription": "This invitation link is invalid. Check the link and open it again."
   },
   "editTournamentModal": {
     "title": "Edit Tournament",

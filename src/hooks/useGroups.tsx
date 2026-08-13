@@ -92,7 +92,7 @@ export const useCreateGroupRequest = () => {
   });
 };
 
-export const useCreateGroup = (onAfterCreate?: () => void) => {
+export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = true) => {
   const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
   return useMutation({
@@ -110,6 +110,8 @@ export const useCreateGroup = (onAfterCreate?: () => void) => {
       onAfterCreate?.();
     },
     onError: (error: any) => {
+      if (!showErrorDialog) return;
+
       const message =
         error.body?.errors?.json?.message?.[0] ??
         error.body?.message ??

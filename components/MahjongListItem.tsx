@@ -54,7 +54,7 @@ export const MahjongListItem = ({
             {accessories.map((accessory, index) => (
               <View key={index} className="flex-row items-center">
                 {typeof accessory === 'string' || typeof accessory === 'number' ? (
-                  <Text className="text-sm text-foreground-muted">{accessory}</Text>
+                  <Text className="text-sm text-on-surface-variant">{accessory}</Text>
                 ) : (
                   accessory
                 )}
