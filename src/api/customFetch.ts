@@ -3,6 +3,11 @@
  * Orvalのmutator用fetchラッパー
  */
 import { API_BASE_URL } from '@/src/api/loadEnv';
+import {
+  getRequestTimeoutMs,
+  type RequestOptions,
+  withRequestTimeout,
+} from '@/src/api/requestTimeout';
 interface CustomFetchConfig {
   url: string;
   method: string;
@@ -17,7 +22,7 @@ interface CustomFetchConfig {
  */
 export const customFetch = async <T>(
   config: CustomFetchConfig,
-  options?: RequestInit,
+  options?: RequestOptions,
 ): Promise<T> => {
   // ✅ ベースURLを組み込む
   const fullUrl = `${API_BASE_URL}${config.url}`;
@@ -30,32 +35,45 @@ export const customFetch = async <T>(
     urlWithParams += `?${query}`;
   }
 
-  const response = await fetch(urlWithParams, {
-    method: config.method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(config.headers || {}),
-      ...(options?.headers || {}),
+  const {
+    signal: optionSignal,
+    timeoutMs = getRequestTimeoutMs(config.method),
+    ...requestOptions
+  } = options ?? {};
+
+  return withRequestTimeout({
+    url: urlWithParams,
+    timeoutMs,
+    signals: [config.signal, optionSignal],
+    request: async (signal) => {
+      const response = await fetch(urlWithParams, {
+        ...requestOptions,
+        method: config.method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(config.headers || {}),
+          ...(requestOptions.headers || {}),
+        },
+        body: config.data && config.method !== 'GET' ? JSON.stringify(config.data) : undefined,
+        signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorBody,
+          url: urlWithParams,
+        };
+      }
+
+      // JSON以外のレスポンスにも対応
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        return (await response.json()) as T;
+      }
+      return (await response.text()) as T;
     },
-    body: config.data && config.method !== 'GET' ? JSON.stringify(config.data) : undefined,
-    signal: config.signal,
-    ...options,
   });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw {
-      status: response.status,
-      statusText: response.statusText,
-      body: errorBody,
-      url: urlWithParams,
-    };
-  }
-
-  // JSON以外のレスポンスにも対応
-  const contentType = response.headers.get('content-type');
-  if (contentType?.includes('application/json')) {
-    return (await response.json()) as T;
-  }
-  return (await response.text()) as T;
 };
