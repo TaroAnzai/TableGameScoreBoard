@@ -11,6 +11,7 @@
     "loadError": "Unable to load data. Check your connection and try again.",
     "retry": "Retry",
     "retrying": "Retrying...",
+    "processing": "Processing...",
     "invalidEmail": "Enter a valid email address.",
     "ok": "OK",
     "save": "Save",
@@ -29,6 +30,10 @@
     "createdAt": "Created: {{date}}",
     "noRegisteredGroups": "Create a new group using the \"Create new group\" button.",
     "pendingGroups": "Pending Groups",
+    "pendingGroupsDescription": "Waiting for the link in the group creation email to be opened. After completing registration, tap the refresh button.",
+    "refreshPendingGroups": "Refresh status",
+    "refreshingPendingGroups": "Refreshing...",
+    "creatingGroup": "Creating...",
     "expiresAt": "Expires: {{date}}"
   },
   "settings": {

@@ -11,6 +11,7 @@
     "loadError": "データを取得できませんでした。通信状態を確認して再取得してください。",
     "retry": "再取得",
     "retrying": "再取得中...",
+    "processing": "処理中...",
     "invalidEmail": "正しい形式のメールアドレスを入力してください。",
     "ok": "OK",
     "save": "保存",
@@ -29,6 +30,10 @@
     "createdAt": "作成日: {{date}}",
     "noRegisteredGroups": "「新しいグループを作成」ボタンから新しいグループを作成してください。",
     "pendingGroups": "申請中のグループ",
+    "pendingGroupsDescription": "グループ作成用メール内のリンクが開かれるのを待っています。登録を完了した後、更新ボタンを押してください。",
+    "refreshPendingGroups": "申請状況を更新",
+    "refreshingPendingGroups": "更新中...",
+    "creatingGroup": "作成中...",
     "expiresAt": "有効期限: {{date}}"
   },
   "settings": {

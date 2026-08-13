@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, userEvent } from '@testing-library/react-native';
+import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import Index from '@/app/index';
@@ -7,6 +7,7 @@ const mockPush = jest.fn();
 const mockRefetch = jest.fn(() => Promise.resolve());
 const mockRefresh = jest.fn(() => Promise.resolve());
 const mockCreateGroup = jest.fn();
+const mockUseCreateGroupRequest = jest.fn();
 const mockUseGroupQueries = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -15,13 +16,40 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('@/src/hooks/useGroups', () => ({
   useGroupQueries: () => mockUseGroupQueries(),
-  useCreateGroupRequest: () => ({ mutate: mockCreateGroup }),
+  useCreateGroupRequest: () => mockUseCreateGroupRequest(),
 }));
 jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: jest.fn() }),
 }));
 jest.mock('@/components/SelectorModal', () => () => null);
-jest.mock('@/components/TextInputModal', () => ({ TextInputModal: () => null }));
+jest.mock('@/components/TextInputModal', () => {
+  const { ActivityIndicator, Pressable, Text, View } = jest.requireActual('react-native');
+  return {
+    TextInputModal: ({
+      open,
+      isPending,
+      pendingText,
+      onComfirm,
+    }: {
+      open: boolean;
+      isPending?: boolean;
+      pendingText?: string;
+      onComfirm: (name: string, email?: string) => void;
+    }) =>
+      open ? (
+        <View>
+          <Pressable
+            accessibilityLabel="グループ作成を決定"
+            disabled={isPending}
+            onPress={() => onComfirm('新規グループ', 'test@example.com')}
+          >
+            {isPending && <ActivityIndicator accessibilityLabel="グループ作成中" />}
+            <Text>{isPending ? pendingText : 'OK'}</Text>
+          </Pressable>
+        </View>
+      ) : null,
+  };
+});
 jest.mock('@/components/MahjongListItem', () => {
   const { Text } = jest.requireActual('react-native');
   return {
@@ -58,6 +86,11 @@ describe('ホームページ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseGroupQueries.mockReturnValue(defaultState);
+    mockUseCreateGroupRequest.mockReturnValue({
+      mutateAsync: mockCreateGroup,
+      isPending: false,
+    });
+    mockCreateGroup.mockResolvedValue(undefined);
   });
 
   it('正常取得したグループを表示して詳細へ遷移する', async () => {
@@ -123,5 +156,58 @@ describe('ホームページ', () => {
     expect(screen.getByText('再取得中...')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: /再取得中/ }));
     expect(mockRefetch).not.toHaveBeenCalled();
+  });
+
+  it('グループ作成APIが成功するまで作成モーダルを閉じない', async () => {
+    let resolveCreate: (() => void) | undefined;
+    mockCreateGroup.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (resolveCreate = resolve)),
+    );
+    await render(<Index />);
+
+    const user = userEvent.setup();
+    await user.press(screen.getByText('新しいグループを作成'));
+    await user.press(screen.getByLabelText('グループ作成を決定'));
+
+    expect(screen.getByLabelText('グループ作成を決定')).toBeTruthy();
+    resolveCreate?.();
+    await waitFor(() =>
+      expect(screen.queryByLabelText('グループ作成を決定')).toBeNull(),
+    );
+  });
+
+  it('グループ作成中は決定ボタンを無効化してスピナーを表示する', async () => {
+    mockUseCreateGroupRequest.mockReturnValue({
+      mutateAsync: mockCreateGroup,
+      isPending: true,
+    });
+    await render(<Index />);
+
+    const user = userEvent.setup();
+    await user.press(screen.getByText('新しいグループを作成'));
+
+    expect(screen.getByText('作成中...')).toBeTruthy();
+    expect(screen.getByLabelText('グループ作成中')).toBeTruthy();
+    expect(screen.getByLabelText('グループ作成を決定')).toBeDisabled();
+  });
+
+  it('保留中グループに説明と更新ボタンを表示する', async () => {
+    mockUseGroupQueries.mockReturnValue({
+      ...defaultState,
+      pendingGroups: [
+        {
+          token: 'pending-token',
+          groupName: '申請中グループ',
+          expiresAt: new Date('2030-01-01T00:00:00Z'),
+        },
+      ],
+    });
+    await render(<Index />);
+
+    expect(
+      screen.getByText(/グループ作成用メール内のリンクが開かれるのを待っています/),
+    ).toBeTruthy();
+    fireEvent.press(screen.getByText('申請状況を更新'));
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
   });
 });

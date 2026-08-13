@@ -3,7 +3,15 @@ import { router, useFocusEffect } from 'expo-router';
 import { Settings, SquareMinus } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, AppStateStatus, Keyboard, RefreshControl, ScrollView, View } from 'react-native';
+import {
+  ActivityIndicator,
+  AppState,
+  AppStateStatus,
+  Keyboard,
+  RefreshControl,
+  ScrollView,
+  View,
+} from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -27,7 +35,7 @@ export default function Index() {
   const { t } = useTranslation();
   const { groups, pendingGroups, isLoading, isFetching, isError, isRefreshing, refetch, refresh } =
     useGroupQueries();
-  const { mutate: createGroup } = useCreateGroupRequest();
+  const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroupRequest();
   const { alertDialog } = useAlertDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRemoveGroupModalOpen, setIsRemoveGroupModalOpen] = useState(false);
@@ -77,15 +85,19 @@ export default function Index() {
   const handleCreateGroup = async (groupName: string, email: string) => {
     if (!groupName || !email) return;
     Keyboard.dismiss();
-    setIsModalOpen(false);
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const recaptchaToken = ''; // TODO: Implement reCAPTCHA and get the token
-    createGroup({
-      name: groupName,
-      email: email,
-      timezone: timezone,
-      recaptcha_token: recaptchaToken,
-    });
+    try {
+      await createGroup({
+        name: groupName,
+        email: email,
+        timezone: timezone,
+        recaptcha_token: recaptchaToken,
+      });
+      setIsModalOpen(false);
+    } catch {
+      // The mutation hook displays the API error dialog. Keep the form open for retrying.
+    }
   };
   const handleEnterGroup = (group: Group) => {
     const key = group.owner_link ?? group.edit_link ?? group.view_link;
@@ -213,6 +225,22 @@ export default function Index() {
             {pendingGroups.length > 0 && (
               <View className="gap-3 align-center">
                 <Text className="text-lg font-semibold">{t('welcomPage.pendingGroups')}</Text>
+                <Text className="text-sm text-muted-foreground">
+                  {t('welcomPage.pendingGroupsDescription')}
+                </Text>
+                <Button
+                  className="self-start"
+                  variant="outline"
+                  disabled={isRefreshing || isFetching}
+                  onPress={() => void refresh()}
+                >
+                  {(isRefreshing || isFetching) && <ActivityIndicator />}
+                  <Text>
+                    {isRefreshing || isFetching
+                      ? t('welcomPage.refreshingPendingGroups')
+                      : t('welcomPage.refreshPendingGroups')}
+                  </Text>
+                </Button>
                 {pendingGroups.map((group) => (
                   <MahjongListItem
                     key={group.token}
@@ -242,11 +270,10 @@ export default function Index() {
         title={t('welcomPage.CreateNewGroup')}
         discription={t('welcomPage.EnterGroupName')}
         InputLabel={t('welcomPage.GroupName')}
-        onComfirm={(inputText, inputText2) => {
-          handleCreateGroup(inputText, inputText2 ?? '');
-          setIsModalOpen(false);
-        }}
+        onComfirm={(inputText, inputText2) => void handleCreateGroup(inputText, inputText2 ?? '')}
         onClose={() => setIsModalOpen(false)}
+        isPending={isCreatingGroup}
+        pendingText={t('welcomPage.creatingGroup')}
         twoInput={true}
         twoInputLabel={t('welcomPage.Email')}
         twoInputType="email"

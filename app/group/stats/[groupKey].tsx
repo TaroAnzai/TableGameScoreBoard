@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
 
 import MahjongContainer from '@/components/MahjongContainer';
 import MahjongSection from '@/components/MahjongSection';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import { PlayerStatsTable } from '@/components/PlayerStatsTable';
+import { Text } from '@/components/ui/text';
 import { useGetPlayerStats } from '@/src/hooks/useScore';
 
 const GroupPlayerStatsPage = () => {

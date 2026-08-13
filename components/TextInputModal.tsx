@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +28,8 @@ interface TextInputModalProps {
   twoInputLabel?: string;
   twoValue?: string;
   twoInputType?: 'text' | 'email' | 'password' | 'number';
+  isPending?: boolean;
+  pendingText?: string;
 }
 
 const getKeyboardType = (type: TextInputModalProps['inputType']) => {
@@ -51,6 +53,8 @@ export const TextInputModal = ({
   twoInputLabel = '',
   twoValue = '',
   twoInputType = 'text',
+  isPending = false,
+  pendingText,
 }: TextInputModalProps) => {
   const { t } = useTranslation();
 
@@ -90,7 +94,7 @@ export const TextInputModal = ({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose();
+        if (!nextOpen && !isPending) onClose();
       }}
     >
       <DialogContent
@@ -147,11 +151,21 @@ export const TextInputModal = ({
           </View>
         </View>
         <DialogFooter>
-          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            variant="outline"
+            disabled={isPending}
+            onPress={onClose}
+          >
             <Text>{t('Common.Cancel')}</Text>
           </Button>
-          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={handleConfirm}>
-            <Text>{t('Common.ok')}</Text>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            disabled={isPending}
+            onPress={handleConfirm}
+          >
+            {isPending && <ActivityIndicator color="white" />}
+            <Text>{isPending ? (pendingText ?? t('Common.processing')) : t('Common.ok')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>
