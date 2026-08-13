@@ -28,6 +28,7 @@ interface PageTitleBarProps {
   onTitleClick?: () => void;
   onTitleChange?: (newTitle: string) => void;
   parentUrl?: string | null;
+  onParentPress?: () => void;
   showBackButton?: boolean;
 }
 interface shareDataType {
@@ -43,6 +44,7 @@ export default function PageTitleBar({
   onTitleClick,
   onTitleChange,
   parentUrl,
+  onParentPress,
   showBackButton = false,
 }: PageTitleBarProps) {
   const router = useRouter();
@@ -99,7 +101,13 @@ export default function PageTitleBar({
             className="h-12 w-12 rounded-full p-0"
             size="icon"
             variant="ghost"
-            onPress={() => router.push(parentUrl as any)}
+            onPress={() => {
+              if (onParentPress) {
+                onParentPress();
+                return;
+              }
+              router.push(parentUrl as any);
+            }}
           >
             <Icon as={ChevronLeft} className="text-on-surface" size={24} />
           </Button>

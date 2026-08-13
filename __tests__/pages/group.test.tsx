@@ -1,9 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import GroupPage from '@/app/group/[groupKey]';
 
 const mockPush = jest.fn();
+const mockDispatch = jest.fn();
+const mockAddListener = jest.fn(
+  (_event: string, _listener: (event: NavigationEvent) => void) => jest.fn(),
+);
+const mockAlertDialog = jest.fn(() => Promise.resolve(false));
+const mockGetGroupKeys = jest.fn(() => Promise.resolve(['group-key']));
+const mockAddGroupKey = jest.fn((_groupKey: string) => Promise.resolve());
 const mockRefetchGroup = jest.fn(() => Promise.resolve());
 const mockLoadPlayers = jest.fn(() => Promise.resolve());
 const mockLoadTournaments = jest.fn(() => Promise.resolve());
@@ -11,9 +18,15 @@ const mockUseGroup = jest.fn();
 const mockUsePlayers = jest.fn();
 const mockUseTournaments = jest.fn();
 
+type NavigationEvent = {
+  data: { action: { type: string } };
+  preventDefault: () => void;
+};
+
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
   useLocalSearchParams: () => ({ groupKey: 'group-key' }),
+  useNavigation: () => ({ addListener: mockAddListener, dispatch: mockDispatch }),
 }));
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   useGetApiGroupsGroupKey: () => mockUseGroup(),
@@ -36,16 +49,29 @@ jest.mock('@/src/hooks/useTables', () => ({
 }));
 jest.mock('@/src/storage/appStorage', () => ({
   appStorage: {
-    getGroupKeys: jest.fn(() => Promise.resolve(['group-key'])),
-    addGroupKey: jest.fn(),
+    getGroupKeys: () => mockGetGroupKeys(),
+    addGroupKey: (groupKey: string) => mockAddGroupKey(groupKey),
   },
 }));
 jest.mock('@/components/common/AlertDialogProvider', () => ({
-  useAlertDialog: () => ({ alertDialog: jest.fn() }),
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
-  const { Text } = jest.requireActual('react-native');
-  return ({ title }: { title: string }) => <Text>{title}</Text>;
+  const { Pressable, Text, View } = jest.requireActual('react-native');
+  return function MockPageTitleBar({
+    title,
+    onParentPress,
+  }: {
+    title: string;
+    onParentPress?: () => void;
+  }) {
+    return (
+      <View>
+        <Text>{title}</Text>
+        <Pressable accessibilityLabel="親ページに戻る" onPress={onParentPress} />
+      </View>
+    );
+  };
 });
 jest.mock('@/components/SelectorModal', () => () => null);
 jest.mock('@/components/TextInputModal', () => ({ TextInputModal: () => null }));
@@ -101,6 +127,8 @@ describe('グループ詳細ページ', () => {
     mockUseGroup.mockReturnValue(groupState);
     mockUsePlayers.mockReturnValue(playersState);
     mockUseTournaments.mockReturnValue(tournamentsState);
+    mockGetGroupKeys.mockResolvedValue(['group-key']);
+    mockAlertDialog.mockResolvedValue(false);
   });
 
   it('正常時は大会とメンバーを表示し、大会へ遷移できる', async () => {
@@ -179,5 +207,77 @@ describe('グループ詳細ページ', () => {
 
     expect(screen.queryByLabelText('大会新規作成')).toBeNull();
     expect(screen.queryByLabelText('グループメンバー追加')).toBeNull();
+  });
+
+  it('未登録のまま画面を離れる場合は警告し、キャンセルすると画面に留まる', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    await render(<GroupPage />);
+    expect(await screen.findByText('アプリに登録')).toBeTruthy();
+
+    const listener = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const navigationEvent: NavigationEvent = {
+      data: { action: { type: 'GO_BACK' } },
+      preventDefault: jest.fn(),
+    };
+    expect(listener).toBeDefined();
+    listener?.(navigationEvent);
+
+    expect(navigationEvent.preventDefault).toHaveBeenCalledTimes(1);
+    expect(mockAlertDialog).toHaveBeenCalledWith({
+      title: 'グループが未登録です',
+      description:
+        'このグループはアプリに登録されていません。このまま画面を離れますか？\n再度開くには招待URLが必要です。',
+      confirmText: '登録せずに離れる',
+      cancelText: 'この画面に戻る',
+      showCancelButton: true,
+    });
+    expect(mockDispatch).not.toHaveBeenCalled();
+  });
+
+  it('未登録のまま統計画面へ進もうとした場合も警告する', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    await render(<GroupPage />);
+    expect(await screen.findByText('アプリに登録')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('成績'));
+
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
+    expect(mockPush).not.toHaveBeenCalledWith('/group/stats/group-key');
+  });
+
+  it('未登録のまま左上のホームボタンを押した場合も警告する', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    await render(<GroupPage />);
+    expect(await screen.findByText('アプリに登録')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText('親ページに戻る'));
+
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
+    expect(mockPush).not.toHaveBeenCalledWith('/');
+  });
+
+  it('未登録警告で離れることを選ぶと統計画面へ遷移する', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    mockAlertDialog.mockResolvedValue(true);
+    await render(<GroupPage />);
+    expect(await screen.findByText('アプリに登録')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('成績'));
+
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/group/stats/group-key'));
+  });
+
+  it('未登録警告で離れることを選ぶと元の画面遷移を実行する', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    mockAlertDialog.mockResolvedValue(true);
+    await render(<GroupPage />);
+    expect(await screen.findByText('アプリに登録')).toBeTruthy();
+
+    const listener = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const action = { type: 'GO_BACK' };
+    listener?.({ data: { action }, preventDefault: jest.fn() });
+
+    await screen.findByText('アプリに登録');
+    expect(mockDispatch).toHaveBeenCalledWith(action);
   });
 });

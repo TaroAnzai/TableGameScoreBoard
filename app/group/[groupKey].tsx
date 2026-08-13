@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { SquareMinus, SquarePlus, UserMinus, UserPlus } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
@@ -33,6 +33,7 @@ import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 const GroupPage = () => {
   const { t } = useTranslation();
   const { groupKey } = useLocalSearchParams<{ groupKey: string }>();
+  const navigation = useNavigation();
   const { alertDialog } = useAlertDialog();
 
   const { players, isLoadingPlayers, isErrorPlayers, isFetchingPlayers, loadPlayers } =
@@ -65,6 +66,8 @@ const GroupPage = () => {
   const [isCreatePlayerModalOpen, setIsCreatePlayerModalOpen] = useState(false);
   const [isGroupRegistered, setIsGroupRegistered] = useState<boolean | null>(null);
   const [value, setValue] = useState('tournament');
+  const allowNavigation = useRef(false);
+  const isLeaveDialogOpen = useRef(false);
   const accessLevel = getAccessLevelstring(group?.group_links);
 
   useEffect(() => {
@@ -81,6 +84,46 @@ const GroupPage = () => {
     };
   }, [groupKey]);
 
+  const navigateAway = useCallback(
+    async (navigate: () => void) => {
+      if (isGroupRegistered !== false || allowNavigation.current) {
+        navigate();
+        return;
+      }
+
+      if (isLeaveDialogOpen.current) return;
+      isLeaveDialogOpen.current = true;
+
+      try {
+        const confirmed = await alertDialog({
+          title: t('groupPage.unregisteredLeaveTitle'),
+          description: t('groupPage.unregisteredLeaveDescription'),
+          confirmText: t('groupPage.unregisteredLeaveConfirm'),
+          cancelText: t('groupPage.unregisteredLeaveCancel'),
+          showCancelButton: true,
+        });
+        if (!confirmed) return;
+
+        allowNavigation.current = true;
+        navigate();
+      } finally {
+        isLeaveDialogOpen.current = false;
+      }
+    },
+    [alertDialog, isGroupRegistered, t],
+  );
+
+  useEffect(() => {
+    if (isGroupRegistered !== false) return;
+
+    return navigation.addListener('beforeRemove', (event) => {
+      if (allowNavigation.current) return;
+
+      event.preventDefault();
+      void navigateAway(() => navigation.dispatch(event.data.action));
+    });
+  }, [isGroupRegistered, navigateAway, navigation]);
+
   const handleTitleChange = (newTitle: string) => {
     if (!newTitle) return;
     if (!groupKey) return;
@@ -95,6 +138,7 @@ const GroupPage = () => {
     });
     if (!res) return;
     await appStorage.addGroupKey(groupKey);
+    allowNavigation.current = true;
     setIsGroupRegistered(true);
     router.push('/');
   };
@@ -119,10 +163,12 @@ const GroupPage = () => {
       tableCreate: { name: t('Common.chip'), type: 'CHIP' },
     });
     setIsCreateTournamentModalOpen(false);
-    router.push({
-      pathname: '/tournament/[tournamentKey]',
-      params: { tournamentKey: data.edit_link, parentGroupKey: groupKey },
-    });
+    await navigateAway(() =>
+      router.push({
+        pathname: '/tournament/[tournamentKey]',
+        params: { tournamentKey: data.edit_link, parentGroupKey: groupKey },
+      }),
+    );
   };
 
   const handleDeleteTournament = async (tournament: Tournament) => {
@@ -153,6 +199,7 @@ const GroupPage = () => {
         shareLinks={group ? group.group_links : []}
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
         parentUrl="/"
+        onParentPress={() => void navigateAway(() => router.push('/'))}
       />
 
       <Tabs value={value} onValueChange={setValue} className="min-h-0 w-full flex-1">
@@ -220,10 +267,12 @@ const GroupPage = () => {
                     ]}
                     onPress={() => {
                       const tournament_key = tournament.edit_link ?? tournament.view_link;
-                      router.push({
-                        pathname: '/tournament/[tournamentKey]',
-                        params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
-                      });
+                      void navigateAway(() =>
+                        router.push({
+                          pathname: '/tournament/[tournamentKey]',
+                          params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
+                        }),
+                      );
                     }}
                   />
                 ))}
@@ -286,7 +335,10 @@ const GroupPage = () => {
               <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
             </Button>
           )}
-          <Button onPress={() => router.push(`/group/stats/${groupKey}`)} className="w-full">
+          <Button
+            onPress={() => void navigateAway(() => router.push(`/group/stats/${groupKey}`))}
+            className="w-full"
+          >
             <Text>{t('groupPage.buttonStats')}</Text>
           </Button>
         </ButtonGridSection>
@@ -319,10 +371,12 @@ const GroupPage = () => {
           onSelect={(tournament) => {
             if (tournament) {
               const tournament_key = tournament.edit_link ?? tournament.view_link;
-              router.push({
-                pathname: '/tournament/[tournamentKey]',
-                params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
-              });
+              void navigateAway(() =>
+                router.push({
+                  pathname: '/tournament/[tournamentKey]',
+                  params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
+                }),
+              );
             }
             setShowTournamentModal(false);
           }}

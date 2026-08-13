@@ -93,6 +93,10 @@
 
     "dialogAddGroupTitle": "登録グループ追加",
     "dialogAddGroupDescription": "登録グループに {{groupName}} を追加してよいですか？\n\nアプリに登録されます。\n機種変更した場合は引き継がれません。引継ぎしたい場合はURLを保存してください。",
+    "unregisteredLeaveTitle": "グループが未登録です",
+    "unregisteredLeaveDescription": "このグループはアプリに登録されていません。このまま画面を離れますか？\n再度開くには招待URLが必要です。",
+    "unregisteredLeaveConfirm": "登録せずに離れる",
+    "unregisteredLeaveCancel": "この画面に戻る",
 
     "dialogRemoveGroupTitle": "登録グループから削除",
     "dialogRemoveGroupDescription": "登録グループから {{groupName}} を削除してよいですか？\n(グループデータ自体は削除されません。)",

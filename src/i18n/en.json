@@ -93,6 +93,10 @@
 
     "dialogAddGroupTitle": "Add Group to Browser",
     "dialogAddGroupDescription": "Do you want to add {{groupName}} to your registered groups?\n\nIt will be saved in your browser.\nIf you change devices or browsers, it will not be transferred. Please save the URL if you want to keep access.",
+    "unregisteredLeaveTitle": "Group is not registered",
+    "unregisteredLeaveDescription": "This group is not registered in the app. Do you want to leave this screen?\nYou will need the invitation URL to open it again.",
+    "unregisteredLeaveConfirm": "Leave without registering",
+    "unregisteredLeaveCancel": "Stay on this screen",
 
     "dialogRemoveGroupTitle": "Remove Group from Browser",
     "dialogRemoveGroupDescription": "Do you want to remove {{groupName}} from your registered groups?\n(The group data itself will not be deleted.)",
