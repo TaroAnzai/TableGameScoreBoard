@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import GroupPage from '@/app/group/[groupKey]';
@@ -17,6 +17,13 @@ const mockLoadTournaments = jest.fn(() => Promise.resolve());
 const mockUseGroup = jest.fn();
 const mockUsePlayers = jest.fn();
 const mockUseTournaments = jest.fn();
+const mockCreatePlayer = jest.fn();
+const mockDeletePlayer = jest.fn();
+const mockCreateTournament = jest.fn();
+const mockDeleteTournament = jest.fn();
+const mockCreateChipTable = jest.fn();
+const mockPlayerMutations = jest.fn();
+const mockTournamentMutations = jest.fn();
 
 type NavigationEvent = {
   data: { action: { type: string } };
@@ -33,19 +40,19 @@ jest.mock('@/src/api/generated/mahjongApi', () => ({
 }));
 jest.mock('@/src/hooks/usePlayers', () => ({
   useGetPlayer: () => mockUsePlayers(),
-  useCreatePlayer: () => ({ mutate: jest.fn() }),
-  useDeletePlayer: () => ({ mutate: jest.fn() }),
+  useCreatePlayer: () => mockPlayerMutations().create,
+  useDeletePlayer: () => mockPlayerMutations().delete,
 }));
 jest.mock('@/src/hooks/useTournaments', () => ({
   useGetTournaments: () => mockUseTournaments(),
-  useCreateTournament: () => ({ mutateAsync: jest.fn() }),
-  useDeleteTournament: () => ({ mutateAsync: jest.fn() }),
+  useCreateTournament: () => mockTournamentMutations().create,
+  useDeleteTournament: () => mockTournamentMutations().delete,
 }));
 jest.mock('@/src/hooks/useGroups', () => ({
   useUpdateGroup: () => ({ mutate: jest.fn() }),
 }));
 jest.mock('@/src/hooks/useTables', () => ({
-  useCreateTable: () => ({ mutateAsync: jest.fn() }),
+  useCreateTable: () => ({ mutateAsync: mockCreateChipTable, isPending: false }),
 }));
 jest.mock('@/src/storage/appStorage', () => ({
   appStorage: {
@@ -73,7 +80,34 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
     );
   };
 });
-jest.mock('@/components/SelectorModal', () => () => null);
+jest.mock('@/components/SelectorModal', () => {
+  const { Pressable, Text, View } = jest.requireActual('react-native');
+  return function MockSelectorModal({
+    open,
+    items,
+    onSelect,
+    pendingText,
+  }: {
+    open: boolean;
+    items?: { id: string | number; name: string }[];
+    onSelect: (item: { id: string | number; name: string }) => void;
+    pendingText?: string;
+  }) {
+    if (!open) return null;
+    return (
+      <View accessibilityLabel="選択モーダル">
+        {pendingText && <Text>{pendingText}</Text>}
+        {items?.map((item) => (
+          <Pressable
+            key={item.id}
+            accessibilityLabel={`${item.name}を選択`}
+            onPress={() => onSelect(item)}
+          />
+        ))}
+      </View>
+    );
+  };
+});
 jest.mock('@/components/TextInputModal', () => ({ TextInputModal: () => null }));
 jest.mock('@/components/MahjongListItem', () => {
   const { Text } = jest.requireActual('react-native');
@@ -127,6 +161,19 @@ describe('グループ詳細ページ', () => {
     mockUseGroup.mockReturnValue(groupState);
     mockUsePlayers.mockReturnValue(playersState);
     mockUseTournaments.mockReturnValue(tournamentsState);
+    mockPlayerMutations.mockReturnValue({
+      create: { mutateAsync: mockCreatePlayer, isPending: false },
+      delete: { mutateAsync: mockDeletePlayer, isPending: false },
+    });
+    mockTournamentMutations.mockReturnValue({
+      create: { mutateAsync: mockCreateTournament, isPending: false },
+      delete: { mutateAsync: mockDeleteTournament, isPending: false },
+    });
+    mockCreatePlayer.mockResolvedValue(undefined);
+    mockDeletePlayer.mockResolvedValue(undefined);
+    mockCreateTournament.mockResolvedValue({ edit_link: 'new-tournament-key' });
+    mockDeleteTournament.mockResolvedValue(undefined);
+    mockCreateChipTable.mockResolvedValue(undefined);
     mockGetGroupKeys.mockResolvedValue(['group-key']);
     mockAlertDialog.mockResolvedValue(false);
   });
@@ -207,6 +254,39 @@ describe('グループ詳細ページ', () => {
 
     expect(screen.queryByLabelText('大会新規作成')).toBeNull();
     expect(screen.queryByLabelText('グループメンバー追加')).toBeNull();
+  });
+
+  it('作成・削除処理中は対応する操作ボタンを無効化する', async () => {
+    mockPlayerMutations.mockReturnValue({
+      create: { mutateAsync: mockCreatePlayer, isPending: true },
+      delete: { mutateAsync: mockDeletePlayer, isPending: true },
+    });
+    mockTournamentMutations.mockReturnValue({
+      create: { mutateAsync: mockCreateTournament, isPending: true },
+      delete: { mutateAsync: mockDeleteTournament, isPending: true },
+    });
+    await render(<GroupPage />);
+
+    expect(screen.getByLabelText('大会新規作成')).toBeDisabled();
+    expect(screen.getByLabelText('削除する大会を選択')).toBeDisabled();
+    expect(screen.getByLabelText('グループメンバー追加')).toBeDisabled();
+    expect(screen.getByLabelText('削除するメンバーを選択')).toBeDisabled();
+  });
+
+  it('メンバー削除APIが成功するまで選択モーダルを閉じない', async () => {
+    let resolveDelete: (() => void) | undefined;
+    mockDeletePlayer.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (resolveDelete = resolve)),
+    );
+    await render(<GroupPage />);
+
+    const user = userEvent.setup();
+    await user.press(screen.getByLabelText('削除するメンバーを選択'));
+    await user.press(screen.getByLabelText('プレイヤー1を選択'));
+
+    expect(screen.getByLabelText('選択モーダル')).toBeTruthy();
+    resolveDelete?.();
+    await waitFor(() => expect(screen.queryByLabelText('選択モーダル')).toBeNull());
   });
 
   it('未登録のまま画面を離れる場合は警告し、キャンセルすると画面に留まる', async () => {

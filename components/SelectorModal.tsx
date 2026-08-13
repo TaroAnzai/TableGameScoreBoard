@@ -1,7 +1,7 @@
 // src/components/SelectorModal.tsx
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 import { radius } from '@/src/lib/theme';
 
@@ -29,6 +29,8 @@ interface SelectorModalProps<T extends SelectorItem> {
   onClose: () => void;
   plusDisplayItem?: keyof T | null;
   emptyMessage?: string;
+  isPending?: boolean;
+  pendingText?: string;
 }
 
 const SelectorModal = <T extends SelectorItem>({
@@ -39,17 +41,26 @@ const SelectorModal = <T extends SelectorItem>({
   onClose,
   plusDisplayItem = null,
   emptyMessage,
+  isPending = false,
+  pendingText,
 }: SelectorModalProps<T>) => {
   const { t } = useTranslation();
   const msg = emptyMessage ?? t('Common.emptyMessage');
 
   return (
-    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+    <Dialog open={open} onOpenChange={(value) => !value && !isPending && onClose()}>
       <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t('Common.Select')}</DialogDescription>
         </DialogHeader>
+
+        {isPending && (
+          <View className="flex-row items-center justify-center gap-2 py-2">
+            <ActivityIndicator accessibilityLabel={pendingText ?? t('Common.processing')} />
+            <Text>{pendingText ?? t('Common.processing')}</Text>
+          </View>
+        )}
 
         {!items || items.length === 0 ? (
           <View className="py-4">
@@ -61,6 +72,7 @@ const SelectorModal = <T extends SelectorItem>({
               {items.map((item) => (
                 <Button
                   key={String(item.id)}
+                  disabled={isPending}
                   onPress={() => onSelect(item)}
                   className="h-auto min-h-14 w-full items-start rounded-xl border border-outline bg-surface px-4 py-3"
                   variant="ghost"
@@ -79,7 +91,11 @@ const SelectorModal = <T extends SelectorItem>({
         )}
 
         <DialogFooter>
-          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={onClose}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            disabled={isPending}
+            onPress={onClose}
+          >
             <Text>{t('Common.close')}</Text>
           </Button>
         </DialogFooter>

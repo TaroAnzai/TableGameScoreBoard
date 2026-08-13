@@ -53,14 +53,13 @@ const GroupPage = () => {
     refetch: refetchGroup,
   } = useGetApiGroupsGroupKey(groupKey);
   const { mutate: updateGroup } = useUpdateGroup(refetchGroup);
-  const { mutate: createPlayer } = useCreatePlayer(loadPlayers);
-  const { mutate: deletePlayer } = useDeletePlayer(loadPlayers);
-  const { mutateAsync: createTournament } = useCreateTournament();
-  const { mutateAsync: deleteTournament } = useDeleteTournament();
-  const { mutateAsync: createChipTable } = useCreateTable();
+  const { mutateAsync: createPlayer, isPending: isCreatingPlayer } = useCreatePlayer(loadPlayers);
+  const { mutateAsync: deletePlayer, isPending: isDeletingPlayer } = useDeletePlayer(loadPlayers);
+  const { mutateAsync: createTournament, isPending: isCreatingTournament } = useCreateTournament();
+  const { mutateAsync: deleteTournament, isPending: isDeletingTournament } = useDeleteTournament();
+  const { mutateAsync: createChipTable, isPending: isCreatingChipTable } = useCreateTable();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showTournamentModal, setShowTournamentModal] = useState(false);
   const [showDeleteTournamentModal, setShowDeleteTournamentModal] = useState(false);
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isCreatePlayerModalOpen, setIsCreatePlayerModalOpen] = useState(false);
@@ -142,37 +141,49 @@ const GroupPage = () => {
     setIsGroupRegistered(true);
     router.push('/');
   };
-  const handleAddPlayer = (name: string) => {
+  const handleAddPlayer = async (name: string) => {
     if (!name) return;
-    createPlayer({ groupKey: groupKey, player: { name: name } });
-    setIsCreatePlayerModalOpen(false);
+    try {
+      await createPlayer({ groupKey: groupKey, player: { name: name } });
+      setIsCreatePlayerModalOpen(false);
+    } catch {
+      // The mutation hook displays the API error dialog. Keep the form open for retrying.
+    }
   };
-  const handleDeletePlayer = (player: Player) => {
+  const handleDeletePlayer = async (player: Player) => {
     if (!player || player.id === undefined) return;
-    deletePlayer({ groupKey: groupKey, playerId: player.id });
+    try {
+      await deletePlayer({ groupKey: groupKey, playerId: player.id });
+      setShowDeleteModal(false);
+    } catch {
+      // The mutation hook displays the API error dialog. Keep the selector open for retrying.
+    }
   };
 
   const handleCreateTournament = async (name: string) => {
     if (!name) return;
-    const payload = { groupKey: groupKey, tournament: { name: name } };
-    const data = await createTournament(payload);
-    //CHIPテーブルを作成
-    if (!data.edit_link) return;
-    await createChipTable({
-      tournamentKey: data.edit_link,
-      tableCreate: { name: t('Common.chip'), type: 'CHIP' },
-    });
-    setIsCreateTournamentModalOpen(false);
-    await navigateAway(() =>
-      router.push({
-        pathname: '/tournament/[tournamentKey]',
-        params: { tournamentKey: data.edit_link, parentGroupKey: groupKey },
-      }),
-    );
+    try {
+      const payload = { groupKey: groupKey, tournament: { name: name } };
+      const data = await createTournament(payload);
+      //CHIPテーブルを作成
+      if (!data.edit_link) return;
+      await createChipTable({
+        tournamentKey: data.edit_link,
+        tableCreate: { name: t('Common.chip'), type: 'CHIP' },
+      });
+      setIsCreateTournamentModalOpen(false);
+      await navigateAway(() =>
+        router.push({
+          pathname: '/tournament/[tournamentKey]',
+          params: { tournamentKey: data.edit_link, parentGroupKey: groupKey },
+        }),
+      );
+    } catch {
+      // The mutation hooks display the API error dialog. Keep the form open for retrying.
+    }
   };
 
   const handleDeleteTournament = async (tournament: Tournament) => {
-    setShowDeleteTournamentModal(false);
     const tournamentKey = tournament.edit_link ?? tournament.owner_link;
     if (!tournamentKey) return;
 
@@ -187,6 +198,7 @@ const GroupPage = () => {
     try {
       await deleteTournament({ tournamentKey });
       await loadTournaments();
+      setShowDeleteTournamentModal(false);
     } catch {
       // The mutation hook displays the API error dialog.
     }
@@ -230,6 +242,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
                       className="h-10 w-10 rounded-full p-0"
+                      disabled={isCreatingTournament || isCreatingChipTable}
                       size="icon"
                       variant="ghost"
                       onPress={() => setIsCreateTournamentModalOpen(true)}
@@ -239,6 +252,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
                       className="h-10 w-10 rounded-full p-0"
+                      disabled={isDeletingTournament}
                       size="icon"
                       variant="ghost"
                       onPress={() => setShowDeleteTournamentModal(true)}
@@ -297,6 +311,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalCreatePlayerTitle')}
                       className="h-10 w-10 rounded-full p-0"
+                      disabled={isCreatingPlayer}
                       size="icon"
                       variant="ghost"
                       onPress={() => setIsCreatePlayerModalOpen(true)}
@@ -307,6 +322,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalDeletePlayerTitle')}
                       className="h-10 w-10 rounded-full p-0"
+                      disabled={isDeletingPlayer}
                       size="icon"
                       variant="ghost"
                       onPress={() => setShowDeleteModal(true)}
@@ -329,20 +345,21 @@ const GroupPage = () => {
             )}
           </MahjongSection>
         </TabsContent>
-        <ButtonGridSection>
-          {isGroupRegistered === false && (
-            <Button onPress={handleAddGroup} className="w-full">
-              <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
-            </Button>
-          )}
-          <Button
-            onPress={() => void navigateAway(() => router.push(`/group/stats/${groupKey}`))}
-            className="w-full"
-          >
-            <Text>{t('groupPage.buttonStats')}</Text>
-          </Button>
-        </ButtonGridSection>
       </Tabs>
+
+      <ButtonGridSection>
+        {isGroupRegistered === false && (
+          <Button onPress={handleAddGroup} className="w-full">
+            <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
+          </Button>
+        )}
+        <Button
+          onPress={() => void navigateAway(() => router.push(`/group/stats/${groupKey}`))}
+          className="w-full"
+        >
+          <Text>{t('groupPage.buttonStats')}</Text>
+        </Button>
+      </ButtonGridSection>
 
       {showDeleteModal && (
         <SelectorModal
@@ -350,38 +367,11 @@ const GroupPage = () => {
           open={showDeleteModal}
           items={players}
           onSelect={(player: Player) => {
-            handleDeletePlayer(player);
+            void handleDeletePlayer(player);
           }}
           onClose={() => setShowDeleteModal(false)}
-        />
-      )}
-      {showTournamentModal && (
-        <SelectorModal
-          title={t('groupPage.modalSelectTournamentTitle')}
-          open={showTournamentModal}
-          items={tournaments?.map((t) => ({
-            ...t,
-            plusDisplayItem:
-              t.created_at &&
-              new Date(t.started_at ?? t.created_at).toLocaleDateString('ja-JP', {
-                timeZone: 'Asia/Tokyo',
-              }),
-          }))}
-          plusDisplayItem={'plusDisplayItem'}
-          onSelect={(tournament) => {
-            if (tournament) {
-              const tournament_key = tournament.edit_link ?? tournament.view_link;
-              void navigateAway(() =>
-                router.push({
-                  pathname: '/tournament/[tournamentKey]',
-                  params: { tournamentKey: tournament_key, parentGroupKey: groupKey },
-                }),
-              );
-            }
-            setShowTournamentModal(false);
-          }}
-          onClose={() => setShowTournamentModal(false)}
-          emptyMessage={t('groupPage.modalSelectTournamentEmpty')}
+          isPending={isDeletingPlayer}
+          pendingText={t('groupPage.deletingPlayer')}
         />
       )}
       {showDeleteTournamentModal && (
@@ -392,6 +382,8 @@ const GroupPage = () => {
           onSelect={handleDeleteTournament}
           onClose={() => setShowDeleteTournamentModal(false)}
           emptyMessage={t('groupPage.modalDeleteTournamentEmpty')}
+          isPending={isDeletingTournament}
+          pendingText={t('groupPage.deletingTournament')}
         />
       )}
       <TextInputModal
@@ -401,6 +393,8 @@ const GroupPage = () => {
         value=""
         title={t('groupPage.modalCreatePlayerTitle')}
         discription={t('groupPage.modalCreatePlayerDescription')}
+        isPending={isCreatingPlayer}
+        pendingText={t('groupPage.creatingPlayer')}
       />
       <TextInputModal
         open={isCreateTournamentModalOpen}
@@ -408,6 +402,8 @@ const GroupPage = () => {
         onClose={() => setIsCreateTournamentModalOpen(false)}
         title={t('groupPage.modalCreateTournamentTitle')}
         discription={t('groupPage.modalCreateTournamentDescription')}
+        isPending={isCreatingTournament || isCreatingChipTable}
+        pendingText={t('groupPage.creatingTournament')}
       />
     </MahjongContainer>
   );

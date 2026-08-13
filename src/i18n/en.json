@@ -113,9 +113,13 @@
 
     "modalCreatePlayerTitle": "Add Group Member",
     "modalCreatePlayerDescription": "Please enter the member name",
+    "creatingPlayer": "Adding member...",
+    "deletingPlayer": "Deleting member...",
 
     "modalCreateTournamentTitle": "Create Tournament",
     "modalCreateTournamentDescription": "Please enter the tournament name",
+    "creatingTournament": "Creating tournament...",
+    "deletingTournament": "Deleting tournament...",
     "modalDeleteTournamentTitle": "Select a Tournament to Delete",
     "modalDeleteTournamentEmpty": "There are no tournaments to delete.",
     "alertDeleteTournamentTitle": "Delete Tournament",

@@ -113,9 +113,13 @@
 
     "modalCreatePlayerTitle": "グループメンバー追加",
     "modalCreatePlayerDescription": "メンバー名を入力してください",
+    "creatingPlayer": "メンバーを追加中...",
+    "deletingPlayer": "メンバーを削除中...",
 
     "modalCreateTournamentTitle": "大会新規作成",
     "modalCreateTournamentDescription": "大会名を入力してください",
+    "creatingTournament": "大会を作成中...",
+    "deletingTournament": "大会を削除中...",
     "modalDeleteTournamentTitle": "削除する大会を選択",
     "modalDeleteTournamentEmpty": "削除できる大会がありません。",
     "alertDeleteTournamentTitle": "大会を削除",
