@@ -31,7 +31,7 @@ const GroupPlayerStatsPage = () => {
         parentUrl={`/group/${groupKey}`}
       ></PageTitleBar>
       <MahjongSection
-        isLoading={isLoadingPlayerStats}
+        isLoading={isLoadingPlayerStats && !isErrorPlayerStats}
         isError={isErrorPlayerStats}
         isRetrying={isErrorPlayerStats && isFetchingPlayerStats}
         onRetry={() => void loadPlayerStats()}

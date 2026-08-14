@@ -79,6 +79,19 @@ describe('統計ページ', () => {
     },
   );
 
+  it('エラーとローディングが同時に真でもエラーを優先して表示する', async () => {
+    mockUsePlayerStats.mockReturnValue({
+      ...defaultState,
+      playerStats: undefined,
+      isLoadingPlayerStats: true,
+      isErrorPlayerStats: true,
+    });
+    await render(<GroupPlayerStatsPage />);
+
+    expect(screen.getByText(/データを取得できませんでした/)).toBeTruthy();
+    expect(screen.queryByText('読み込み中...')).toBeNull();
+  });
+
   it('再取得ボタンで統計を再取得する', async () => {
     mockUsePlayerStats.mockReturnValue({ ...defaultState, isErrorPlayerStats: true });
     await render(<GroupPlayerStatsPage />);
