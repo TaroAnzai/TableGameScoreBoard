@@ -27,7 +27,7 @@ export const semanticColorVariables = {
   chip: '--ds-chip',
 } as const satisfies Record<keyof SemanticColors, `--${string}`>;
 
-export function createNativeWindTheme(theme: SemanticColors) {
+export const createNativeWindTheme = (theme: SemanticColors) => {
   return vars(
     Object.fromEntries(
       Object.entries(semanticColorVariables).map(([role, variable]) => [
@@ -36,4 +36,4 @@ export function createNativeWindTheme(theme: SemanticColors) {
       ]),
     ),
   );
-}
+};

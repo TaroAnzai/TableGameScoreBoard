@@ -6,7 +6,15 @@ module.exports = [
   ...expoConfig,
 
   {
-    ignores: ['node_modules/**', '.expo/**', 'dist/**', 'build/**', 'android/**', 'ios/**'],
+    ignores: [
+      'node_modules/**',
+      '.expo/**',
+      'dist/**',
+      'build/**',
+      'android/**',
+      'ios/**',
+      'src/api/generated/**',
+    ],
   },
 
   {

@@ -1,7 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-import { Share } from 'react-native';
+import { Share, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -33,7 +32,7 @@ const ShareModal = ({ groupName, open, shareUrl, typeName, onClose }: ShareModal
         message: `${t('titleBar.shareText', { typeName })}\n${shareUrl}`,
         url: shareUrl,
       });
-    } catch (err: any) {
+    } catch {
       try {
         await Clipboard.setStringAsync(shareUrl);
 

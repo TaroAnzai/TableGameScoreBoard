@@ -71,7 +71,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "generate:api": "orval --config orval.config.ts",
-    "emulator": "~/Android/Sdk/emulator/emulator -avd Pixel_9"
+    "emulator": "~/Android/Sdk/emulator/emulator -avd Pixel_9",
+    "lint": "expo lint"
   },
   "jest": {
     "preset": "jest-expo",

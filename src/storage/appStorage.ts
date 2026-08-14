@@ -70,7 +70,7 @@ export const appStorage = {
       }
 
       return validGroups;
-    } catch (error) {
+    } catch {
       await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify([]));
       return [];
     }

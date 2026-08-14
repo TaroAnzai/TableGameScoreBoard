@@ -17,7 +17,8 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
 
 jest.mock('@/components/page_parts/EditableTitle', () => {
   const { Text } = jest.requireActual('react-native');
-  return ({ value }: { value: string }) => <Text>{value}</Text>;
+  const MockEditableTitle = ({ value }: { value: string }) => <Text>{value}</Text>;
+  return MockEditableTitle;
 });
 
 jest.mock('@/components/page_parts/ShareModal', () => () => null);

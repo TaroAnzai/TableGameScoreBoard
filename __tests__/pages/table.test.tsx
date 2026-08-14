@@ -45,16 +45,18 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
   const { Pressable, Text, View } = jest.requireActual('react-native');
-  return ({ title, parentUrl }: { title: string; parentUrl?: string | null }) => (
+  const MockPageTitleBar = ({ title, parentUrl }: { title: string; parentUrl?: string | null }) => (
     <View>
       <Text>{title}</Text>
       {parentUrl && <Pressable accessibilityLabel="親大会に戻る" />}
     </View>
   );
+  return MockPageTitleBar;
 });
 jest.mock('@/components/TableScoreBoard', () => {
   const { Text } = jest.requireActual('react-native');
-  return () => <Text>記録表本体</Text>;
+  const MockTableScoreBoard = () => <Text>記録表本体</Text>;
+  return MockTableScoreBoard;
 });
 jest.mock('@/components/MultiSelectorModal', () => () => null);
 jest.mock('@/components/SelectorModal', () => () => null);

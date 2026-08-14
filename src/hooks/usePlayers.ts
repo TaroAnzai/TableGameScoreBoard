@@ -40,7 +40,7 @@ export const useCreatePlayer = (onAfterCreate?: () => void) => {
     mutationFn: (data: { groupKey: string; player: PlayerCreate }) => {
       return postApiGroupsGroupKeyPlayers(data.groupKey, data.player);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Toast.show({
         type: 'success',
         text1: t('notifications.player.createSuccess'),
@@ -69,7 +69,7 @@ export const useDeletePlayer = (onAfterDelete?: () => void) => {
     mutationFn: (data: { groupKey: string; playerId: number }) => {
       return deleteApiGroupsGroupKeyPlayersPlayerId(data.groupKey, data.playerId);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Toast.show({
         type: 'success',
         text1: t('notifications.player.deleteSuccess'),

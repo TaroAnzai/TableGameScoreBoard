@@ -1,5 +1,5 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
-import { Calendar, X } from 'lucide-react-native';
+import { Calendar } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions, View } from 'react-native';

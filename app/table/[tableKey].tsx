@@ -1,7 +1,7 @@
 // React 関連
 import { router, useLocalSearchParams } from 'expo-router';
 import { UserMinus, UserPlus } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
@@ -88,7 +88,7 @@ export default function TablePage() {
 
   const accessLevel = getAccessLevelstring(table?.table_links);
   const parentUrl = parentTournamentKey ? `/tournament/${parentTournamentKey}` : null;
-  const navigateToTournament = () => {
+  const navigateToTournament = useCallback(() => {
     if (!tournamentKey) return;
     router.push({
       pathname: '/tournament/[tournamentKey]',
@@ -97,12 +97,12 @@ export default function TablePage() {
         ...(parentGroupKey ? { parentGroupKey } : {}),
       },
     });
-  };
+  }, [parentGroupKey, tournamentKey]);
   useEffect(() => {
     if (isTableDeleteSuccess) {
       navigateToTournament();
     }
-  }, [isTableDeleteSuccess, tournamentKey, parentGroupKey]);
+  }, [isTableDeleteSuccess, navigateToTournament]);
 
   // Early retrurn
   // --- ① 不正URL対応 ---

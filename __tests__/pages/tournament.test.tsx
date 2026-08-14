@@ -49,32 +49,31 @@ jest.mock('@/src/hooks/usePlayers', () => ({
 jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
-jest.mock(
-  '@/components/page_parts/PageTitleBar',
-  () =>
-    ({
-      title,
-      onTitleClick,
-      parentUrl,
-    }: {
-      title: string;
-      onTitleClick?: () => void;
-      parentUrl?: string | null;
-    }) => {
-      const { Pressable, Text } = jest.requireActual('react-native');
-      return (
-        <>
-          <Text>{title}</Text>
-          {parentUrl && <Pressable accessibilityLabel="親グループに戻る" />}
-          {onTitleClick && (
-            <Text accessibilityRole="button" onPress={onTitleClick}>
-              大会名を編集
-            </Text>
-          )}
-        </>
-      );
-    },
-);
+jest.mock('@/components/page_parts/PageTitleBar', () => {
+  const MockPageTitleBar = ({
+    title,
+    onTitleClick,
+    parentUrl,
+  }: {
+    title: string;
+    onTitleClick?: () => void;
+    parentUrl?: string | null;
+  }) => {
+    const { Pressable, Text } = jest.requireActual('react-native');
+    return (
+      <>
+        <Text>{title}</Text>
+        {parentUrl && <Pressable accessibilityLabel="親グループに戻る" />}
+        {onTitleClick && (
+          <Text accessibilityRole="button" onPress={onTitleClick}>
+            大会名を編集
+          </Text>
+        )}
+      </>
+    );
+  };
+  return MockPageTitleBar;
+});
 jest.mock('@/components/ScoreTable', () => {
   const { Text } = jest.requireActual('react-native');
   return {

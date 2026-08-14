@@ -30,7 +30,7 @@ export const withRequestTimeout = async <T>({
   url,
 }: {
   request: (signal: AbortSignal) => Promise<T>;
-  signals: Array<AbortSignal | null | undefined>;
+  signals: (AbortSignal | null | undefined)[];
   timeoutMs: number;
   url: string;
 }): Promise<T> => {

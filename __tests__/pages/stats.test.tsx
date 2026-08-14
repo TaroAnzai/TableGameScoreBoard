@@ -17,7 +17,8 @@ jest.mock('@/src/hooks/useScore', () => ({
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
   const { Text } = jest.requireActual('react-native');
-  return ({ title }: { title: string }) => <Text>{title}</Text>;
+  const MockPageTitleBar = ({ title }: { title: string }) => <Text>{title}</Text>;
+  return MockPageTitleBar;
 });
 jest.mock('@/components/PlayerStatsTable', () => {
   const { Text } = jest.requireActual('react-native');

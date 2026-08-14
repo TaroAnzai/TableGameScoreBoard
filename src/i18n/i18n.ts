@@ -11,6 +11,8 @@ export const toSupportedLanguage = (languageCode: string | null | undefined): Su
   return languageCode === 'ja' ? 'ja' : 'en';
 };
 
+// The default export is the configured i18next instance, not its named `use` export.
+// eslint-disable-next-line import/no-named-as-default-member
 i18n.use(initReactI18next).init({
   compatibilityJSON: 'v4',
   resources: {
