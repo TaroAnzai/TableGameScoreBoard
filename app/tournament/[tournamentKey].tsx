@@ -1,19 +1,21 @@
 // src/pages/TournamentPage.jsx
 import { router, useLocalSearchParams } from 'expo-router';
-import { UserMinus, UserPlus } from 'lucide-react-native';
+import { TriangleAlert, UserMinus, UserPlus } from 'lucide-react-native';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, Pressable, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import EditTournamentModal from '@/components/EditTournamentModal';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
 import MahjongContainer from '@/components/MahjongContainer';
 import MahjongSection from '@/components/MahjongSection';
 import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import MultiSelectorModal from '@/components/MultiSelectorModal';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import { ScoreTable } from '@/components/ScoreTable';
+import { SectionErrorState } from '@/components/SectionErrorState';
 import SelectorModal from '@/components/SelectorModal';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
@@ -28,21 +30,15 @@ import {
   type TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useGetPlayer } from '@/src/hooks/usePlayers';
-import {
-  useAddTablePlayer,
-  useCreateTable,
-  useDeleteChipTableWithScores,
-  useGetTables,
-} from '@/src/hooks/useTables';
+import { useAddTablePlayer, useCreateTable, useGetTables } from '@/src/hooks/useTables';
 import {
   useAddTournamentPlayer,
   useDeleteTounamentsPlayer,
-  useDeleteTournament,
   useGetTournament,
   useGetTournamentPlayers,
   useUpdateTournament,
 } from '@/src/hooks/useTournaments';
-import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
+import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
 
 const isChipTableNonZero = (scoreMap: TournamentScoreMap | undefined) => {
   const chipTableIds =
@@ -54,18 +50,6 @@ const isChipTableNonZero = (scoreMap: TournamentScoreMap | undefined) => {
     return tableTotal !== 0;
   });
 };
-//CHPテーブルにスコアデータが入っているか確認
-const hasChipTableScore = (scoreMap: TournamentScoreMap | undefined) => {
-  const chipTableIds =
-    scoreMap?.tables?.filter((t) => t.type === TableType.CHIP).map((t) => t.id) ?? [];
-  return chipTableIds.some((tableId) => {
-    return scoreMap?.players.some((player) => {
-      const score = player.scores?.[tableId] ?? 0;
-      return score !== 0;
-    });
-  });
-};
-
 const TournamentPage = () => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
@@ -79,10 +63,10 @@ const TournamentPage = () => {
     isLoadingTournament,
     isErrorTournament,
     isFetchingTournament,
+    tournamentError,
     loadTournament,
   } = useGetTournament(tournamentKey);
-  const groupKey =
-    tournament?.parent_group_link.edit_link ?? tournament?.parent_group_link.view_link ?? '';
+  const groupKey = getResourceKey(tournament?.parent_group_link) ?? '';
   const {
     players,
     isLoadingPlayers,
@@ -104,11 +88,9 @@ const TournamentPage = () => {
   //Mutation系フック
   const { mutateAsync: addTournamentPlayer } = useAddTournamentPlayer();
   const { mutateAsync: deleteTournamentPlayer } = useDeleteTounamentsPlayer();
-  const { mutate: createTable } = useCreateTable();
+  const { mutate: createTable, isPending: isCreatingTable } = useCreateTable();
   const { mutate: updateTournament } = useUpdateTournament();
-  const { mutate: deleteTournament } = useDeleteTournament();
   const { mutate: addTablePlayer } = useAddTablePlayer();
-  const { mutateAsync: deleteChipTable } = useDeleteChipTableWithScores();
 
   //ローカルステート
 
@@ -116,6 +98,7 @@ const TournamentPage = () => {
 
   const [showDeletePlayerModal, setShowDeletePlayerModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const isCreatingTableRef = useRef(false);
 
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
   const parentPageUrl = `/group/${parentGroupKey ?? groupKey}`;
@@ -158,8 +141,12 @@ const TournamentPage = () => {
   };
 
   const handleOpenAddPlayerModal = async () => {
-    if (!groupPlayers || groupPlayers.length === 0) {
-      alert(t('tournamentPage.alertNoPlayersToAdd'));
+    if (!candidatePlayers?.length) {
+      await alertDialog({
+        title: t('tournamentPage.alertNoPlayersToAddTitle'),
+        description: t('tournamentPage.alertNoPlayersToAdd'),
+        showCancelButton: false,
+      });
       return;
     }
     setShowAddPlayerModal(true);
@@ -183,6 +170,8 @@ const TournamentPage = () => {
     });
   };
   const handleCreateTable = () => {
+    if (isCreatingTableRef.current || isCreatingTable) return;
+    isCreatingTableRef.current = true;
     // 既存の卓名から使用済み番号を抽出
     const existingNames = tables?.map((t) => t.name);
     let index = 1;
@@ -193,12 +182,15 @@ const TournamentPage = () => {
     }
 
     // 卓を作成
-    createTable({
-      tournamentKey: tournamentKey,
-      tableCreate: {
-        name: newName,
+    createTable(
+      {
+        tournamentKey: tournamentKey,
+        tableCreate: {
+          name: newName,
+        },
       },
-    });
+      { onSettled: () => (isCreatingTableRef.current = false) },
+    );
   };
 
   const handleOpenDeletePlayerModal = () => {
@@ -240,8 +232,16 @@ const TournamentPage = () => {
     if (!tables) return;
     const table = tables.find((t) => t.id === table_id);
     if (!table) return;
-    const table_key = table.edit_link ?? table.view_link ?? '';
-    router.push(`/table/${table_key}`);
+    const table_key = getResourceKey(table);
+    if (!table_key) return;
+    router.push({
+      pathname: '/table/[tableKey]',
+      params: {
+        tableKey: table_key,
+        parentTournamentKey: tournamentKey,
+        parentGroupKey: parentGroupKey ?? groupKey,
+      },
+    });
   };
   const TitleWithModal = ({ onPress }: { onPress?: () => void }) =>
     onPress ? (
@@ -251,54 +251,39 @@ const TournamentPage = () => {
     ) : (
       <Text>{tournament?.name}</Text>
     );
-  const handleDeleteTournament = async () => {
-    //テーブルがあればエラーにする。
-    const nomalTables = tables?.filter((t) => t.type === TableType.NORMAL);
-    if (nomalTables && nomalTables.length > 0) {
-      alertDialog({
-        title: t('tournamentPage.alertDeleteTournamentErrorTitle'),
-        description: t('tournamentPage.alertDeleteTournamentErrorDescription'),
-        showCancelButton: false,
-      });
-      return;
-    }
-    //CHIPテーブルにデータが入っていたら確認後に削除する。
-    const chipTables = tables?.filter((t) => t.type === TableType.CHIP);
-    if (hasChipTableScore(scoreMap)) {
-      const chipTableConfirmed = await alertDialog({
-        title: t('tournamentPage.alertChipTableScoreTitle'),
-        description: t('tournamentPage.alertChipTableScoreDescription'),
-      });
-      if (!chipTableConfirmed) return;
-    }
-    const confirmed = await alertDialog({
-      title: t('tournamentPage.alertDeleteTournamentTitle'),
-      description: t('tournamentPage.alertDeleteTournamentDescription'),
-    });
-    if (!confirmed) return;
-
-    //CHIPテーブルのスコアデータとテーブル自体を削除
-    if (chipTables && chipTables.length > 0) {
-      for (const table of chipTables) {
-        const tableKey = table.edit_link;
-        if (tableKey) {
-          await deleteChipTable(tableKey);
-        }
-      }
-    }
-    await deleteTournament({ tournamentKey: tournamentKey! });
-    router.push({
-      pathname: '/group/[groupKey]',
-      params: { groupKey: parentGroupKey ?? groupKey },
-    });
-  };
-
   if (!tournamentKey) {
     return (
       <MahjongContainer>
         <View className="flex-1 items-center justify-center">
           <Text>{t('tournamentPage.tournamentKeyMissing')}</Text>
         </View>
+      </MahjongContainer>
+    );
+  }
+
+  if (isLoadingTournament) {
+    return (
+      <MahjongContainer>
+        <LoadingIndicator text={t('tournamentPage.loading')} />
+      </MahjongContainer>
+    );
+  }
+
+  if (isErrorTournament || !tournament) {
+    const isNotFound =
+      typeof tournamentError === 'object' &&
+      tournamentError !== null &&
+      'status' in tournamentError &&
+      Number(tournamentError.status) === 404;
+    return (
+      <MahjongContainer>
+        <SectionErrorState
+          message={t(
+            isNotFound ? 'tournamentPage.tournamentNotFound' : 'tournamentPage.tournamentLoadError',
+          )}
+          isRetrying={isFetchingTournament}
+          onRetry={() => void loadTournament()}
+        />
       </MahjongContainer>
     );
   }
@@ -362,14 +347,40 @@ const TournamentPage = () => {
           <Text>{t('tournamentPage.sectionTournamentScoreEmpty')}</Text>
         ) : (
           <>
-            {isChipTableNonZero(scoreMap) && <Text>{t('tournamentPage.chipNotZeroWarning')}</Text>}
+            {isChipTableNonZero(scoreMap) && (
+              <View
+                accessibilityRole="alert"
+                className="mb-3 w-full flex-row gap-3 rounded-xl border border-warning bg-warning/10 p-3"
+              >
+                <Icon as={TriangleAlert} className="mt-0.5 text-warning" size={22} />
+                <View className="min-w-0 flex-1 gap-1">
+                  <Text className="font-bold text-warning">
+                    {t('tournamentPage.chipNotZeroWarningTitle')}
+                  </Text>
+                  <Text className="text-sm text-on-surface">
+                    {t('tournamentPage.chipNotZeroWarning')}
+                  </Text>
+                </View>
+              </View>
+            )}
             {scoreMap && <ScoreTable scoreMap={scoreMap} onClick={handleTableClick} />}
           </>
         )}
       </MahjongSection>
       <ButtonGridSection>
-        <Button className="w-full" disabled={accessLevel === 'VIEW'} onPress={handleCreateTable}>
-          <Text>{t('tournamentPage.buttonCreateTable')}</Text>
+        <Button
+          className="w-full"
+          disabled={accessLevel === 'VIEW' || isCreatingTable}
+          onPress={handleCreateTable}
+        >
+          {isCreatingTable && (
+            <ActivityIndicator accessibilityLabel={t('tournamentPage.creatingTable')} />
+          )}
+          <Text>
+            {isCreatingTable
+              ? t('tournamentPage.creatingTable')
+              : t('tournamentPage.buttonCreateTable')}
+          </Text>
         </Button>
       </ButtonGridSection>
       {showAddPlayerModal && (

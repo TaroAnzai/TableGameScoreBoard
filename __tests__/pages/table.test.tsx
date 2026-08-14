@@ -4,7 +4,11 @@ import React from 'react';
 import TablePage from '@/app/table/[tableKey]';
 
 const mockPush = jest.fn();
-const mockParams = jest.fn(() => ({ tableKey: 'table-key' }));
+const mockParams = jest.fn(
+  (): { tableKey: string; parentTournamentKey?: string; parentGroupKey?: string } => ({
+    tableKey: 'table-key',
+  }),
+);
 const loadTable = jest.fn(() => Promise.resolve());
 const loadTablePlayers = jest.fn(() => Promise.resolve());
 const loadGames = jest.fn(() => Promise.resolve());
@@ -40,8 +44,13 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: jest.fn() }),
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
-  const { Text } = jest.requireActual('react-native');
-  return ({ title }: { title: string }) => <Text>{title}</Text>;
+  const { Pressable, Text, View } = jest.requireActual('react-native');
+  return ({ title, onParentPress }: { title: string; onParentPress?: () => void }) => (
+    <View>
+      <Text>{title}</Text>
+      <Pressable accessibilityLabel="親大会に戻る" onPress={onParentPress} />
+    </View>
+  );
 });
 jest.mock('@/components/TableScoreBoard', () => {
   const { Text } = jest.requireActual('react-native');
@@ -166,6 +175,55 @@ describe('卓詳細ページ', () => {
     mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: true });
     await render(<TablePage />);
 
-    expect(mockPush).toHaveBeenCalledWith('/tournament/tournament-key');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/tournament/[tournamentKey]',
+      params: { tournamentKey: 'tournament-key' },
+    });
+  });
+
+  it('親大会へ戻るときはオーナーキーを優先する', async () => {
+    mockUseTable.mockReturnValue({
+      ...tableState,
+      table: {
+        ...tableState.table,
+        parent_tournament_link: {
+          owner_link: 'tournament-owner-key',
+          edit_link: 'tournament-edit-key',
+          view_link: 'tournament-view-key',
+        },
+      },
+    });
+    mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: true });
+    await render(<TablePage />);
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/tournament/[tournamentKey]',
+      params: { tournamentKey: 'tournament-owner-key' },
+    });
+  });
+
+  it('大会から渡されたキーを卓から大会へ戻る際にも引き継ぐ', async () => {
+    mockParams.mockReturnValue({
+      tableKey: 'table-owner-key',
+      parentTournamentKey: 'tournament-owner-key',
+      parentGroupKey: 'group-owner-key',
+    });
+    mockUseTable.mockReturnValue({
+      ...tableState,
+      table: {
+        ...tableState.table,
+        parent_tournament_link: { edit_link: 'different-tournament-edit-key' },
+      },
+    });
+    await render(<TablePage />);
+
+    fireEvent.press(screen.getByLabelText('親大会に戻る'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/tournament/[tournamentKey]',
+      params: {
+        tournamentKey: 'tournament-owner-key',
+        parentGroupKey: 'group-owner-key',
+      },
+    });
   });
 });

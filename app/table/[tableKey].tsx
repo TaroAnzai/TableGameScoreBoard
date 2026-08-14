@@ -39,7 +39,7 @@ import {
   useUpdateTable,
 } from '@/src/hooks/useTables';
 import { useGetTournamentPlayers } from '@/src/hooks/useTournaments';
-import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
+import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
 
 export default function TablePage() {
   const { alertDialog } = useAlertDialog();
@@ -57,7 +57,11 @@ export default function TablePage() {
   const { mutate: updateGame } = useUpdateGame();
   const { mutate: deleteGame } = useDeleteGame();
   //Query系フック設定
-  const { tableKey } = useLocalSearchParams<{ tableKey: string }>();
+  const { tableKey, parentTournamentKey, parentGroupKey } = useLocalSearchParams<{
+    tableKey: string;
+    parentTournamentKey?: string;
+    parentGroupKey?: string;
+  }>();
   const { table, isLoadingTable, isErrorTable, isFetchingTable, loadTable } = useGetTable(
     tableKey ?? '',
     { enabled: !!tableKey },
@@ -75,8 +79,7 @@ export default function TablePage() {
   );
 
   const isChipTable = table?.type === 'CHIP';
-  const tournamentKey =
-    table?.parent_tournament_link.edit_link ?? table?.parent_tournament_link.view_link ?? undefined;
+  const tournamentKey = parentTournamentKey ?? getResourceKey(table?.parent_tournament_link);
   const {
     players: tournamentPlayers,
     isLoadingPlayers,
@@ -90,11 +93,21 @@ export default function TablePage() {
 
   const accessLevel = getAccessLevelstring(table?.table_links);
   const parentUrl = `/tournament/${tournamentKey}`;
+  const navigateToTournament = () => {
+    if (!tournamentKey) return;
+    router.push({
+      pathname: '/tournament/[tournamentKey]',
+      params: {
+        tournamentKey,
+        ...(parentGroupKey ? { parentGroupKey } : {}),
+      },
+    });
+  };
   useEffect(() => {
     if (isTableDeleteSuccess) {
-      router.push(`/tournament/${tournamentKey}`);
+      navigateToTournament();
     }
-  }, [isTableDeleteSuccess]);
+  }, [isTableDeleteSuccess, tournamentKey, parentGroupKey]);
 
   // Early retrurn
   // --- ① 不正URL対応 ---
@@ -181,6 +194,7 @@ export default function TablePage() {
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTableNameChange}
         shareLinks={table ? table.table_links : []}
         parentUrl={parentUrl}
+        onParentPress={navigateToTournament}
       />
 
       <MahjongSection

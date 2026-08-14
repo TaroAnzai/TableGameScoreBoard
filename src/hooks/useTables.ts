@@ -23,6 +23,7 @@ import type {
   TableUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useDeleteGame } from '@/src/hooks/useGames';
+import { getResourceKey } from '@/src/utils/accessLevel_utils';
 
 export const useGetTables = (tournamentKey: string) => {
   const {
@@ -57,7 +58,8 @@ export const useCreateTable = () => {
         position: 'bottom',
       });
       // 遷移
-      router.push(`/table/${data.edit_link}`);
+      const tableKey = getResourceKey(data);
+      if (tableKey) router.push(`/table/${tableKey}`);
     },
     onError: (error: any) => {
       console.error('Error creating table:', error);

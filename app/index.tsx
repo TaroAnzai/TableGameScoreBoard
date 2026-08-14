@@ -27,7 +27,7 @@ import { Text } from '@/components/ui/text';
 import { Group } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
 import { appStorage } from '@/src/storage/appStorage';
-import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
+import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
 
 type RemovableGroup = Omit<Group, 'id'> & { id: string | number };
 
@@ -41,7 +41,7 @@ export default function Index() {
   const [isRemoveGroupModalOpen, setIsRemoveGroupModalOpen] = useState(false);
   const removableGroups = groups.map((group) => ({
     ...group,
-    id: group.id ?? group.owner_link ?? group.edit_link ?? group.view_link ?? group.name,
+    id: group.id ?? getResourceKey(group) ?? group.name,
   }));
 
   const appState = useRef<AppStateStatus>(AppState.currentState);
@@ -68,7 +68,7 @@ export default function Index() {
   const handleRemoveGroup = async (group: RemovableGroup) => {
     setIsRemoveGroupModalOpen(false);
 
-    const groupKey = group.owner_link ?? group.edit_link ?? group.view_link;
+    const groupKey = getResourceKey(group);
     if (!groupKey) return;
 
     const confirmed = await alertDialog({
@@ -100,7 +100,7 @@ export default function Index() {
     }
   };
   const handleEnterGroup = (group: Group) => {
-    const key = group.owner_link ?? group.edit_link ?? group.view_link;
+    const key = getResourceKey(group);
     if (!key) return;
     router.push(`/group/${key}`);
   };

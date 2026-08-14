@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,6 +9,7 @@ import {
   View,
 } from 'react-native';
 
+import { Icon } from '@/components/ui/icon';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Text } from '@/components/ui/text';
 import type { TournamentScoreMap } from '@/src/api/generated/mahjongApi.schemas';
@@ -44,79 +46,89 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
   };
 
   return (
-    <View className="min-h-0 flex-1 self-stretch overflow-hidden rounded-xl border border-outline bg-surface">
-      {/* ヘッダー */}
-      <View className="flex-row">
-        <ColIndexCell fixed>{t('scoreTable.columnParticipant')}</ColIndexCell>
-        <ScrollView
-          ref={headerScrollRef}
-          className="flex-1 min-w-0"
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          onScrollEndDrag={syncDetailScroll}
-          onMomentumScrollEnd={syncDetailScroll}
-        >
-          <View className="flex-row">
-            {sortedTables.map((table) => (
-              <Pressable
-                key={table.id}
-                hitSlop={2}
-                role="button"
-                onPress={() => table.id && onClick(table.id)}
-              >
-                <ColIndexCell underline>{table.name}</ColIndexCell>
-              </Pressable>
-            ))}
-
-            <ColIndexCell>{t('scoreTable.columnTotal')}</ColIndexCell>
-            <ColIndexCell>{t('scoreTable.columnConvertedTotal')}</ColIndexCell>
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* 明細 */}
-      <ScrollView className="flex-1 min-h-0" nestedScrollEnabled>
+    <View className="min-h-0 flex-1 self-stretch">
+      {sortedTables.length > 0 && (
+        <Text className="mb-2 text-sm text-on-surface-variant">
+          {t('scoreTable.tableNavigationHint')}
+        </Text>
+      )}
+      <View className="min-h-0 flex-1 overflow-hidden rounded-xl border border-outline bg-surface">
+        {/* ヘッダー */}
         <View className="flex-row">
-          <View>
-            {scoreMap.players.map((player) => (
-              <ScoreCell key={player.id} fixed>
-                {player.name}
-              </ScoreCell>
-            ))}
-          </View>
+          <ColIndexCell fixed>{t('scoreTable.columnParticipant')}</ColIndexCell>
           <ScrollView
-            ref={detailScrollRef}
+            ref={headerScrollRef}
             className="flex-1 min-w-0"
             horizontal
-            nestedScrollEnabled
-            onScroll={syncHeaderScroll}
-            scrollEventThrottle={16}
+            showsHorizontalScrollIndicator={false}
+            onScrollEndDrag={syncDetailScroll}
+            onMomentumScrollEnd={syncDetailScroll}
           >
-            <View>
-              {scoreMap.players.map((player) => (
-                <View key={player.id} className="flex-row">
-                  {sortedTables.map((table) => {
-                    const score = (player.scores ?? {})[String(table.id)] as number | undefined;
-
-                    return (
-                      <ScoreCell key={table.id}>
-                        {score === undefined ? '—' : score.toLocaleString()}
-                      </ScoreCell>
-                    );
-                  })}
-
-                  <ScoreCell>
-                    {player.total === null || player.total === undefined
-                      ? '—'
-                      : player.total.toLocaleString()}
-                  </ScoreCell>
-                  <ScoreCell>{Number(player.converted_total ?? 0).toLocaleString()}</ScoreCell>
-                </View>
+            <View className="flex-row">
+              {sortedTables.map((table) => (
+                <Pressable
+                  key={table.id}
+                  hitSlop={2}
+                  role="button"
+                  accessibilityLabel={t('scoreTable.openTable', { tableName: table.name })}
+                  onPress={() => table.id && onClick(table.id)}
+                >
+                  <ColIndexCell showNavigationIcon underline>
+                    {table.name}
+                  </ColIndexCell>
+                </Pressable>
               ))}
+
+              <ColIndexCell>{t('scoreTable.columnTotal')}</ColIndexCell>
+              <ColIndexCell>{t('scoreTable.columnConvertedTotal')}</ColIndexCell>
             </View>
           </ScrollView>
         </View>
-      </ScrollView>
+
+        {/* 明細 */}
+        <ScrollView className="flex-1 min-h-0" nestedScrollEnabled>
+          <View className="flex-row">
+            <View>
+              {scoreMap.players.map((player) => (
+                <ScoreCell key={player.id} fixed>
+                  {player.name}
+                </ScoreCell>
+              ))}
+            </View>
+            <ScrollView
+              ref={detailScrollRef}
+              className="flex-1 min-w-0"
+              horizontal
+              nestedScrollEnabled
+              onScroll={syncHeaderScroll}
+              scrollEventThrottle={16}
+            >
+              <View>
+                {scoreMap.players.map((player) => (
+                  <View key={player.id} className="flex-row">
+                    {sortedTables.map((table) => {
+                      const score = (player.scores ?? {})[String(table.id)] as number | undefined;
+
+                      return (
+                        <ScoreCell key={table.id}>
+                          {score === undefined ? '—' : score.toLocaleString()}
+                        </ScoreCell>
+                      );
+                    })}
+
+                    <ScoreCell>
+                      {player.total === null || player.total === undefined
+                        ? '—'
+                        : player.total.toLocaleString()}
+                    </ScoreCell>
+                    <ScoreCell>{Number(player.converted_total ?? 0).toLocaleString()}</ScoreCell>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 };
@@ -164,25 +176,38 @@ type ColIndexCellProps = {
   children: React.ReactNode;
   fixed?: boolean;
   underline?: boolean;
+  showNavigationIcon?: boolean;
 };
 
-const ColIndexCell = ({ children, fixed = false, underline = false }: ColIndexCellProps) => {
+const ColIndexCell = ({
+  children,
+  fixed = false,
+  underline = false,
+  showNavigationIcon = false,
+}: ColIndexCellProps) => {
   return (
     <View
       style={{
         minHeight: mahjong.tableHeaderHeight,
         width: fixed ? mahjong.playerColumnWidth : mahjong.scoreCellWidth,
       }}
-      className="items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1"
+      className="items-center justify-center border-b border-r border-outline bg-surface-variant px-1 py-1"
     >
-      <Text
-        className={[
-          'text-center text-[13px] font-bold leading-[18px] text-on-surface',
-          underline ? 'underline' : '',
-        ].join(' ')}
-      >
-        {children}
-      </Text>
+      <View className="w-full flex-row items-center justify-center">
+        <Text
+          numberOfLines={2}
+          ellipsizeMode="tail"
+          className={[
+            'min-w-0 flex-1 text-center text-[13px] font-bold leading-[18px] text-on-surface',
+            underline ? 'underline' : '',
+          ].join(' ')}
+        >
+          {children}
+        </Text>
+        {showNavigationIcon && (
+          <Icon as={ChevronRight} className="shrink-0 text-primary" size={14} />
+        )}
+      </View>
     </View>
   );
 };

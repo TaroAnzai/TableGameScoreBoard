@@ -5,8 +5,8 @@ import GroupPage from '@/app/group/[groupKey]';
 
 const mockPush = jest.fn();
 const mockDispatch = jest.fn();
-const mockAddListener = jest.fn(
-  (_event: string, _listener: (event: NavigationEvent) => void) => jest.fn(),
+const mockAddListener = jest.fn((_event: string, _listener: (event: NavigationEvent) => void) =>
+  jest.fn(),
 );
 const mockAlertDialog = jest.fn(() => Promise.resolve(false));
 const mockGetGroupKeys = jest.fn(() => Promise.resolve(['group-key']));
@@ -186,6 +186,27 @@ describe('グループ詳細ページ', () => {
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/tournament/[tournamentKey]',
       params: { tournamentKey: 'tournament-key', parentGroupKey: 'group-key' },
+    });
+  });
+
+  it('オーナーで大会を開くとオーナーキーを引き継ぐ', async () => {
+    mockUseTournaments.mockReturnValue({
+      ...tournamentsState,
+      tournaments: [
+        {
+          ...tournamentsState.tournaments[0],
+          owner_link: 'tournament-owner-key',
+          edit_link: 'tournament-edit-key',
+          view_link: 'tournament-view-key',
+        },
+      ],
+    });
+    await render(<GroupPage />);
+
+    fireEvent.press(screen.getByText('大会1'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/tournament/[tournamentKey]',
+      params: { tournamentKey: 'tournament-owner-key', parentGroupKey: 'group-key' },
     });
   });
 

@@ -128,6 +128,8 @@
 
   "tournamentPage": {
     "tournamentKeyMissing": "Tournament key is not specified",
+    "tournamentNotFound": "Tournament not found. It may have been deleted, or the URL may be incorrect.",
+    "tournamentLoadError": "Tournament information could not be loaded. Check your connection and try again.",
 
     "loading": "Loading...",
 
@@ -137,30 +139,24 @@
     "buttonAddPlayer": "Add Participant",
     "buttonDeletePlayer": "Remove Participant",
     "buttonCreateTable": "Create Table Score Sheet",
+    "creatingTable": "Creating score sheet...",
     "buttonDeleteTournament": "Delete Tournament",
 
     "sectionTournamentScore": "Tournament Results",
     "sectionTournamentScoreEmpty": "Select participants using the + button.",
-    "chipNotZeroWarning": "The total chip score is not zero.",
+    "chipNotZeroWarningTitle": "Chip totals do not match",
+    "chipNotZeroWarning": "The participants' chip total is not zero. Check for missing entries or incorrect signs.",
 
     "modalSelectPlayerTitle": "Select Participants",
     "modalDeletePlayerTitle": "Select a Participant to Remove",
 
-    "alertNoPlayersToAdd": "No available participants to add",
+    "alertNoPlayersToAddTitle": "Cannot add participants",
+    "alertNoPlayersToAdd": "There are no group members available to add. Everyone may already be participating, or the group has no members.",
     "alertNoPlayersToDelete": "No participants available for deletion",
 
     "alertDeletePlayerTitle": "Delete Participant",
     "alertDeletePlayerErrorTitle": "Error Deleting Participant",
-    "alertDeletePlayerDescription": "Are you sure you want to remove {{playerName}}?",
-
-    "alertDeleteTournamentErrorTitle": "Error Deleting Tournament",
-    "alertDeleteTournamentErrorDescription": "A score sheet exists and the tournament cannot be deleted. Please delete the score sheet first.",
-
-    "alertChipTableScoreTitle": "Delete Tournament",
-    "alertChipTableScoreDescription": "Chip score sheets contain data. Deleting the tournament will also delete the chip sheets and their scores. Are you sure you want to continue?",
-
-    "alertDeleteTournamentTitle": "Delete Tournament",
-    "alertDeleteTournamentDescription": "Are you sure you want to delete this tournament?"
+    "alertDeletePlayerDescription": "Are you sure you want to remove {{playerName}}?"
   },
   "tablePage": {
     "errorInvalidTableKey": "Invalid access (table key missing).",
@@ -336,6 +332,8 @@
     }
   },
   "scoreTable": {
+    "tableNavigationHint": "Tap a table name to open its score sheet.",
+    "openTable": "Open the score sheet for {{tableName}}",
     "noScoreData": "No score data available",
     "columnParticipant": "Participant",
     "columnTotal": "Total",

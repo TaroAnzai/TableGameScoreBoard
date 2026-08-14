@@ -29,7 +29,7 @@ import {
   useGetTournaments,
 } from '@/src/hooks/useTournaments';
 import { appStorage } from '@/src/storage/appStorage';
-import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
+import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
 const GroupPage = () => {
   const { t } = useTranslation();
   const { groupKey } = useLocalSearchParams<{ groupKey: string }>();
@@ -166,16 +166,17 @@ const GroupPage = () => {
       const payload = { groupKey: groupKey, tournament: { name: name } };
       const data = await createTournament(payload);
       //CHIPテーブルを作成
-      if (!data.edit_link) return;
+      const tournamentKey = getResourceKey(data);
+      if (!tournamentKey) return;
       await createChipTable({
-        tournamentKey: data.edit_link,
+        tournamentKey,
         tableCreate: { name: t('Common.chip'), type: 'CHIP' },
       });
       setIsCreateTournamentModalOpen(false);
       await navigateAway(() =>
         router.push({
           pathname: '/tournament/[tournamentKey]',
-          params: { tournamentKey: data.edit_link, parentGroupKey: groupKey },
+          params: { tournamentKey, parentGroupKey: groupKey },
         }),
       );
     } catch {
@@ -184,7 +185,7 @@ const GroupPage = () => {
   };
 
   const handleDeleteTournament = async (tournament: Tournament) => {
-    const tournamentKey = tournament.edit_link ?? tournament.owner_link;
+    const tournamentKey = getResourceKey(tournament);
     if (!tournamentKey) return;
 
     const confirmed = await alertDialog({
@@ -280,7 +281,8 @@ const GroupPage = () => {
                         }),
                     ]}
                     onPress={() => {
-                      const tournament_key = tournament.edit_link ?? tournament.view_link;
+                      const tournament_key = getResourceKey(tournament);
+                      if (!tournament_key) return;
                       void navigateAway(() =>
                         router.push({
                           pathname: '/tournament/[tournamentKey]',

@@ -127,6 +127,8 @@
   },
   "tournamentPage": {
     "tournamentKeyMissing": "大会キーが指定されていません",
+    "tournamentNotFound": "大会が見つかりませんでした。削除されたか、URLが正しくない可能性があります。",
+    "tournamentLoadError": "大会情報を取得できませんでした。通信状態を確認して再取得してください。",
 
     "loading": "読み込み中...",
 
@@ -136,30 +138,24 @@
     "buttonAddPlayer": "参加者を追加",
     "buttonDeletePlayer": "参加者を削除",
     "buttonCreateTable": "記録用紙を新規作成",
+    "creatingTable": "記録用紙を作成中...",
     "buttonDeleteTournament": "大会を削除",
 
     "sectionTournamentScore": "大会成績",
     "sectionTournamentScoreEmpty": "参加メンバーを＋ボタンから選択してください。",
-    "chipNotZeroWarning": "チップの合計が０になっていません。",
+    "chipNotZeroWarningTitle": "チップ合計が一致していません",
+    "chipNotZeroWarning": "参加者のチップ合計が0ではありません。入力漏れや符号の間違いがないか確認してください。",
 
     "modalSelectPlayerTitle": "参加者を選択",
     "modalDeletePlayerTitle": "削除する参加者を選択",
 
-    "alertNoPlayersToAdd": "追加可能な参加者がいません",
+    "alertNoPlayersToAddTitle": "参加者を追加できません",
+    "alertNoPlayersToAdd": "追加可能なグループメンバーがいません。全員が追加済みか、グループにメンバーが登録されていません。",
     "alertNoPlayersToDelete": "削除対象の参加者がいません",
 
     "alertDeletePlayerTitle": "Delete Player",
     "alertDeletePlayerErrorTitle": "参加者を削除できません",
-    "alertDeletePlayerDescription": "{{playerName}} を削除してよいですか？",
-
-    "alertDeleteTournamentErrorTitle": "Error deleting tournament",
-    "alertDeleteTournamentErrorDescription": "記録表が存在するため、大会を削除できません。記録表を先に削除してください。",
-
-    "alertChipTableScoreTitle": "Delete Tournament",
-    "alertChipTableScoreDescription": "チップ記録表にスコアデータが存在します。大会を削除するとチップ記録表とそのスコアデータも削除されます。本当に削除してよいですか？",
-
-    "alertDeleteTournamentTitle": "Delete Tournament",
-    "alertDeleteTournamentDescription": "大会を削除してよいですか?"
+    "alertDeletePlayerDescription": "{{playerName}} を削除してよいですか？"
   },
   "tablePage": {
     "errorInvalidTableKey": "不正なアクセスです（卓キーが指定されていません）",
@@ -337,6 +333,8 @@
     }
   },
   "scoreTable": {
+    "tableNavigationHint": "卓名をタップすると記録用紙を開きます。",
+    "openTable": "{{tableName}}の記録用紙を開く",
     "noScoreData": "成績データがありません",
     "columnParticipant": "参加者",
     "columnTotal": "合計",

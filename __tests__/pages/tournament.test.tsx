@@ -14,6 +14,9 @@ const mockUseTournamentPlayers = jest.fn();
 const mockUseTables = jest.fn();
 const mockUseScoreMap = jest.fn();
 const mockUseGroupPlayers = jest.fn();
+const mockAlertDialog = jest.fn(() => Promise.resolve(true));
+const mockCreateTable = jest.fn();
+let mockIsCreatingTable = false;
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -29,7 +32,7 @@ jest.mock('@/src/hooks/useTournaments', () => ({
 }));
 jest.mock('@/src/hooks/useTables', () => ({
   useGetTables: () => mockUseTables(),
-  useCreateTable: () => ({ mutate: jest.fn() }),
+  useCreateTable: () => ({ mutate: mockCreateTable, isPending: mockIsCreatingTable }),
   useAddTablePlayer: () => ({ mutate: jest.fn() }),
   useDeleteChipTableWithScores: () => ({ mutateAsync: jest.fn() }),
 }));
@@ -40,7 +43,7 @@ jest.mock('@/src/hooks/usePlayers', () => ({
   useGetPlayer: () => mockUseGroupPlayers(),
 }));
 jest.mock('@/components/common/AlertDialogProvider', () => ({
-  useAlertDialog: () => ({ alertDialog: jest.fn() }),
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
 jest.mock(
   '@/components/page_parts/PageTitleBar',
@@ -124,6 +127,7 @@ const groupPlayersState = {
 describe('大会詳細ページ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsCreatingTable = false;
     mockUseTournament.mockReturnValue(tournamentState);
     mockUseTournamentPlayers.mockReturnValue(playersState);
     mockUseTables.mockReturnValue(tablesState);
@@ -135,7 +139,39 @@ describe('大会詳細ページ', () => {
     await render(<TournamentPage />);
 
     fireEvent.press(screen.getByText('スコア表'));
-    expect(mockPush).toHaveBeenCalledWith('/table/table-key');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/table/[tableKey]',
+      params: {
+        tableKey: 'table-key',
+        parentTournamentKey: 'tournament-key',
+        parentGroupKey: 'group-key',
+      },
+    });
+  });
+
+  it('オーナーで卓を開くとオーナーキーを引き継ぐ', async () => {
+    mockUseTables.mockReturnValue({
+      ...tablesState,
+      tables: [
+        {
+          ...tablesState.tables[0],
+          owner_link: 'table-owner-key',
+          edit_link: 'table-edit-key',
+          view_link: 'table-view-key',
+        },
+      ],
+    });
+    await render(<TournamentPage />);
+
+    fireEvent.press(screen.getByText('スコア表'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/table/[tableKey]',
+      params: {
+        tableKey: 'table-owner-key',
+        parentTournamentKey: 'tournament-key',
+        parentGroupKey: 'group-key',
+      },
+    });
   });
 
   it('いずれかのQueryがローディング中ならローディングを表示する', async () => {
@@ -198,5 +234,46 @@ describe('大会詳細ページ', () => {
     expect(
       screen.getByRole('button', { name: '記録用紙を新規作成' }).props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(screen.queryByDisplayValue('50')).toBeNull();
+  });
+
+  it('追加可能な参加者がいない場合は共通ダイアログを表示する', async () => {
+    mockUseGroupPlayers.mockReturnValue({
+      ...groupPlayersState,
+      players: [{ id: 1, name: '参加者1' }],
+    });
+    await render(<TournamentPage />);
+
+    fireEvent.press(screen.getByRole('button', { name: '大会新規作成' }));
+    expect(mockAlertDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: '参加者を追加できません',
+        showCancelButton: false,
+      }),
+    );
+  });
+
+  it('大会が存在しない場合は専用メッセージと再取得導線を表示する', async () => {
+    mockUseTournament.mockReturnValue({
+      ...tournamentState,
+      tournament: undefined,
+      isErrorTournament: true,
+      tournamentError: { status: 404 },
+    });
+    await render(<TournamentPage />);
+
+    expect(screen.getByText(/大会が見つかりませんでした/)).toBeTruthy();
+    fireEvent.press(screen.getByText('再取得'));
+    expect(loadTournament).toHaveBeenCalledTimes(1);
+  });
+
+  it('卓の作成中は処理中表示にしてボタンを無効化する', async () => {
+    mockIsCreatingTable = true;
+    await render(<TournamentPage />);
+
+    const button = screen.getByRole('button', { name: /記録用紙を作成中/ });
+    expect(button.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    fireEvent.press(button);
+    expect(mockCreateTable).not.toHaveBeenCalled();
   });
 });
