@@ -1,5 +1,6 @@
 const expoConfig = require('eslint-config-expo/flat');
 const simpleImportSort = require('eslint-plugin-simple-import-sort');
+const tseslint = require('@typescript-eslint/eslint-plugin');
 
 module.exports = [
   ...expoConfig,
@@ -10,6 +11,7 @@ module.exports = [
 
   {
     plugins: {
+      '@typescript-eslint': tseslint,
       'simple-import-sort': simpleImportSort,
     },
     rules: {
