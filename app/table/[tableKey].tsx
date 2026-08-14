@@ -24,11 +24,7 @@ import {
   useGetTableGames,
   useUpdateGame,
 } from '@/src//hooks/useGames';
-import type {
-  Player,
-  ScoreInput,
-  TablePlayerItem,
-} from '@/src/api/generated/mahjongApi.schemas';
+import type { Player, ScoreInput, TablePlayerItem } from '@/src/api/generated/mahjongApi.schemas';
 import {
   useAddTablePlayer,
   useDeleteTable,
@@ -91,7 +87,7 @@ export default function TablePage() {
   );
 
   const accessLevel = getAccessLevelstring(table?.table_links);
-  const parentUrl = `/tournament/${tournamentKey}`;
+  const parentUrl = parentTournamentKey ? `/tournament/${parentTournamentKey}` : null;
   const navigateToTournament = () => {
     if (!tournamentKey) return;
     router.push({
@@ -193,7 +189,6 @@ export default function TablePage() {
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTableNameChange}
         shareLinks={table ? table.table_links : []}
         parentUrl={parentUrl}
-        onParentPress={navigateToTournament}
       />
 
       <MahjongSection

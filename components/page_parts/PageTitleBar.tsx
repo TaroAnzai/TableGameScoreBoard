@@ -106,7 +106,7 @@ export default function PageTitleBar({
                 onParentPress();
                 return;
               }
-              router.push(parentUrl as any);
+              router.back();
             }}
           >
             <Icon as={ChevronLeft} className="text-on-surface" size={24} />

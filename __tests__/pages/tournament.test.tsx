@@ -4,6 +4,10 @@ import React from 'react';
 import TournamentPage from '@/app/tournament/[tournamentKey]';
 
 const mockPush = jest.fn();
+const mockParams = jest.fn<{ tournamentKey: string; parentGroupKey?: string }, []>(() => ({
+  tournamentKey: 'tournament-key',
+  parentGroupKey: 'group-key',
+}));
 const loadTournament = jest.fn(() => Promise.resolve());
 const loadTournamentPlayers = jest.fn(() => Promise.resolve());
 const loadTables = jest.fn(() => Promise.resolve());
@@ -20,7 +24,7 @@ let mockIsCreatingTable = false;
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
-  useLocalSearchParams: () => ({ tournamentKey: 'tournament-key', parentGroupKey: 'group-key' }),
+  useLocalSearchParams: () => mockParams(),
 }));
 jest.mock('@/src/hooks/useTournaments', () => ({
   useGetTournament: () => mockUseTournament(),
@@ -48,11 +52,20 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
 jest.mock(
   '@/components/page_parts/PageTitleBar',
   () =>
-    ({ title, onTitleClick }: { title: string; onTitleClick?: () => void }) => {
-      const { Text } = jest.requireActual('react-native');
+    ({
+      title,
+      onTitleClick,
+      parentUrl,
+    }: {
+      title: string;
+      onTitleClick?: () => void;
+      parentUrl?: string | null;
+    }) => {
+      const { Pressable, Text } = jest.requireActual('react-native');
       return (
         <>
           <Text>{title}</Text>
+          {parentUrl && <Pressable accessibilityLabel="親グループに戻る" />}
           {onTitleClick && (
             <Text accessibilityRole="button" onPress={onTitleClick}>
               大会名を編集
@@ -127,6 +140,7 @@ const groupPlayersState = {
 describe('大会詳細ページ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockParams.mockReturnValue({ tournamentKey: 'tournament-key', parentGroupKey: 'group-key' });
     mockIsCreatingTable = false;
     mockUseTournament.mockReturnValue(tournamentState);
     mockUseTournamentPlayers.mockReturnValue(playersState);
@@ -147,6 +161,20 @@ describe('大会詳細ページ', () => {
         parentGroupKey: 'group-key',
       },
     });
+  });
+
+  it('グループから開いた場合は親グループへの戻る操作を表示する', async () => {
+    await render(<TournamentPage />);
+
+    expect(screen.getByLabelText('親グループに戻る')).toBeTruthy();
+  });
+
+  it('共有リンクから大会を開いた場合は親グループへの戻る操作を表示しない', async () => {
+    mockParams.mockReturnValue({ tournamentKey: 'tournament-key' });
+
+    await render(<TournamentPage />);
+
+    expect(screen.queryByLabelText('親グループに戻る')).toBeNull();
   });
 
   it('オーナーで卓を開くとオーナーキーを引き継ぐ', async () => {

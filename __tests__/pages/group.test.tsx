@@ -4,6 +4,7 @@ import React from 'react';
 import GroupPage from '@/app/group/[groupKey]';
 
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 const mockDispatch = jest.fn();
 const mockAddListener = jest.fn((_event: string, _listener: (event: NavigationEvent) => void) =>
   jest.fn(),
@@ -31,7 +32,10 @@ type NavigationEvent = {
 };
 
 jest.mock('expo-router', () => ({
-  router: { push: (...args: unknown[]) => mockPush(...args) },
+  router: {
+    back: () => mockBack(),
+    push: (...args: unknown[]) => mockPush(...args),
+  },
   useLocalSearchParams: () => ({ groupKey: 'group-key' }),
   useNavigation: () => ({ addListener: mockAddListener, dispatch: mockDispatch }),
 }));
@@ -355,6 +359,7 @@ describe('グループ詳細ページ', () => {
 
     await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
     expect(mockPush).not.toHaveBeenCalledWith('/');
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
   it('未登録警告で離れることを選ぶと統計画面へ遷移する', async () => {

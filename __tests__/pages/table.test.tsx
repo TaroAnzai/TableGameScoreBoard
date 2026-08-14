@@ -45,10 +45,10 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
   const { Pressable, Text, View } = jest.requireActual('react-native');
-  return ({ title, onParentPress }: { title: string; onParentPress?: () => void }) => (
+  return ({ title, parentUrl }: { title: string; parentUrl?: string | null }) => (
     <View>
       <Text>{title}</Text>
-      <Pressable accessibilityLabel="親大会に戻る" onPress={onParentPress} />
+      {parentUrl && <Pressable accessibilityLabel="親大会に戻る" />}
     </View>
   );
 });
@@ -202,7 +202,7 @@ describe('卓詳細ページ', () => {
     });
   });
 
-  it('大会から渡されたキーを卓から大会へ戻る際にも引き継ぐ', async () => {
+  it('大会から開いた場合は親大会への戻る操作を表示する', async () => {
     mockParams.mockReturnValue({
       tableKey: 'table-owner-key',
       parentTournamentKey: 'tournament-owner-key',
@@ -217,13 +217,12 @@ describe('卓詳細ページ', () => {
     });
     await render(<TablePage />);
 
-    fireEvent.press(screen.getByLabelText('親大会に戻る'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/tournament/[tournamentKey]',
-      params: {
-        tournamentKey: 'tournament-owner-key',
-        parentGroupKey: 'group-owner-key',
-      },
-    });
+    expect(screen.getByLabelText('親大会に戻る')).toBeTruthy();
+  });
+
+  it('共有リンクから卓を開いた場合は親大会への戻る操作を表示しない', async () => {
+    await render(<TablePage />);
+
+    expect(screen.queryByLabelText('親大会に戻る')).toBeNull();
   });
 });

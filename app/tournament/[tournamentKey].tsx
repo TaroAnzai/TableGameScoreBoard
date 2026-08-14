@@ -101,7 +101,7 @@ const TournamentPage = () => {
   const isCreatingTableRef = useRef(false);
 
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
-  const parentPageUrl = `/group/${parentGroupKey ?? groupKey}`;
+  const parentPageUrl = parentGroupKey ? `/group/${parentGroupKey}` : null;
 
   const candidatePlayers = groupPlayers?.filter(
     (player) => !players?.some((p) => p.id === player.id),

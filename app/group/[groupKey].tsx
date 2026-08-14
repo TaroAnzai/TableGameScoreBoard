@@ -212,7 +212,7 @@ const GroupPage = () => {
         shareLinks={group ? group.group_links : []}
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
         parentUrl="/"
-        onParentPress={() => void navigateAway(() => router.push('/'))}
+        onParentPress={() => void navigateAway(() => router.back())}
       />
 
       <Tabs value={value} onValueChange={setValue} className="min-h-0 w-full flex-1">
