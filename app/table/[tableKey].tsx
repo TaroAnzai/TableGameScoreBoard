@@ -1,7 +1,7 @@
 // React 関連
 import { router, useLocalSearchParams } from 'expo-router';
-import { Accessibility, UserMinus, UserPlus } from 'lucide-react-native';
-import React, { use, useEffect, useRef, useState } from 'react';
+import { UserMinus, UserPlus } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
@@ -25,7 +25,6 @@ import {
   useUpdateGame,
 } from '@/src//hooks/useGames';
 import type {
-  Game,
   Player,
   ScoreInput,
   TablePlayerItem,
@@ -53,8 +52,8 @@ export default function TablePage() {
   const { mutate: deleteTable, isSuccess: isTableDeleteSuccess } = useDeleteTable();
   const { mutate: addTablePlayer } = useAddTablePlayer();
   const { mutate: deleteTablePlayer } = useDeleteTablePlayer();
-  const { mutate: createGame } = useCreateGame();
-  const { mutate: updateGame } = useUpdateGame();
+  const { mutateAsync: createGame } = useCreateGame();
+  const { mutateAsync: updateGame } = useUpdateGame();
   const { mutate: deleteGame } = useDeleteGame();
   //Query系フック設定
   const { tableKey, parentTournamentKey, parentGroupKey } = useLocalSearchParams<{
@@ -155,21 +154,21 @@ export default function TablePage() {
     deleteTablePlayer({ tableKey: tableKey!, playerId: player.id });
     setShowDeletePlayerModal(false);
   };
-  const handleUpdateGame = (gameId: number | null, newScores: ScoreInput[]) => {
+  const handleUpdateGame = async (gameId: number | null, newScores: ScoreInput[]) => {
     if (!tableKey) return;
     if (gameId === null) {
       const gameCreate = { scores: newScores };
-      createGame({ tableKey: tableKey, gameCreate: gameCreate });
+      await createGame({ tableKey: tableKey, gameCreate: gameCreate });
     } else {
       const data = { scores: newScores };
-      updateGame({ tableKey: tableKey, gameId: gameId, gameUpdate: data });
+      await updateGame({ tableKey: tableKey, gameId: gameId, gameUpdate: data });
     }
   };
 
   const handleDeleteTable = async () => {
     const confirmed = await alertDialog({
-      title: t('tablePage.alertDeleteGameTitle'),
-      description: t('tablePage.alertDeleteGameDescription'),
+      title: t('tablePage.alertDeleteTableTitle'),
+      description: t('tablePage.alertDeleteTableDescription'),
     });
     if (!confirmed) return;
     deleteTable({ tableKey: tableKey! });
@@ -217,7 +216,11 @@ export default function TablePage() {
               <>
                 <Button
                   accessibilityLabel={t('tablePage.buttonAddPlayer')}
+                  accessibilityHint={
+                    remainingPlayers?.length === 0 ? t('tablePage.noPlayersToAdd') : undefined
+                  }
                   className="h-10 w-10 rounded-full p-0"
+                  disabled={remainingPlayers?.length === 0}
                   size="icon"
                   variant="ghost"
                   onPress={() => {
@@ -228,7 +231,11 @@ export default function TablePage() {
                 </Button>
                 <Button
                   accessibilityLabel={t('tablePage.buttonDeletePlayer')}
+                  accessibilityHint={
+                    tablePlayers?.length === 0 ? t('tablePage.noPlayersToDelete') : undefined
+                  }
                   className="h-10 w-10 rounded-full p-0"
+                  disabled={tablePlayers?.length === 0}
                   size="icon"
                   variant="ghost"
                   onPress={() => setShowDeletePlayerModal(true)}
@@ -253,12 +260,18 @@ export default function TablePage() {
         <ButtonGridSection>
           <Button
             className="w-full"
-            disabled={accessLevel === 'VIEW'}
+            variant="destructive"
+            disabled={accessLevel === 'VIEW' || !games?.length}
             onPress={handleDeleteGameClick}
           >
             <Text>{t('tablePage.buttonDeleteGame')}</Text>
           </Button>
-          <Button className="w-full" disabled={accessLevel === 'VIEW'} onPress={handleDeleteTable}>
+          <Button
+            className="w-full"
+            variant="destructive"
+            disabled={accessLevel === 'VIEW'}
+            onPress={handleDeleteTable}
+          >
             <Text>{t('tablePage.buttonDeleteTable')}</Text>
           </Button>
         </ButtonGridSection>
@@ -268,6 +281,7 @@ export default function TablePage() {
           open={showAddPlayerModal}
           title={t('tablePage.modalAddPlayerTitle')}
           items={remainingPlayers ?? []}
+          emptyMessage={t('tablePage.noPlayersToAdd')}
           onConfirm={handleAddPlayer}
           onClose={() => setShowAddPlayerModal(false)}
         />
@@ -277,6 +291,7 @@ export default function TablePage() {
           title={t('tablePage.modalDeletePlayerTitle')}
           open={showDeletePlayerModal}
           items={tablePlayers}
+          emptyMessage={t('tablePage.noPlayersToDelete')}
           onSelect={handleDeletePlayer}
           onClose={() => setShowDeletePlayerModal(false)}
         />
@@ -291,6 +306,7 @@ export default function TablePage() {
               id: g.id,
               name: t('tablePage.gameLabel', { index: index + 1 }),
             }))}
+          emptyMessage={t('tablePage.noGamesToDelete')}
           onSelect={handleDeleteGame}
           onClose={() => setShowDeleteGameModal(false)}
         />

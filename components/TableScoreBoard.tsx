@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react-native';
 import React, { Fragment, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 
 import TableScoreInputModal from '@/components/TableScoreInputModal';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type {
   Game,
@@ -22,7 +24,7 @@ interface TableScoreBoardProps {
   table: ScoreTable;
   players: readonly Player[];
   games: Game[];
-  onUpdateGame: (gameId: number | null, scores: ScoreInput[]) => void;
+  onUpdateGame: (gameId: number | null, scores: ScoreInput[]) => Promise<void>;
   disabled?: boolean;
 }
 
@@ -38,6 +40,7 @@ const TableScoreBoard = ({
   const detailScrollRef = useRef<ScrollView>(null);
 
   const [editingGameIndex, setEditingGameIndex] = useState<number | null>(null);
+  const [savingGameIndex, setSavingGameIndex] = useState<number | null>(null);
   const isChipTable = table.type === 'CHIP';
 
   const displayPlayers = [...players];
@@ -68,12 +71,19 @@ const TableScoreBoard = ({
     setEditingGameIndex(index);
   };
 
-  const handleConfirm = (scores: ScoreInput[]) => {
+  const handleConfirm = async (scores: ScoreInput[]) => {
     if (editingGameIndex === null) return;
 
     const game = displayGames[editingGameIndex];
-    onUpdateGame(game?.id ?? null, scores);
-    setEditingGameIndex(null);
+    setSavingGameIndex(editingGameIndex);
+    try {
+      await onUpdateGame(game?.id ?? null, scores);
+      setEditingGameIndex(null);
+    } catch {
+      // The mutation hook presents the error. Keep the modal and its draft open for retry.
+    } finally {
+      setSavingGameIndex(null);
+    }
   };
 
   const handleCancel = () => {
@@ -103,6 +113,9 @@ const TableScoreBoard = ({
 
   return (
     <View className="mt-4 min-h-0 flex-1 self-stretch overflow-hidden rounded-xl border border-outline bg-surface">
+      <View className="flex-row items-center justify-center gap-1 border-b border-outline bg-surface px-3 py-1.5">
+        <Text className="text-xs text-on-surface-variant">{t('scoreBoard.horizontalScrollHint')}</Text>
+      </View>
       <View className="flex-row">
         <View
           style={{ minHeight: mahjong.tableHeaderHeight, width: mahjong.gameColumnWidth }}
@@ -144,15 +157,21 @@ const TableScoreBoard = ({
               <Pressable
                 key={game?.id ?? `index-row-${index}`}
                 accessibilityRole="button"
-                accessibilityState={{ disabled }}
+                accessibilityLabel={t('scoreBoard.editRowLabel', {
+                  game: isChipTable
+                    ? t('Common.chip')
+                    : t('scoreBoard.gameLabel', { index: index + 1 }),
+                })}
+                accessibilityState={{ disabled: disabled || savingGameIndex === index, busy: savingGameIndex === index }}
                 className="min-h-11 items-center justify-center border-b border-r border-outline bg-surface-variant px-2 py-1 active:bg-primary-container"
-                disabled={disabled}
+                disabled={disabled || savingGameIndex === index}
                 style={{ width: mahjong.gameColumnWidth }}
                 onPress={() => handleRowPress(index)}
               >
                 <Text className="text-center text-sm text-on-surface" numberOfLines={1}>
                   {isChipTable ? t('Common.chip') : t('scoreBoard.gameLabel', { index: index + 1 })}
                 </Text>
+                {!disabled && <Icon as={Pencil} className="text-on-surface-variant" size={13} />}
               </Pressable>
             ))}
 
@@ -181,9 +200,15 @@ const TableScoreBoard = ({
                 <Fragment key={game?.id ?? `score-row-${index}`}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityState={{ disabled }}
+                    accessibilityLabel={t('scoreBoard.editRowLabel', {
+                      game: isChipTable
+                        ? t('Common.chip')
+                        : t('scoreBoard.gameLabel', { index: index + 1 }),
+                    })}
+                    accessibilityHint={t('scoreBoard.tapToInput')}
+                    accessibilityState={{ disabled: disabled || savingGameIndex === index, busy: savingGameIndex === index }}
                     className="min-h-11 flex-row active:bg-primary-container"
-                    disabled={disabled}
+                    disabled={disabled || savingGameIndex === index}
                     onPress={() => handleRowPress(index)}
                   >
                     {displayPlayers.map((player) => {
@@ -239,9 +264,10 @@ const TableScoreBoard = ({
           tableType={table.type}
           game={displayGames[editingGameIndex]}
           gameIndex={editingGameIndex}
-          players={displayPlayers}
+          players={players}
           onConfirm={handleConfirm}
           onClose={handleCancel}
+          isSaving={savingGameIndex === editingGameIndex}
         />
       )}
     </View>

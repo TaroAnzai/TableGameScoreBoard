@@ -14,6 +14,7 @@ interface MultiSelectorModalProps<T extends { id: number; name: string }> {
   items: T[];
   onConfirm: (selectedItems: T[]) => void;
   onClose: () => void;
+  emptyMessage?: string;
 }
 
 const MultiSelectorModal = <T extends { id: number; name: string }>({
@@ -22,6 +23,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
   items,
   onConfirm,
   onClose,
+  emptyMessage,
 }: MultiSelectorModalProps<T>) => {
   const { t } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -44,7 +46,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
 
         {items.length === 0 ? (
           <Text className="py-4 text-center text-on-surface-variant">
-            {t('Common.emptyMessage')}
+            {emptyMessage ?? t('Common.emptyMessage')}
           </Text>
         ) : (
           <ScrollView className="max-h-80 w-full">

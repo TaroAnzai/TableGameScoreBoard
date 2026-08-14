@@ -171,6 +171,9 @@
     "modalAddPlayerTitle": "Select Players",
     "modalDeletePlayerTitle": "Select a Player to Remove",
     "modalDeleteGameTitle": "Select a Game to Delete",
+    "noPlayersToAdd": "There are no players available to add.",
+    "noPlayersToDelete": "There are no players available to remove.",
+    "noGamesToDelete": "There are no games available to delete.",
 
     "alertDeleteTableTitle": "Delete Table",
     "alertDeleteTableDescription": "Are you sure you want to delete this table?",
@@ -185,7 +188,11 @@
     "gameLabel": "Game{{index}}",
     "inputTitle": "Enter scores for {{game}}",
     "totalLabel": "Total",
-    "totalMustBeZero": "The total for a standard table must be zero"
+    "totalMustBeZero": "The total for a standard table must be zero",
+    "tapToInput": "Tap to enter scores",
+    "editRowLabel": "Edit scores for {{game}}",
+    "horizontalScrollHint": "Scroll horizontally to see every player's score",
+    "saving": "Saving…"
   },
   "titleBar": {
     "group": "Group",

@@ -170,6 +170,9 @@
     "modalAddPlayerTitle": "参加者を選択",
     "modalDeletePlayerTitle": "削除する参加者を選択",
     "modalDeleteGameTitle": "削除するゲームを選択",
+    "noPlayersToAdd": "追加できる参加者がいません",
+    "noPlayersToDelete": "削除できる参加者がいません",
+    "noGamesToDelete": "削除できるゲームがありません",
 
     "alertDeleteTableTitle": "記録表削除",
     "alertDeleteTableDescription": "この記録表を削除してよいですか？",
@@ -184,7 +187,11 @@
     "gameLabel": "第{{index}}局",
     "inputTitle": "{{game}}の点数入力",
     "totalLabel": "合計",
-    "totalMustBeZero": "通常卓の合計は0にしてください"
+    "totalMustBeZero": "通常卓の合計は0にしてください",
+    "tapToInput": "タップして入力",
+    "editRowLabel": "{{game}}のスコアを編集",
+    "horizontalScrollHint": "横にスクロールして全員のスコアを表示できます",
+    "saving": "保存中…"
   },
   "titleBar": {
     "group": "グループ",

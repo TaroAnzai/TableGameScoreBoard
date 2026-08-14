@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, type LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ interface TableScoreInputModalProps {
   players: readonly Player[];
   onConfirm: (scores: ScoreInput[]) => void;
   onClose: () => void;
+  isSaving?: boolean;
 }
 
 const TableScoreInputModal = ({
@@ -39,6 +40,7 @@ const TableScoreInputModal = ({
   players,
   onConfirm,
   onClose,
+  isSaving = false,
 }: TableScoreInputModalProps) => {
   const { t } = useTranslation();
   const inputPlayers = players.filter((player) => player.id > 0);
@@ -85,7 +87,7 @@ const TableScoreInputModal = ({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose();
+        if (!nextOpen && !isSaving) onClose();
       }}
     >
       <DialogContent
@@ -152,6 +154,7 @@ const TableScoreInputModal = ({
                   >
                     <Input
                       value={scores[player.id] ?? ''}
+                      editable={!isSaving}
                       onChangeText={(value) => handleScoreChange(player.id, value)}
                       keyboardType="numeric"
                       selectTextOnFocus
@@ -177,15 +180,16 @@ const TableScoreInputModal = ({
         )}
 
         <DialogFooter>
-          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
+          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" disabled={isSaving} onPress={onClose}>
             <Text>{t('Common.Cancel')}</Text>
           </Button>
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
-            disabled={!canConfirm}
+            disabled={!canConfirm || isSaving}
             onPress={() => onConfirm(formattedScores)}
           >
-            <Text>{t('Common.Confirmed')}</Text>
+            {isSaving && <ActivityIndicator color="white" />}
+            <Text>{isSaving ? t('scoreBoard.saving') : t('Common.Confirmed')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>
