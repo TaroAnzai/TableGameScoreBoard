@@ -1,9 +1,13 @@
 // src/components/EditableTitle.jsx
+import { Pencil } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Pressable } from 'react-native';
 
+import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
 
 interface EditableTitleProps {
   value: string;
@@ -11,6 +15,7 @@ interface EditableTitleProps {
   className?: string;
 }
 const EditableTitle = ({ value, onChange, className = '' }: EditableTitleProps) => {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
@@ -26,26 +31,35 @@ const EditableTitle = ({ value, onChange, className = '' }: EditableTitleProps) 
     }
   };
 
+  if (!onChange) {
+    return <Text className={className}>{value}</Text>;
+  }
+
+  if (editing) {
+    return (
+      <Input
+        value={tempValue}
+        onChangeText={setTempValue}
+        onBlur={handleFinishEdit}
+        onSubmitEditing={handleFinishEdit}
+        autoFocus
+      />
+    );
+  }
+
   return (
-    <View>
-      {onChange ? (
-        <Pressable onPress={handleStartEdit} className={className}>
-          {editing ? (
-            <Input
-              value={tempValue}
-              onChangeText={setTempValue}
-              onBlur={handleFinishEdit}
-              onSubmitEditing={handleFinishEdit}
-              autoFocus
-            />
-          ) : (
-            <Text>{value}</Text>
-          )}
-        </Pressable>
-      ) : (
-        <Text className={className}>{value}</Text>
+    <Pressable
+      accessibilityLabel={t('Common.editTitle', { title: value })}
+      className={cn(
+        'flex-row items-center gap-2 rounded-md px-2 py-1 active:bg-surface-variant',
+        className,
       )}
-    </View>
+      role="button"
+      onPress={handleStartEdit}
+    >
+      <Text>{value}</Text>
+      <Icon as={Pencil} className="text-on-surface-variant" size={18} />
+    </Pressable>
   );
 };
 

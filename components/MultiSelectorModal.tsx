@@ -15,6 +15,7 @@ interface MultiSelectorModalProps<T extends { id: number; name: string }> {
   onConfirm: (selectedItems: T[]) => void;
   onClose: () => void;
   emptyMessage?: string;
+  initialSelectedIds?: readonly number[];
 }
 
 const MultiSelectorModal = <T extends { id: number; name: string }>({
@@ -24,9 +25,18 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
   onConfirm,
   onClose,
   emptyMessage,
+  initialSelectedIds = [],
 }: MultiSelectorModalProps<T>) => {
   const { t } = useTranslation();
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const initialSelectionKey = initialSelectedIds.join(',');
+  const [selectedIds, setSelectedIds] = useState<number[]>([...initialSelectedIds]);
+  const selectionResetKey = `${open}-${initialSelectionKey}`;
+  const [previousSelectionResetKey, setPreviousSelectionResetKey] = useState(selectionResetKey);
+
+  if (selectionResetKey !== previousSelectionResetKey) {
+    setPreviousSelectionResetKey(selectionResetKey);
+    if (open) setSelectedIds([...initialSelectedIds]);
+  }
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -34,11 +44,17 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
 
   const handleConfirm = () => {
     const selectedItems = items.filter((item) => selectedIds.includes(item.id));
+    setSelectedIds([...initialSelectedIds]);
     onConfirm(selectedItems);
   };
 
+  const handleCancel = () => {
+    setSelectedIds([...initialSelectedIds]);
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleCancel()}>
       <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -57,6 +73,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
                 return (
                   <Pressable
                     key={item.id}
+                    accessibilityLabel={item.name}
                     accessibilityState={{ checked: selected }}
                     role="checkbox"
                     onPress={() => toggleSelect(item.id)}
@@ -80,7 +97,11 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
         )}
 
         <DialogFooter>
-          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            variant="outline"
+            onPress={handleCancel}
+          >
             <Text>{t('Common.Cancel')}</Text>
           </Button>
           <Button

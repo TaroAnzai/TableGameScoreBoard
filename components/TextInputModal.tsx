@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -58,8 +58,8 @@ export const TextInputModal = ({
 }: TextInputModalProps) => {
   const { t } = useTranslation();
 
-  const inputTextRef = useRef(value || '');
-  const inputText2Ref = useRef(twoValue || '');
+  const [inputText, setInputText] = useState(value || '');
+  const [inputText2, setInputText2] = useState(twoValue || '');
   const [inputError, setInputError] = useState(false);
   const [input2Error, setInput2Error] = useState(false);
   const resetKey = `${open}-${value ?? ''}-${twoValue}`;
@@ -67,28 +67,28 @@ export const TextInputModal = ({
 
   if (resetKey !== previousResetKey) {
     setPreviousResetKey(resetKey);
-    setInputError(false);
-    setInput2Error(false);
+    if (open) {
+      setInputText(value || '');
+      setInputText2(twoValue || '');
+      setInputError(false);
+      setInput2Error(false);
+    }
   }
 
-  useEffect(() => {
-    if (!open) return;
-
-    inputTextRef.current = value || '';
-    inputText2Ref.current = twoValue || '';
-  }, [open, twoValue, value]);
-
   const handleConfirm = () => {
-    const hasInputError = inputType === 'email' && !isValidEmail(inputTextRef.current);
-    const hasInput2Error =
-      twoInput && twoInputType === 'email' && !isValidEmail(inputText2Ref.current);
+    if (!inputText.trim() || (twoInput && !inputText2.trim())) return;
+
+    const hasInputError = inputType === 'email' && !isValidEmail(inputText);
+    const hasInput2Error = twoInput && twoInputType === 'email' && !isValidEmail(inputText2);
 
     setInputError(hasInputError);
     setInput2Error(hasInput2Error);
     if (hasInputError || hasInput2Error) return;
 
-    onComfirm(inputTextRef.current, inputText2Ref.current);
+    onComfirm(inputText, inputText2);
   };
+
+  const isConfirmDisabled = isPending || !inputText.trim() || (twoInput && !inputText2.trim());
 
   return (
     <Dialog
@@ -110,9 +110,9 @@ export const TextInputModal = ({
           <View className="gap-3">
             <Label htmlFor="primaryInput">{InputLabel}</Label>
             <Input
-              defaultValue={value}
+              value={inputText}
               onChangeText={(text) => {
-                inputTextRef.current = text;
+                setInputText(text);
                 if (inputError) setInputError(false);
               }}
               keyboardType={getKeyboardType(inputType)}
@@ -131,9 +131,9 @@ export const TextInputModal = ({
               <>
                 <Label htmlFor="twoInput">{twoInputLabel}</Label>
                 <Input
-                  defaultValue={twoValue}
+                  value={inputText2}
                   onChangeText={(text) => {
-                    inputText2Ref.current = text;
+                    setInputText2(text);
                     if (input2Error) setInput2Error(false);
                   }}
                   keyboardType={getKeyboardType(twoInputType)}
@@ -161,7 +161,7 @@ export const TextInputModal = ({
           </Button>
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
-            disabled={isPending}
+            disabled={isConfirmDisabled}
             onPress={handleConfirm}
           >
             {isPending && <ActivityIndicator color="white" />}

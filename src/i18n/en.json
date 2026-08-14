@@ -13,6 +13,7 @@
     "retrying": "Retrying...",
     "processing": "Processing...",
     "invalidEmail": "Enter a valid email address.",
+    "editTitle": "Edit {{title}}",
     "ok": "OK",
     "save": "Save",
     "accessLevel": { "VIEW": "View", "EDIT": "Edit", "OWNER": "Owner" }
