@@ -13,4 +13,4 @@ echo "Current reverse settings:"
 adb reverse --list
 
 echo "Start Expo dev client..."
-npx expo start --dev-client --localhost -c
+npx expo start --dev-client --localhost "$@"

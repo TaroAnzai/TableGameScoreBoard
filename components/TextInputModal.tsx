@@ -118,6 +118,8 @@ export const TextInputModal = ({
           <View className="gap-3">
             <Label htmlFor="primaryInput">{InputLabel}</Label>
             <Input
+              nativeID="primaryInput"
+              testID="primaryInput"
               value={inputText}
               onChangeText={(text) => {
                 setInputText(text);
@@ -139,6 +141,8 @@ export const TextInputModal = ({
               <>
                 <Label htmlFor="twoInput">{twoInputLabel}</Label>
                 <Input
+                  nativeID="twoInput"
+                  testID="twoInput"
                   value={inputText2}
                   onChangeText={(text) => {
                     setInputText2(text);

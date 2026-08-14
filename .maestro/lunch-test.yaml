@@ -1,0 +1,17 @@
+appId: com.anonymous.mahjongmobile
+---
+- openLink:
+    link: 'mahjongapp://'
+
+- runFlow:
+    when:
+    visible: '麻雀集計'
+    commands:
+      - tapOn: '麻雀集計'
+      - tapOn:
+          text: '常時'
+          optional: true
+
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
