@@ -2,7 +2,7 @@ import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { Calendar } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,10 @@ import { componentSize, radius } from '@/src/lib/theme';
 interface EditTournamentModalProps {
   tournament: Tournament;
   open: boolean;
-  onConfirm: (updates: TournamentUpdate) => void;
+  onConfirm: (updates: TournamentUpdate) => void | Promise<void>;
   onClose: () => void;
+  isPending?: boolean;
+  pendingText?: string;
 }
 
 const parseDateInput = (value: string): Date | null => {
@@ -50,6 +52,8 @@ const EditTournamentModal = ({
   open,
   onConfirm,
   onClose,
+  isPending = false,
+  pendingText,
 }: EditTournamentModalProps) => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
@@ -59,6 +63,8 @@ const EditTournamentModal = ({
     tournament.started_at ? tournament.started_at.substring(0, 10) : '',
   );
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isProcessing = isPending || isSubmitting;
 
   const handleSubmit = async () => {
     const startDate = startedAt ? parseDateInput(startedAt) : null;
@@ -72,15 +78,21 @@ const EditTournamentModal = ({
       return;
     }
 
-    onConfirm({
-      name,
-      description,
-      started_at: startDate?.toISOString() ?? null,
-    });
+    if (isProcessing) return;
+    setIsSubmitting(true);
+    try {
+      await onConfirm({
+        name,
+        description,
+        started_at: startDate?.toISOString() ?? null,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const { width } = useWindowDimensions();
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && !isProcessing && onClose()}>
       <DialogContent
         className="bg-surface -translate-y-20"
         style={{
@@ -97,6 +109,7 @@ const EditTournamentModal = ({
             <Label>{t('editTournamentModal.name')}</Label>
             <Input
               value={name}
+              editable={!isProcessing}
               onChangeText={setName}
               className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
@@ -106,6 +119,7 @@ const EditTournamentModal = ({
             <Label>{t('editTournamentModal.memo')}</Label>
             <Input
               value={description}
+              editable={!isProcessing}
               onChangeText={setDescription}
               multiline
               textAlignVertical="top"
@@ -120,6 +134,7 @@ const EditTournamentModal = ({
                 accessibilityLabel={t('editTournamentModal.selectDate')}
                 className="h-auto min-h-12 flex-1 justify-start rounded-xl px-3 py-3"
                 variant="outline"
+                disabled={isProcessing}
                 onPress={() => setIsDatePickerOpen(true)}
               >
                 <Icon as={Calendar} className="text-on-surface" size={20} />
@@ -146,11 +161,21 @@ const EditTournamentModal = ({
         </View>
 
         <DialogFooter>
-          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" onPress={onClose}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            variant="outline"
+            disabled={isProcessing}
+            onPress={onClose}
+          >
             <Text>{t('Common.close')}</Text>
           </Button>
-          <Button className="h-auto min-h-12 rounded-xl py-3" onPress={() => void handleSubmit()}>
-            <Text>{t('Common.save')}</Text>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            disabled={isProcessing || !name.trim()}
+            onPress={() => void handleSubmit()}
+          >
+            {isProcessing && <ActivityIndicator color="white" />}
+            <Text>{isProcessing ? (pendingText ?? t('Common.processing')) : t('Common.save')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

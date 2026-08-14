@@ -86,11 +86,13 @@ const TournamentPage = () => {
     loadPlayers: loadGroupPlayers,
   } = useGetPlayer(groupKey);
   //Mutation系フック
-  const { mutateAsync: addTournamentPlayer } = useAddTournamentPlayer();
-  const { mutateAsync: deleteTournamentPlayer } = useDeleteTounamentsPlayer();
+  const { mutateAsync: addTournamentPlayer, isPending: isAddingTournamentPlayer } =
+    useAddTournamentPlayer();
+  const { mutateAsync: deleteTournamentPlayer, isPending: isDeletingTournamentPlayer } =
+    useDeleteTounamentsPlayer();
   const { mutate: createTable, isPending: isCreatingTable } = useCreateTable();
-  const { mutate: updateTournament } = useUpdateTournament();
-  const { mutate: addTablePlayer } = useAddTablePlayer();
+  const { mutateAsync: updateTournament, isPending: isUpdatingTournament } = useUpdateTournament();
+  const { mutateAsync: addTablePlayer, isPending: isAddingTablePlayer } = useAddTablePlayer();
 
   //ローカルステート
 
@@ -153,21 +155,27 @@ const TournamentPage = () => {
   };
 
   const handleAddPlayer = async (selectedPlayers: Player[]) => {
-    setShowAddPlayerModal(false);
-    await addTournamentPlayer({
-      tournamentKey: tournamentKey!,
-      players: selectedPlayers,
-    });
-    //CHIPテーブルにも追加する。
-    const chipTables = tables?.filter((t) => t.type === 'CHIP');
-    chipTables?.forEach((table) => {
-      const tableKey = table.edit_link;
-      if (!tableKey) return;
-      const tablePlayers = selectedPlayers.map<TablePlayerItem>((player) => ({
-        player_id: player.id,
-      }));
-      addTablePlayer({ tableKey: tableKey, tablePlayersItem: tablePlayers });
-    });
+    try {
+      await addTournamentPlayer({
+        tournamentKey: tournamentKey!,
+        players: selectedPlayers,
+      });
+      //CHIPテーブルにも追加する。
+      const chipTables = tables?.filter((t) => t.type === 'CHIP') ?? [];
+      await Promise.all(
+        chipTables.map(async (table) => {
+          const tableKey = table.edit_link;
+          if (!tableKey) return;
+          const tablePlayers = selectedPlayers.map<TablePlayerItem>((player) => ({
+            player_id: player.id,
+          }));
+          await addTablePlayer({ tableKey, tablePlayersItem: tablePlayers });
+        }),
+      );
+      setShowAddPlayerModal(false);
+    } catch {
+      // The mutation hooks show the error. Keep the selection open for retrying.
+    }
   };
   const handleCreateTable = () => {
     if (isCreatingTableRef.current || isCreatingTable) return;
@@ -211,19 +219,26 @@ const TournamentPage = () => {
     //
     if (!confirmed) return;
     const payload = { tournamentKey: tournamentKey!, playerId: player.id };
-    deleteTournamentPlayer(payload);
-
-    setShowDeletePlayerModal(false);
+    try {
+      await deleteTournamentPlayer(payload);
+      setShowDeletePlayerModal(false);
+    } catch {
+      // The mutation hook shows the error. Keep the selector open for retrying.
+    }
   };
-  const handleTitleChange = (newName: string) => {
-    updateTournament({ tournamentKey: tournamentKey, tournament: { name: newName } });
+  const handleTitleChange = async (newName: string) => {
+    await updateTournament({ tournamentKey: tournamentKey, tournament: { name: newName } });
   };
-  const handleUpdateTournament = (updates: TournamentUpdate) => {
-    updateTournament({ tournamentKey: tournamentKey!, tournament: updates });
-    setShowEditModal(false);
+  const handleUpdateTournament = async (updates: TournamentUpdate) => {
+    try {
+      await updateTournament({ tournamentKey: tournamentKey!, tournament: updates });
+      setShowEditModal(false);
+    } catch {
+      // The mutation hook shows the error. Keep the form open for retrying.
+    }
   };
-  const handleRateChange = (newRate: number) => {
-    updateTournament({
+  const handleRateChange = async (newRate: number) => {
+    await updateTournament({
       tournamentKey: tournamentKey!,
       tournament: { rate: newRate },
     });
@@ -324,6 +339,7 @@ const TournamentPage = () => {
                 <Button
                   accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
                   className="h-10 w-10 rounded-full p-0"
+                  disabled={isAddingTournamentPlayer || isAddingTablePlayer}
                   size="icon"
                   variant="ghost"
                   onPress={handleOpenAddPlayerModal}
@@ -333,6 +349,7 @@ const TournamentPage = () => {
                 <Button
                   accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
                   className="h-10 w-10 rounded-full p-0"
+                  disabled={isDeletingTournamentPlayer}
                   size="icon"
                   variant="ghost"
                   onPress={handleOpenDeletePlayerModal}
@@ -390,6 +407,8 @@ const TournamentPage = () => {
           items={candidatePlayers ?? []}
           onConfirm={handleAddPlayer}
           onClose={() => setShowAddPlayerModal(false)}
+          isPending={isAddingTournamentPlayer || isAddingTablePlayer}
+          pendingText={t('Common.processing')}
         />
       )}
 
@@ -400,6 +419,8 @@ const TournamentPage = () => {
           items={players ?? []}
           onSelect={handleDeletePlayer}
           onClose={() => setShowDeletePlayerModal(false)}
+          isPending={isDeletingTournamentPlayer}
+          pendingText={t('Common.processing')}
         />
       )}
 
@@ -409,6 +430,8 @@ const TournamentPage = () => {
           tournament={tournament}
           onConfirm={handleUpdateTournament}
           onClose={() => setShowEditModal(false)}
+          isPending={isUpdatingTournament}
+          pendingText={t('Common.processing')}
         />
       )}
     </MahjongContainer>
@@ -421,10 +444,13 @@ const EditableRate = ({
 }: {
   rate: number;
   label: string;
-  onChange?: (rate: number) => void;
+  onChange?: (rate: number) => void | Promise<void>;
 }) => {
+  const { t } = useTranslation();
   const [editedRate, setEditedRate] = useState<number | ''>(rate);
+  const [isSaving, setIsSaving] = useState(false);
   const submittedRef = useRef(false);
+  const isSavingRef = useRef(false);
 
   const handleRateChange = (text: string) => {
     if (text === '') {
@@ -438,7 +464,8 @@ const EditableRate = ({
     }
   };
 
-  const handleRateSubmit = () => {
+  const handleRateSubmit = async () => {
+    if (isSavingRef.current) return;
     submittedRef.current = true;
     if (editedRate === '' || Number(editedRate) <= 0) {
       setEditedRate(rate);
@@ -448,7 +475,16 @@ const EditableRate = ({
       return;
     }
     const newRate = Number(editedRate);
-    onChange?.(newRate);
+    isSavingRef.current = true;
+    setIsSaving(true);
+    try {
+      await onChange?.(newRate);
+    } catch {
+      // The mutation hook shows the error. Keep the edited value for retrying.
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
+    }
   };
   const handleRateBlur = () => {
     if (submittedRef.current) {
@@ -466,16 +502,18 @@ const EditableRate = ({
             className="w-20 text-right"
             keyboardType="numeric"
             value={editedRate.toString()}
+            editable={!isSaving}
             onChangeText={handleRateChange}
             onBlur={() => {
               handleRateBlur();
             }}
-            onSubmitEditing={handleRateSubmit}
+            onSubmitEditing={() => void handleRateSubmit()}
             submitBehavior="blurAndSubmit"
           />
         ) : (
           <Text>{rate.toLocaleString()}</Text>
         )}
+        {isSaving && <ActivityIndicator accessibilityLabel={t('Common.processing')} />}
       </View>
     </Pressable>
   );

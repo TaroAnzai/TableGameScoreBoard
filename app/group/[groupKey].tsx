@@ -52,7 +52,7 @@ const GroupPage = () => {
     isFetching: isFetchingGroup,
     refetch: refetchGroup,
   } = useGetApiGroupsGroupKey(groupKey);
-  const { mutate: updateGroup } = useUpdateGroup(refetchGroup);
+  const { mutateAsync: updateGroup } = useUpdateGroup(refetchGroup);
   const { mutateAsync: createPlayer, isPending: isCreatingPlayer } = useCreatePlayer(loadPlayers);
   const { mutateAsync: deletePlayer, isPending: isDeletingPlayer } = useDeletePlayer(loadPlayers);
   const { mutateAsync: createTournament, isPending: isCreatingTournament } = useCreateTournament();
@@ -123,10 +123,10 @@ const GroupPage = () => {
     });
   }, [isGroupRegistered, navigateAway, navigation]);
 
-  const handleTitleChange = (newTitle: string) => {
+  const handleTitleChange = async (newTitle: string) => {
     if (!newTitle) return;
     if (!groupKey) return;
-    updateGroup({ groupKey: groupKey, groupUpdate: { name: newTitle } });
+    await updateGroup({ groupKey: groupKey, groupUpdate: { name: newTitle } });
   };
   const handleAddGroup = async () => {
     if (!groupKey || !group) return;

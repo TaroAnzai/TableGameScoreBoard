@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
 import { radius } from '@/src/lib/theme';
@@ -12,10 +12,12 @@ interface MultiSelectorModalProps<T extends { id: number; name: string }> {
   title: string;
   open: boolean;
   items: T[];
-  onConfirm: (selectedItems: T[]) => void;
+  onConfirm: (selectedItems: T[]) => void | Promise<void>;
   onClose: () => void;
   emptyMessage?: string;
   initialSelectedIds?: readonly number[];
+  isPending?: boolean;
+  pendingText?: string;
 }
 
 const MultiSelectorModal = <T extends { id: number; name: string }>({
@@ -26,12 +28,16 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
   onClose,
   emptyMessage,
   initialSelectedIds = [],
+  isPending = false,
+  pendingText,
 }: MultiSelectorModalProps<T>) => {
   const { t } = useTranslation();
   const initialSelectionKey = initialSelectedIds.join(',');
   const [selectedIds, setSelectedIds] = useState<number[]>([...initialSelectedIds]);
   const selectionResetKey = `${open}-${initialSelectionKey}`;
   const [previousSelectionResetKey, setPreviousSelectionResetKey] = useState(selectionResetKey);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isProcessing = isPending || isSubmitting;
 
   if (selectionResetKey !== previousSelectionResetKey) {
     setPreviousSelectionResetKey(selectionResetKey);
@@ -42,13 +48,19 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (isProcessing) return;
     const selectedItems = items.filter((item) => selectedIds.includes(item.id));
-    setSelectedIds([...initialSelectedIds]);
-    onConfirm(selectedItems);
+    setIsSubmitting(true);
+    try {
+      await onConfirm(selectedItems);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
+    if (isProcessing) return;
     setSelectedIds([...initialSelectedIds]);
     onClose();
   };
@@ -59,6 +71,13 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+
+        {isProcessing && (
+          <View className="flex-row items-center justify-center gap-2 py-2">
+            <ActivityIndicator accessibilityLabel={pendingText ?? t('Common.processing')} />
+            <Text>{pendingText ?? t('Common.processing')}</Text>
+          </View>
+        )}
 
         {items.length === 0 ? (
           <Text className="py-4 text-center text-on-surface-variant">
@@ -75,6 +94,7 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
                     key={item.id}
                     accessibilityLabel={item.name}
                     accessibilityState={{ checked: selected }}
+                    disabled={isProcessing}
                     role="checkbox"
                     onPress={() => toggleSelect(item.id)}
                     className="mb-2 min-h-14 w-full flex-row items-center rounded-xl border border-outline bg-surface px-4 py-3 active:bg-surface-variant"
@@ -100,16 +120,18 @@ const MultiSelectorModal = <T extends { id: number; name: string }>({
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
             variant="outline"
+            disabled={isProcessing}
             onPress={handleCancel}
           >
             <Text>{t('Common.Cancel')}</Text>
           </Button>
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
-            onPress={handleConfirm}
-            disabled={selectedIds.length === 0}
+            onPress={() => void handleConfirm()}
+            disabled={selectedIds.length === 0 || isProcessing}
           >
-            <Text>{t('Common.ok')}</Text>
+            {isProcessing && <ActivityIndicator color="white" />}
+            <Text>{isProcessing ? (pendingText ?? t('Common.processing')) : t('Common.ok')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

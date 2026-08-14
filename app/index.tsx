@@ -270,7 +270,7 @@ export default function Index() {
         title={t('welcomPage.CreateNewGroup')}
         discription={t('welcomPage.EnterGroupName')}
         InputLabel={t('welcomPage.GroupName')}
-        onComfirm={(inputText, inputText2) => void handleCreateGroup(inputText, inputText2 ?? '')}
+        onComfirm={(inputText, inputText2) => handleCreateGroup(inputText, inputText2 ?? '')}
         onClose={() => setIsModalOpen(false)}
         isPending={isCreatingGroup}
         pendingText={t('welcomPage.creatingGroup')}

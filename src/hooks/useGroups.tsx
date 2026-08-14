@@ -21,6 +21,7 @@ import type {
   GroupResponse,
   GroupUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { appStorage, PendingGroup } from '@/src/storage/appStorage';
 import { syncPendingGroups } from '@/src/utils/groupSync';
 
@@ -46,6 +47,7 @@ import { formatLocalDateTime, toLocalDate } from '../utils/date_utils';
  */
 export const useCreateGroupRequest = () => {
   const { alertDialog } = useAlertDialog();
+  const { showError } = useMutationFeedback();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   return useMutation({
@@ -83,27 +85,24 @@ export const useCreateGroupRequest = () => {
             error.body?.message ??
             error.statusText ??
             t('hooks.groupRequest.unknownError'));
-      alertDialog({
+      showError({
         title: t('hooks.groupRequest.createErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        fallback: t('hooks.groupRequest.unknownError'),
+        message,
       });
     },
   });
 };
 
 export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = true) => {
-  const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
+  const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: GroupCreate) => {
       return postApiGroups(data);
     },
     onSuccess: (data: Group) => {
-      Toast.show({
-        type: 'success',
-        text1: t('hooks.group.createSuccess'),
-      });
+      showSuccess(t('hooks.group.createSuccess'));
       if (data.owner_link) {
         appStorage.addGroupKey(data.owner_link);
       }
@@ -112,44 +111,30 @@ export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = tru
     onError: (error: any) => {
       if (!showErrorDialog) return;
 
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('hooks.group.unknownError');
-      alertDialog({
+      showError({
         title: t('hooks.group.createErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('hooks.group.unknownError'),
       });
     },
   });
 };
 export const useUpdateGroup = (onAfterUpdate?: () => void) => {
-  const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
+  const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: { groupKey: string; groupUpdate: GroupUpdate }) => {
       return putApiGroupsGroupKey(data.groupKey, data.groupUpdate);
     },
     onSuccess: (data: Group) => {
-      Toast.show({
-        type: 'success',
-        text1: t('hooks.group.updateSuccess'),
-        text2: data.name,
-      });
+      showSuccess(t('hooks.group.updateSuccess'), data.name);
       onAfterUpdate?.();
     },
     onError: (error: any) => {
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('hooks.group.unknownError');
-      alertDialog({
+      showError({
         title: t('hooks.group.updateErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('hooks.group.unknownError'),
       });
     },
   });

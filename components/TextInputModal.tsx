@@ -17,7 +17,7 @@ import { Text } from '@/components/ui/text';
 import { radius } from '@/src/lib/theme';
 interface TextInputModalProps {
   open: boolean;
-  onComfirm: (inputText: string, inputText2?: string) => void;
+  onComfirm: (inputText: string, inputText2?: string) => void | Promise<void>;
   onClose: () => void;
   value?: string;
   title?: string;
@@ -62,6 +62,8 @@ export const TextInputModal = ({
   const [inputText2, setInputText2] = useState(twoValue || '');
   const [inputError, setInputError] = useState(false);
   const [input2Error, setInput2Error] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isProcessing = isPending || isSubmitting;
   const resetKey = `${open}-${value ?? ''}-${twoValue}`;
   const [previousResetKey, setPreviousResetKey] = useState(resetKey);
 
@@ -75,7 +77,8 @@ export const TextInputModal = ({
     }
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (isProcessing) return;
     if (!inputText.trim() || (twoInput && !inputText2.trim())) return;
 
     const hasInputError = inputType === 'email' && !isValidEmail(inputText);
@@ -85,16 +88,21 @@ export const TextInputModal = ({
     setInput2Error(hasInput2Error);
     if (hasInputError || hasInput2Error) return;
 
-    onComfirm(inputText, inputText2);
+    setIsSubmitting(true);
+    try {
+      await onComfirm(inputText, inputText2);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const isConfirmDisabled = isPending || !inputText.trim() || (twoInput && !inputText2.trim());
+  const isConfirmDisabled = isProcessing || !inputText.trim() || (twoInput && !inputText2.trim());
 
   return (
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen && !isPending) onClose();
+        if (!nextOpen && !isProcessing) onClose();
       }}
     >
       <DialogContent
@@ -154,7 +162,7 @@ export const TextInputModal = ({
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
             variant="outline"
-            disabled={isPending}
+            disabled={isProcessing}
             onPress={onClose}
           >
             <Text>{t('Common.Cancel')}</Text>
@@ -162,10 +170,10 @@ export const TextInputModal = ({
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
             disabled={isConfirmDisabled}
-            onPress={handleConfirm}
+            onPress={() => void handleConfirm()}
           >
-            {isPending && <ActivityIndicator color="white" />}
-            <Text>{isPending ? (pendingText ?? t('Common.processing')) : t('Common.ok')}</Text>
+            {isProcessing && <ActivityIndicator color="white" />}
+            <Text>{isProcessing ? (pendingText ?? t('Common.processing')) : t('Common.ok')}</Text>
           </Button>
         </DialogFooter>
       </DialogContent>

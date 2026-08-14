@@ -1,5 +1,5 @@
 // src/components/SelectorModal.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
@@ -25,7 +25,7 @@ interface SelectorModalProps<T extends SelectorItem> {
   title: string;
   open: boolean;
   items?: readonly T[];
-  onSelect: (item: T) => void;
+  onSelect: (item: T) => void | Promise<void>;
   onClose: () => void;
   plusDisplayItem?: keyof T | null;
   emptyMessage?: string;
@@ -46,16 +46,28 @@ const SelectorModal = <T extends SelectorItem>({
 }: SelectorModalProps<T>) => {
   const { t } = useTranslation();
   const msg = emptyMessage ?? t('Common.emptyMessage');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isProcessing = isPending || isSubmitting;
+
+  const handleSelect = async (item: T) => {
+    if (isProcessing) return;
+    setIsSubmitting(true);
+    try {
+      await onSelect(item);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(value) => !value && !isPending && onClose()}>
+    <Dialog open={open} onOpenChange={(value) => !value && !isProcessing && onClose()}>
       <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t('Common.Select')}</DialogDescription>
         </DialogHeader>
 
-        {isPending && (
+        {isProcessing && (
           <View className="flex-row items-center justify-center gap-2 py-2">
             <ActivityIndicator accessibilityLabel={pendingText ?? t('Common.processing')} />
             <Text>{pendingText ?? t('Common.processing')}</Text>
@@ -72,8 +84,8 @@ const SelectorModal = <T extends SelectorItem>({
               {items.map((item) => (
                 <Button
                   key={String(item.id)}
-                  disabled={isPending}
-                  onPress={() => onSelect(item)}
+                  disabled={isProcessing}
+                  onPress={() => void handleSelect(item)}
                   className="h-auto min-h-14 w-full items-start rounded-xl border border-outline bg-surface px-4 py-3"
                   variant="ghost"
                 >
@@ -93,7 +105,7 @@ const SelectorModal = <T extends SelectorItem>({
         <DialogFooter>
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
-            disabled={isPending}
+            disabled={isProcessing}
             onPress={onClose}
           >
             <Text>{t('Common.close')}</Text>

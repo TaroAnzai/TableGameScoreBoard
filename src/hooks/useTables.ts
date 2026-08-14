@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
 
-import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import {
   deleteApiTablesTableKey,
   deleteApiTablesTableKeyPlayersPlayerId,
@@ -23,6 +21,7 @@ import type {
   TableUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useDeleteGame } from '@/src/hooks/useGames';
+import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { getResourceKey } from '@/src/utils/accessLevel_utils';
 
 export const useGetTables = (tournamentKey: string) => {
@@ -46,32 +45,23 @@ export const useGetTables = (tournamentKey: string) => {
 
 export const useCreateTable = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; tableCreate: TableCreate }) => {
       return postApiTournamentsTournamentKeyTables(data.tournamentKey, data.tableCreate);
     },
     onSuccess: (data) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.table.createSuccess'),
-        position: 'bottom',
-      });
+      showSuccess(t('notifications.table.createSuccess'));
       // 遷移
       const tableKey = getResourceKey(data);
       if (tableKey) router.push(`/table/${tableKey}`);
     },
     onError: (error: any) => {
       console.error('Error creating table:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.table.createErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -79,33 +69,24 @@ export const useCreateTable = () => {
 
 export const useUpdateTable = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tableKey: string; tableUpdate: TableUpdate }) => {
       return putApiTablesTableKey(data.tableKey, data.tableUpdate);
     },
     onSuccess: (data, variables) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.table.updateSuccess'),
-        position: 'bottom',
-      });
+      showSuccess(t('notifications.table.updateSuccess'));
       // キャッシュ更新
       const queryKey = getGetApiTablesTableKeyQueryOptions(variables.tableKey).queryKey;
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: any) => {
       console.error('Error updating table:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.table.updateErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -132,29 +113,20 @@ export const useGetTable = (tableKey: string, optins?: object) => {
 
 export const useDeleteTable = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: { tableKey: string }) => {
       return deleteApiTablesTableKey(data.tableKey);
     },
     onSuccess: () => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.table.deleteSuccess'),
-        position: 'bottom',
-      });
+      showSuccess(t('notifications.table.deleteSuccess'));
     },
     onError: (error: any) => {
       console.error('Error deleting table:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.table.deleteErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -182,33 +154,24 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
 
 export const useAddTablePlayer = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tableKey: string; tablePlayersItem: TablePlayerItem[] }) => {
       return postApiTablesTableKeyPlayers(data.tableKey, { players: data.tablePlayersItem });
     },
     onSuccess: (data, variables) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.table.addPlayersSuccess'),
-        position: 'bottom',
-      });
+      showSuccess(t('notifications.table.addPlayersSuccess'));
       // キャッシュ更新
       const queryKey = getGetApiTablesTableKeyPlayersQueryKey(variables.tableKey);
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: any) => {
       console.error('Error adding players to table:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.table.addPlayersErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -216,33 +179,24 @@ export const useAddTablePlayer = () => {
 
 export const useDeleteTablePlayer = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tableKey: string; playerId: number }) => {
       return deleteApiTablesTableKeyPlayersPlayerId(data.tableKey, data.playerId);
     },
     onSuccess: (data, variables) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.table.removePlayersSuccess'),
-        position: 'bottom',
-      });
+      showSuccess(t('notifications.table.removePlayersSuccess'));
       // キャッシュ更新
       const queryKey = getGetApiTablesTableKeyPlayersQueryKey(variables.tableKey);
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: any) => {
       console.error('Error removing players from table:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.table.removePlayersErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -250,6 +204,7 @@ export const useDeleteTablePlayer = () => {
 
 export const useDeleteChipTableWithScores = () => {
   const { t } = useTranslation();
+  const { showError, showSuccess } = useMutationFeedback();
   // チップテーブルのスコアデータとテーブル自体を削除する。
   const { mutateAsync: deleteScores } = useDeleteGame();
 
@@ -267,23 +222,14 @@ export const useDeleteChipTableWithScores = () => {
       return deleteApiTablesTableKey(tableKey);
     },
     onSuccess: () => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.table.deleteSuccess'),
-        position: 'bottom',
-      });
+      showSuccess(t('notifications.table.deleteSuccess'));
     },
     onError: (error: any) => {
       console.error('Error deleting table:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      Toast.show({
-        type: 'error',
-        text1: message,
-        position: 'bottom',
+      showError({
+        title: t('notifications.table.deleteErrorTitle'),
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });

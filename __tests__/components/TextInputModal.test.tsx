@@ -72,4 +72,26 @@ describe('TextInputModal', () => {
       expect.objectContaining({ disabled: true }),
     );
   });
+
+  it('処理中は入力内容を維持して確定・キャンセルを無効化する', async () => {
+    await render(
+      <TextInputModal
+        open
+        onComfirm={jest.fn()}
+        onClose={jest.fn()}
+        value="入力済み"
+        title="入力"
+        isPending
+        pendingText="保存中..."
+      />,
+    );
+
+    expect(screen.getByDisplayValue('入力済み')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'キャンセル' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ disabled: true }),
+    );
+    expect(screen.getByRole('button', { name: '保存中...' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ disabled: true }),
+    );
+  });
 });

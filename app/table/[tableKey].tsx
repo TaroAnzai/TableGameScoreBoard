@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { UserMinus, UserPlus } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ActivityIndicator } from 'react-native';
 
 import { ButtonGridSection } from '@/components/ButtonGridSection';
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -44,13 +45,18 @@ export default function TablePage() {
   const [showDeletePlayerModal, setShowDeletePlayerModal] = useState(false);
   const [showDeleteGameModal, setShowDeleteGameModal] = useState(false);
   //Mutation系フック
-  const { mutate: updateTable } = useUpdateTable();
-  const { mutate: deleteTable, isSuccess: isTableDeleteSuccess } = useDeleteTable();
-  const { mutate: addTablePlayer } = useAddTablePlayer();
-  const { mutate: deleteTablePlayer } = useDeleteTablePlayer();
+  const { mutateAsync: updateTable } = useUpdateTable();
+  const {
+    mutateAsync: deleteTable,
+    isPending: isDeletingTable,
+    isSuccess: isTableDeleteSuccess,
+  } = useDeleteTable();
+  const { mutateAsync: addTablePlayer, isPending: isAddingTablePlayer } = useAddTablePlayer();
+  const { mutateAsync: deleteTablePlayer, isPending: isDeletingTablePlayer } =
+    useDeleteTablePlayer();
   const { mutateAsync: createGame } = useCreateGame();
   const { mutateAsync: updateGame } = useUpdateGame();
-  const { mutate: deleteGame } = useDeleteGame();
+  const { mutateAsync: deleteGame, isPending: isDeletingGame } = useDeleteGame();
   //Query系フック設定
   const { tableKey, parentTournamentKey, parentGroupKey } = useLocalSearchParams<{
     tableKey: string;
@@ -113,8 +119,8 @@ export default function TablePage() {
       </MahjongContainer>
     );
   }
-  const handleTableNameChange = (newTitle: string) => {
-    updateTable({ tableKey: tableKey!, tableUpdate: { name: newTitle } });
+  const handleTableNameChange = async (newTitle: string) => {
+    await updateTable({ tableKey: tableKey!, tableUpdate: { name: newTitle } });
   };
   // --- ④ データが存在しない ---
   if (!table && !isLoadingTable && !isErrorTable) {
@@ -140,15 +146,23 @@ export default function TablePage() {
     if (tournamentKey) requests.push(loadTournamentPlayers());
     await Promise.all(requests);
   };
-  const handleAddPlayer = (selectedPlayers: Player[]) => {
+  const handleAddPlayer = async (selectedPlayers: Player[]) => {
     const plyerIds: TablePlayerItem[] = selectedPlayers.map((p) => ({ player_id: p.id }));
-    addTablePlayer({ tableKey: tableKey!, tablePlayersItem: plyerIds });
-    setShowAddPlayerModal(false);
+    try {
+      await addTablePlayer({ tableKey: tableKey!, tablePlayersItem: plyerIds });
+      setShowAddPlayerModal(false);
+    } catch {
+      // The mutation hook shows the error. Keep the selection open for retrying.
+    }
   };
 
-  const handleDeletePlayer = (player: Player) => {
-    deleteTablePlayer({ tableKey: tableKey!, playerId: player.id });
-    setShowDeletePlayerModal(false);
+  const handleDeletePlayer = async (player: Player) => {
+    try {
+      await deleteTablePlayer({ tableKey: tableKey!, playerId: player.id });
+      setShowDeletePlayerModal(false);
+    } catch {
+      // The mutation hook shows the error. Keep the selector open for retrying.
+    }
   };
   const handleUpdateGame = async (gameId: number | null, newScores: ScoreInput[]) => {
     if (!tableKey) return;
@@ -167,7 +181,11 @@ export default function TablePage() {
       description: t('tablePage.alertDeleteTableDescription'),
     });
     if (!confirmed) return;
-    deleteTable({ tableKey: tableKey! });
+    try {
+      await deleteTable({ tableKey: tableKey! });
+    } catch {
+      // The mutation hook shows the error. Keep this page available for retrying.
+    }
   };
 
   const handleDeleteGameClick = () => {
@@ -178,8 +196,13 @@ export default function TablePage() {
       title: t('tablePage.alertDeleteGameTitle'),
       description: t('tablePage.alertDeleteGameDescription'),
     });
-    if (confirmed) deleteGame({ tableKey: tableKey!, gameId: game.id! });
-    setShowDeleteGameModal(false);
+    if (!confirmed) return;
+    try {
+      await deleteGame({ tableKey: tableKey!, gameId: game.id! });
+      setShowDeleteGameModal(false);
+    } catch {
+      // The mutation hook shows the error. Keep the selector open for retrying.
+    }
   };
 
   return (
@@ -215,7 +238,7 @@ export default function TablePage() {
                     remainingPlayers?.length === 0 ? t('tablePage.noPlayersToAdd') : undefined
                   }
                   className="h-10 w-10 rounded-full p-0"
-                  disabled={remainingPlayers?.length === 0}
+                  disabled={remainingPlayers?.length === 0 || isAddingTablePlayer}
                   size="icon"
                   variant="ghost"
                   onPress={() => {
@@ -230,7 +253,7 @@ export default function TablePage() {
                     tablePlayers?.length === 0 ? t('tablePage.noPlayersToDelete') : undefined
                   }
                   className="h-10 w-10 rounded-full p-0"
-                  disabled={tablePlayers?.length === 0}
+                  disabled={tablePlayers?.length === 0 || isDeletingTablePlayer}
                   size="icon"
                   variant="ghost"
                   onPress={() => setShowDeletePlayerModal(true)}
@@ -256,18 +279,22 @@ export default function TablePage() {
           <Button
             className="w-full"
             variant="destructive"
-            disabled={accessLevel === 'VIEW' || !games?.length}
+            disabled={accessLevel === 'VIEW' || !games?.length || isDeletingGame}
             onPress={handleDeleteGameClick}
           >
-            <Text>{t('tablePage.buttonDeleteGame')}</Text>
+            {isDeletingGame && <ActivityIndicator color="white" />}
+            <Text>{isDeletingGame ? t('Common.processing') : t('tablePage.buttonDeleteGame')}</Text>
           </Button>
           <Button
             className="w-full"
             variant="destructive"
-            disabled={accessLevel === 'VIEW'}
+            disabled={accessLevel === 'VIEW' || isDeletingTable}
             onPress={handleDeleteTable}
           >
-            <Text>{t('tablePage.buttonDeleteTable')}</Text>
+            {isDeletingTable && <ActivityIndicator color="white" />}
+            <Text>
+              {isDeletingTable ? t('Common.processing') : t('tablePage.buttonDeleteTable')}
+            </Text>
           </Button>
         </ButtonGridSection>
       )}
@@ -279,6 +306,8 @@ export default function TablePage() {
           emptyMessage={t('tablePage.noPlayersToAdd')}
           onConfirm={handleAddPlayer}
           onClose={() => setShowAddPlayerModal(false)}
+          isPending={isAddingTablePlayer}
+          pendingText={t('Common.processing')}
         />
       )}
       {showDeletePlayerModal && (
@@ -289,6 +318,8 @@ export default function TablePage() {
           emptyMessage={t('tablePage.noPlayersToDelete')}
           onSelect={handleDeletePlayer}
           onClose={() => setShowDeletePlayerModal(false)}
+          isPending={isDeletingTablePlayer}
+          pendingText={t('Common.processing')}
         />
       )}
       {showDeleteGameModal && (
@@ -304,6 +335,8 @@ export default function TablePage() {
           emptyMessage={t('tablePage.noGamesToDelete')}
           onSelect={handleDeleteGame}
           onClose={() => setShowDeleteGameModal(false)}
+          isPending={isDeletingGame}
+          pendingText={t('Common.processing')}
         />
       )}
     </MahjongContainer>

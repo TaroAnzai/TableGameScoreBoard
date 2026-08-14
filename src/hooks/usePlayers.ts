@@ -1,14 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
 
-import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import {
   deleteApiGroupsGroupKeyPlayersPlayerId,
   postApiGroupsGroupKeyPlayers,
   useGetApiGroupsGroupKeyPlayers,
 } from '@/src/api/generated/mahjongApi';
 import type { PlayerCreate } from '@/src/api/generated/mahjongApi.schemas';
+import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 /**
  * Fetch players in a group by group key.
  *
@@ -35,58 +34,42 @@ export const useGetPlayer = (groupKey: string) => {
 };
 export const useCreatePlayer = (onAfterCreate?: () => void) => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: { groupKey: string; player: PlayerCreate }) => {
       return postApiGroupsGroupKeyPlayers(data.groupKey, data.player);
     },
     onSuccess: () => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.player.createSuccess'),
-      });
+      showSuccess(t('notifications.player.createSuccess'));
       onAfterCreate?.();
     },
     onError: (error: any) => {
       console.error('Error creating player:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.player.createErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
 };
 export const useDeletePlayer = (onAfterDelete?: () => void) => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: { groupKey: string; playerId: number }) => {
       return deleteApiGroupsGroupKeyPlayersPlayerId(data.groupKey, data.playerId);
     },
     onSuccess: () => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.player.deleteSuccess'),
-      });
+      showSuccess(t('notifications.player.deleteSuccess'));
       onAfterDelete?.();
     },
     onError: (error: any) => {
       console.error('Error deleting player:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.player.deleteErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });

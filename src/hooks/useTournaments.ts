@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
 
-import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import {
   deleteApiTournamentsTournamentKey,
   deleteApiTournamentsTournamentKeyParticipantsPlayerId,
@@ -21,32 +19,25 @@ import type {
   TournamentCreate,
   TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 
 export const useCreateTournament = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
 
   return useMutation({
     mutationFn: (data: { groupKey: string; tournament: TournamentCreate }) => {
       return postApiGroupsGroupKeyTournaments(data.groupKey, data.tournament);
     },
     onSuccess: () => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.tournament.createSuccess'),
-      });
+      showSuccess(t('notifications.tournament.createSuccess'));
     },
     onError: (error: any) => {
       console.error('Error creating tournament:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.tournament.createErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -72,17 +63,14 @@ export const useGetTournaments = (groupKey: string) => {
 };
 export const useUpdateTournament = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; tournament: TournamentUpdate }) => {
       return putApiTournamentsTournamentKey(data.tournamentKey, data.tournament);
     },
     onSuccess: (data, variables) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.tournament.updateSuccess'),
-      });
+      showSuccess(t('notifications.tournament.updateSuccess'));
       const queryKeytournament = getGetApiTournamentsTournamentKeyQueryOptions(
         variables.tournamentKey,
       ).queryKey;
@@ -94,44 +82,31 @@ export const useUpdateTournament = () => {
     },
     onError: (error: any) => {
       console.error('Error updating tournament:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.tournament.updateErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
 };
 export const useDeleteTournament = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
 
   return useMutation({
     mutationFn: (data: { tournamentKey: string }) => {
       return deleteApiTournamentsTournamentKey(data.tournamentKey);
     },
     onSuccess: () => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.tournament.deleteSuccess'),
-      });
+      showSuccess(t('notifications.tournament.deleteSuccess'));
     },
     onError: (error: any) => {
       console.error('Error deleting tournament:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.tournament.deleteErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -177,7 +152,7 @@ export const useGetTournamentPlayers = (tournamentKey: string, options?: object)
 
 export const useAddTournamentPlayer = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; players: Player[] }) => {
@@ -192,10 +167,7 @@ export const useAddTournamentPlayer = () => {
       return postApiTournamentsTournamentKeyParticipants(data.tournamentKey, payload);
     },
     onSuccess: (data, variables) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.tournament.addPlayerSuccess'),
-      });
+      showSuccess(t('notifications.tournament.addPlayerSuccess'));
 
       const queryKeyPlayer = getGetApiTournamentsTournamentKeyParticipantsQueryOptions(
         variables.tournamentKey,
@@ -208,15 +180,10 @@ export const useAddTournamentPlayer = () => {
     },
     onError: (error: any) => {
       console.error('Error adding player:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.tournament.addPlayerErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });
@@ -224,7 +191,7 @@ export const useAddTournamentPlayer = () => {
 
 export const useDeleteTounamentsPlayer = () => {
   const { t } = useTranslation();
-  const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; playerId: number }) => {
@@ -234,10 +201,7 @@ export const useDeleteTounamentsPlayer = () => {
       );
     },
     onSuccess: (data, variables) => {
-      Toast.show({
-        type: 'success',
-        text1: t('notifications.tournament.deletePlayerSuccess'),
-      });
+      showSuccess(t('notifications.tournament.deletePlayerSuccess'));
       const queryKeyPlayer = getGetApiTournamentsTournamentKeyParticipantsQueryOptions(
         variables.tournamentKey,
       ).queryKey;
@@ -249,15 +213,10 @@ export const useDeleteTounamentsPlayer = () => {
     },
     onError: (error: any) => {
       console.error('Error deleting player from tournament:', error);
-      const message =
-        error.body?.errors?.json?.message?.[0] ??
-        error.body?.message ??
-        error.statusText ??
-        t('notifications.common.unknownError');
-      alertDialog({
+      showError({
         title: t('notifications.tournament.deletePlayerErrorTitle'),
-        description: message,
-        showCancelButton: false,
+        error,
+        fallback: t('notifications.common.unknownError'),
       });
     },
   });

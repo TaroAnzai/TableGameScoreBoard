@@ -92,4 +92,30 @@ describe('MultiSelectorModal', () => {
 
     expect(onConfirm).toHaveBeenCalledWith(items);
   });
+
+  it('処理中は選択・確定・キャンセルを無効化して進行状況を表示する', async () => {
+    await render(
+      <MultiSelectorModal
+        title="選択"
+        open
+        items={items}
+        initialSelectedIds={[1]}
+        onConfirm={jest.fn()}
+        onClose={jest.fn()}
+        isPending
+        pendingText="追加中..."
+      />,
+    );
+
+    expect(screen.getAllByText('追加中...').length).toBeGreaterThan(0);
+    expect(screen.getByRole('checkbox', { name: 'プレイヤー1' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ disabled: true }),
+    );
+    expect(screen.getByRole('button', { name: 'キャンセル' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ disabled: true }),
+    );
+    expect(screen.getByRole('button', { name: '追加中...' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ disabled: true }),
+    );
+  });
 });
