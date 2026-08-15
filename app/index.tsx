@@ -248,7 +248,7 @@ export default function Index() {
                     accessories={[
                       group.expiresAt &&
                         t('welcomPage.expiresAt', {
-                          date: format(group.expiresAt, 'yyyy-MM-dd'),
+                          date: format(group.expiresAt, 'yyyy-MM-dd HH:mm'),
                         }),
                     ]}
                   />

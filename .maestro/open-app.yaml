@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+---
+- openLink:
+    link: "${APP_SCHEME}://"
+
+# Android がリンクを開くアプリを質問した場合だけ選択する。
+- runFlow:
+    when:
+      visible: "麻雀集計"
+    commands:
+      - tapOn: "麻雀集計"
+      - tapOn:
+          text: "常時"
+          optional: true
+
+- extendedWaitUntil:
+    visible: "麻雀大会 集計"
+    timeout: 30000

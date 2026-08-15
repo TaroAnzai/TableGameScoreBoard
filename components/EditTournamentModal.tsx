@@ -108,6 +108,7 @@ const EditTournamentModal = ({
           <View className="gap-2">
             <Label>{t('editTournamentModal.name')}</Label>
             <Input
+              testID="tournament-name-input"
               value={name}
               editable={!isProcessing}
               onChangeText={setName}
@@ -118,6 +119,7 @@ const EditTournamentModal = ({
           <View className="gap-2">
             <Label>{t('editTournamentModal.memo')}</Label>
             <Input
+              testID="tournament-description-input"
               value={description}
               editable={!isProcessing}
               onChangeText={setDescription}

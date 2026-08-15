@@ -35,7 +35,7 @@ export const syncPendingGroups = async (): Promise<boolean> => {
     }
 
     if (result.status === 'rejected') {
-      console.error('Failed to check pending group:', result.reason);
+      console.log('Failed to check pending group:', result.reason);
     }
   }
 

@@ -1,11 +1,11 @@
-appId: com.anonymous.mahjongmobile
+appId: com.anzaihome.mahjongapp.dev
 ---
 - openLink:
-    link: 'mahjongapp://'
+    link: 'mahjongapp-dev://'
 
 - runFlow:
     when:
-    visible: '麻雀集計'
+      visible: '麻雀集計'
     commands:
       - tapOn: '麻雀集計'
       - tapOn:

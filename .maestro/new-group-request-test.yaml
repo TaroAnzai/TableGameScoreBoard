@@ -1,0 +1,32 @@
+appId: com.anzaihome.mahjongapp.dev
+---
+- runScript: scripts/create-group-fixture.js
+- runFlow: lunch-test.yaml
+
+- tapOn:
+    text: 'キャンセル'
+    optional: true
+- tapOn: '新しいグループを作成'
+
+- tapOn:
+    id: 'primaryInput'
+- setClipboard: ${output.groupName}
+- pasteText
+
+- tapOn:
+    id: 'twoInput'
+- setClipboard: ${output.email}
+- pasteText
+
+- tapOn: 'OK'
+
+- extendedWaitUntil:
+    visible: 'グループ作成用メールを送信しました'
+    timeout: 30000
+- tapOn: 'OK'
+
+- extendedWaitUntil:
+    visible: '申請中のグループ'
+    timeout: 30000
+- assertVisible: ${output.groupName}
+- assertVisible: ${output.expiresAtLabel}

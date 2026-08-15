@@ -1,32 +1,16 @@
-appId: com.anonymous.mahjongmobile
+appId: com.anzaihome.mahjongapp.dev
 ---
 - runScript: scripts/create-group-fixture.js
-- runFlow: lunch-test.yaml
+- runScript:
+    file: scripts/request-group-creation-link.js
+    env:
+      API_BASE_URL: 'http://localhost:6080'
 
-- tapOn: '新しいグループを作成'
-
-- tapOn:
-    id: 'primaryInput'
-- inputText: ${output.groupName}
-
-- tapOn:
-    id: 'twoInput'
-- inputText: ${output.email}
-
-- tapOn: 'OK'
-
-- extendedWaitUntil:
-    visible: 'グループ作成用メールを送信しました'
-    timeout: 30000
-- tapOn: 'OK'
-
-- retry:
-    maxRetries: 3
+- runFlow:
+    when:
+      visible: 'この画面に戻る'
     commands:
-      - runScript:
-          file: scripts/get-group-creation-link.js
-          env:
-            MAILHOG_URL: 'http://localhost:8025'
+      - tapOn: 'この画面に戻る'
 
 - openLink:
     link: ${output.deepLink}
@@ -35,10 +19,12 @@ appId: com.anonymous.mahjongmobile
     visible: ${output.groupName}
     timeout: 30000
 
-- tapOn: '上の階層へ移動'
+- openLink:
+    link: 'mahjongapp-dev://'
 
 - extendedWaitUntil:
     visible: '麻雀大会 集計'
     timeout: 30000
+- assertVisible: '登録グループ一覧'
 - assertVisible: ${output.groupName}
 - assertVisible: ${output.createdAtLabel}

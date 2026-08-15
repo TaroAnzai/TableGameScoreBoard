@@ -153,6 +153,8 @@ const TableScoreInputModal = ({
                     className="border-r border-outline bg-surface"
                   >
                     <Input
+                      testID={`score-input-${player.id}`}
+                      accessibilityLabel={`${player.name}の点数`}
                       value={scores[player.id] ?? ''}
                       editable={!isSaving}
                       onChangeText={(value) => handleScoreChange(player.id, value)}
