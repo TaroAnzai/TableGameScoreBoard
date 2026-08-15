@@ -53,6 +53,9 @@ export default function PageTitleBar({
   const { alertDialog } = useAlertDialog();
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
   const [shareData, setShareData] = React.useState<shareDataType>();
+  const hasParentPage = parentUrl !== null && parentUrl !== undefined;
+  const canGoBack = router.canGoBack();
+  const shouldShowBackButton = showBackButton || (!hasParentPage && canGoBack);
 
   const pathSegments = pathname.split('/').filter(Boolean);
 
@@ -95,7 +98,7 @@ export default function PageTitleBar({
   return (
     <View className="relative min-h-12 flex-row items-center justify-center border-b border-outline bg-surface py-2 mb-2">
       <View className="absolute left-0 flex-row items-center">
-        {parentUrl !== null && parentUrl !== undefined && (
+        {hasParentPage && (
           <Button
             accessibilityLabel={t('titleBar.parentPage')}
             className="h-12 w-12 rounded-full p-0"
@@ -113,7 +116,7 @@ export default function PageTitleBar({
           </Button>
         )}
 
-        {showBackButton && (
+        {shouldShowBackButton && (
           <Button
             accessibilityLabel={t('titleBar.back')}
             className="h-12 w-12 rounded-full p-0"
@@ -129,7 +132,7 @@ export default function PageTitleBar({
       <View
         className={cn(
           'items-center justify-center',
-          parentUrl !== null && parentUrl !== undefined && showBackButton
+          hasParentPage && shouldShowBackButton
             ? 'max-w-[55%]'
             : 'max-w-[70%]',
         )}

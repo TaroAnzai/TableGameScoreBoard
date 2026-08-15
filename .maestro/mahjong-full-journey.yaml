@@ -1,187 +1,170 @@
-appId: ${APP_ID}
+appId: com.anzaihome.mahjongapp.dev
 ---
 # 前提:
-# - GROUP_NAME で指定した編集権限付きグループがアプリに登録済み
 # - 日本語表示
-# - 同名のメンバー・大会が存在しないテスト専用グループ
+# - グループ作成API（http://localhost:6080）へ接続可能
 - stopApp
-- runFlow: open-app.yaml
+- runFlow: new-group-registration-test.yaml
 
 # アプリ起動 → グループ一覧 → グループ画面
-- assertVisible: "麻雀大会 集計"
-- assertVisible: "登録グループ一覧"
-- assertVisible: ${GROUP_NAME}
-- tapOn: ${GROUP_NAME}
-- assertVisible: "大会一覧"
-- assertVisible: "メンバー一覧"
+- assertVisible: '麻雀大会 集計'
+- assertVisible: '登録グループ一覧'
+- assertVisible: ${output.groupName}
+- tapOn: ${output.groupName}
+- assertVisible: '大会一覧'
+- assertVisible: 'メンバー一覧'
 
 # 大会参加者の元になるグループメンバーを4名作成
-- tapOn: "メンバー一覧"
-- runFlow:
-    when:
-      true: ${CREATE_PLAYER_1 == 'true'}
-    commands:
-      - tapOn: "グループメンバー追加"
-      - tapOn:
-          id: "primaryInput"
-      - inputText: ${PLAYER_1}
-      - tapOn: "OK"
-      - assertVisible: ${PLAYER_1}
-- runFlow:
-    when:
-      true: ${CREATE_PLAYER_2 == 'true'}
-    commands:
-      - tapOn: "グループメンバー追加"
-      - tapOn:
-          id: "primaryInput"
-      - inputText: ${PLAYER_2}
-      - tapOn: "OK"
-      - assertVisible: ${PLAYER_2}
-- runFlow:
-    when:
-      true: ${CREATE_PLAYER_3 == 'true'}
-    commands:
-      - tapOn: "グループメンバー追加"
-      - tapOn:
-          id: "primaryInput"
-      - inputText: ${PLAYER_3}
-      - tapOn: "OK"
-      - assertVisible: ${PLAYER_3}
-- runFlow:
-    when:
-      true: ${CREATE_PLAYER_4 == 'true'}
-    commands:
-      - tapOn: "グループメンバー追加"
-      - tapOn:
-          id: "primaryInput"
-      - inputText: ${PLAYER_4}
-      - tapOn: "OK"
-      - assertVisible: ${PLAYER_4}
+- tapOn: 'メンバー一覧'
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.player1}
+- tapOn: 'OK'
+- assertVisible: ${output.player1}
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.player2}
+- tapOn: 'OK'
+- assertVisible: ${output.player2}
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.player3}
+- tapOn: 'OK'
+- assertVisible: ${output.player3}
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.player4}
+- tapOn: 'OK'
+- assertVisible: ${output.player4}
 
 # 大会作成
-- tapOn: "大会一覧"
-- tapOn: "大会新規作成"
+- tapOn: '大会一覧'
+- tapOn: '大会新規作成'
 - assertVisible:
-    id: "primaryInput"
+    id: 'primaryInput'
 - tapOn:
-    id: "primaryInput"
-- inputText: ${TOURNAMENT_NAME}
-- tapOn: "OK"
-- assertVisible: ${TOURNAMENT_NAME}
-- assertVisible: "大会成績"
+    id: 'primaryInput'
+- inputText: ${output.tournamentName}
+- tapOn: 'OK'
+- assertVisible: ${output.tournamentName}
+- assertVisible: '大会成績'
 
 # 大会編集（大会名とメモ）
-- tapOn: ${TOURNAMENT_NAME}
+- tapOn: ${output.tournamentName}
 - assertVisible:
-    id: "tournament-name-input"
+    id: 'tournament-name-input'
 - tapOn:
-    id: "tournament-name-input"
+    id: 'tournament-name-input'
 - eraseText
-- inputText: ${EDITED_TOURNAMENT_NAME}
+- inputText: ${output.editedTournamentName}
 - tapOn:
-    id: "tournament-description-input"
-- inputText: ${TOURNAMENT_MEMO}
-- tapOn: "保存"
-- assertVisible: ${EDITED_TOURNAMENT_NAME}
+    id: 'tournament-description-input'
+- inputText: ${output.tournamentMemo}
+- tapOn: '保存'
+- assertVisible: ${output.editedTournamentName}
 
 # 大会へ参加者4名を追加
-- tapOn: "大会新規作成"
-- assertVisible: "参加者を選択"
-- tapOn: ${PLAYER_1}
-- tapOn: ${PLAYER_2}
-- tapOn: ${PLAYER_3}
-- tapOn: ${PLAYER_4}
-- tapOn: "OK"
-- assertVisible: ${PLAYER_1}
+- tapOn: '大会新規作成'
+- assertVisible: '参加者を選択'
+- tapOn: ${output.player1}
+- tapOn: ${output.player2}
+- tapOn: ${output.player3}
+- tapOn: ${output.player4}
+- tapOn: 'OK'
+- assertVisible: ${output.player1}
 
 # 卓作成（作成後は記録表へ自動遷移）→ 卓へ参加者4名を追加
-- tapOn: "記録用紙を新規作成"
-- assertVisible: "卓1記録表"
-- tapOn: "参加者を追加"
-- assertVisible: "参加者を選択"
-- tapOn: ${PLAYER_1}
-- tapOn: ${PLAYER_2}
-- tapOn: ${PLAYER_3}
-- tapOn: ${PLAYER_4}
-- tapOn: "OK"
-- assertVisible: ${PLAYER_1}
-- assertVisible: ${PLAYER_4}
+- tapOn: '記録用紙を新規作成'
+- assertVisible: '卓1記録表'
+- tapOn: '参加者を追加'
+- assertVisible: '参加者を選択'
+- tapOn: ${output.player1}
+- tapOn: ${output.player2}
+- tapOn: ${output.player3}
+- tapOn: ${output.player4}
+- tapOn: 'OK'
+- assertVisible: ${output.player1}
+- assertVisible: ${output.player4}
 
 # 4人の点数入力 → 確定
-- tapOn: "第1局のスコアを編集"
-- assertVisible: "${PLAYER_1}の点数"
-- tapOn: "${PLAYER_1}の点数"
-- inputText: "30000"
-- tapOn: "${PLAYER_2}の点数"
-- inputText: "10000"
-- tapOn: "${PLAYER_3}の点数"
-- inputText: "-10000"
-- tapOn: "${PLAYER_4}の点数"
-- inputText: "-30000"
-- assertVisible: "合計: 0"
-- tapOn: "確定"
-- assertVisible: "30,000"
-- assertVisible: "-30,000"
+- tapOn: '第1局のスコアを編集'
+- assertVisible: '${output.player1}の点数'
+- tapOn: '${output.player1}の点数'
+- inputText: '30000'
+- tapOn: '${output.player2}の点数'
+- inputText: '10000'
+- tapOn: '${output.player3}の点数'
+- inputText: '-10000'
+- tapOn: '${output.player4}の点数'
+- inputText: '-30000'
+- assertVisible: '合計: 0'
+- tapOn: '確定'
+- assertVisible: '30,000'
+- assertVisible: '-30,000'
 
 # 大会集計が更新される
-- tapOn: "上の階層へ移動"
-- assertVisible: "大会成績"
-- assertVisible: "30,000"
-- assertVisible: "10,000"
-- assertVisible: "-10,000"
-- assertVisible: "-30,000"
+- tapOn: '上の階層へ移動'
+- assertVisible: '大会成績'
+- assertVisible: '30,000'
+- assertVisible: '10,000'
+- assertVisible: '-10,000'
+- assertVisible: '-30,000'
 
 # 入力済みスコアを修正
-- tapOn: "卓1の記録用紙を開く"
-- tapOn: "第1局のスコアを編集"
-- tapOn: "${PLAYER_1}の点数"
+- tapOn: '卓1の記録用紙を開く'
+- tapOn: '第1局のスコアを編集'
+- tapOn: '${output.player1}の点数'
 - eraseText
-- inputText: "25000"
-- tapOn: "${PLAYER_2}の点数"
+- inputText: '25000'
+- tapOn: '${output.player2}の点数'
 - eraseText
-- inputText: "15000"
-- tapOn: "${PLAYER_3}の点数"
+- inputText: '15000'
+- tapOn: '${output.player3}の点数'
 - eraseText
-- inputText: "-5000"
-- tapOn: "${PLAYER_4}の点数"
+- inputText: '-5000'
+- tapOn: '${output.player4}の点数'
 - eraseText
-- inputText: "-35000"
-- assertVisible: "合計: 0"
-- tapOn: "確定"
-- assertVisible: "25,000"
-- assertVisible: "-35,000"
+- inputText: '-35000'
+- assertVisible: '合計: 0'
+- tapOn: '確定'
+- assertVisible: '25,000'
+- assertVisible: '-35,000'
 
 # グループ画面へ戻り、成績と個人成績を検証
-- tapOn: "上の階層へ移動"
-- assertVisible: "大会成績"
-- assertVisible: "25,000"
-- assertVisible: "15,000"
-- assertVisible: "-5,000"
-- assertVisible: "-35,000"
-- tapOn: "上の階層へ移動"
-- assertVisible: ${GROUP_NAME}
-- tapOn: "成績"
-- assertVisible: "グループメンバー成績"
-- assertVisible: ${PLAYER_1}
-- assertVisible: "25,000"
-- tapOn: "${PLAYER_1}さんの詳細を表示"
-- assertVisible: "${PLAYER_1}さんの成績"
-- assertVisible: "大会参加回数"
-- assertVisible: "対局数"
-- assertVisible: "得点合計（チップ・換算含まない）"
-- assertVisible: "25,000"
-- assertVisible: "平均順位"
-- assertVisible: "1"
-- tapOn: "閉.*る"
+- tapOn: '上の階層へ移動'
+- assertVisible: '大会成績'
+- assertVisible: '25,000'
+- assertVisible: '15,000'
+- assertVisible: '-5,000'
+- assertVisible: '-35,000'
+- tapOn: '上の階層へ移動'
+- assertVisible: ${output.groupName}
+- tapOn: '成績'
+- assertVisible: 'グループメンバー成績'
+- assertVisible: ${output.player1}
+- assertVisible: '25,000'
+- tapOn: '${output.player1}さんの詳細を表示'
+- assertVisible: '${output.player1}さんの成績'
+- assertVisible: '大会参加回数'
+- assertVisible: '対局数'
+- assertVisible: '得点合計（チップ・換算含まない）'
+- assertVisible: '25,000'
+- assertVisible: '平均順位'
+- assertVisible: '1'
+- tapOn: '閉.*る'
 
 # アプリ再起動後も登録グループとサーバー上の結果が表示される
 - stopApp
-- runFlow: open-app.yaml
-- assertVisible: "登録グループ一覧"
-- assertVisible: ${GROUP_NAME}
-- tapOn: ${GROUP_NAME}
-- assertVisible: ${EDITED_TOURNAMENT_NAME}
-- tapOn: ${EDITED_TOURNAMENT_NAME}
-- assertVisible: "大会成績"
-- assertVisible: "25,000"
-- assertVisible: "-35,000"
+- runFlow: lunch-test.yaml
+- assertVisible: '登録グループ一覧'
+- assertVisible: ${output.groupName}
+- tapOn: ${output.groupName}
+- assertVisible: ${output.editedTournamentName}
+- tapOn: ${output.editedTournamentName}
+- assertVisible: '大会成績'
+- assertVisible: '25,000'
+- assertVisible: '-35,000'

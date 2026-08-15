@@ -17,6 +17,29 @@ jest.mock('@/components/ui/dialog', () => {
 });
 
 describe('TextInputModal', () => {
+  it('日本語IMEの変換を妨げないよう入力値をcontrolledにしない', async () => {
+    const user = userEvent.setup();
+    await render(
+      <TextInputModal
+        open
+        onComfirm={jest.fn()}
+        onClose={jest.fn()}
+        value="初期値"
+        title="入力"
+      />,
+    );
+
+    const input = screen.getByTestId('primaryInput');
+    expect(input.props.defaultValue).toBe('初期値');
+    expect(input.props.value).toBeUndefined();
+
+    await user.clear(input);
+    await user.type(input, 'たいかい');
+
+    // 再レンダー後もJS側からvalueを書き戻さないことを保証する。
+    expect(screen.getByTestId('primaryInput').props.value).toBeUndefined();
+  });
+
   it('空白だけの入力では確定ボタンを無効にする', async () => {
     const user = userEvent.setup();
     const onConfirm = jest.fn();

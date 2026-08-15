@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -58,8 +58,10 @@ export const TextInputModal = ({
 }: TextInputModalProps) => {
   const { t } = useTranslation();
 
-  const [inputText, setInputText] = useState(value || '');
-  const [inputText2, setInputText2] = useState(twoValue || '');
+  const inputTextRef = useRef(value || '');
+  const inputText2Ref = useRef(twoValue || '');
+  const [hasInput, setHasInput] = useState(Boolean(value?.trim()));
+  const [hasInput2, setHasInput2] = useState(Boolean(twoValue.trim()));
   const [inputError, setInputError] = useState(false);
   const [input2Error, setInput2Error] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,18 +69,27 @@ export const TextInputModal = ({
   const resetKey = `${open}-${value ?? ''}-${twoValue}`;
   const [previousResetKey, setPreviousResetKey] = useState(resetKey);
 
-  if (resetKey !== previousResetKey) {
+  useEffect(() => {
+    if (!open) return;
+
+    inputTextRef.current = value || '';
+    inputText2Ref.current = twoValue || '';
+  }, [open, twoValue, value]);
+
+  if (open && resetKey !== previousResetKey) {
     setPreviousResetKey(resetKey);
-    if (open) {
-      setInputText(value || '');
-      setInputText2(twoValue || '');
-      setInputError(false);
-      setInput2Error(false);
-    }
+    setHasInput(Boolean(value?.trim()));
+    setHasInput2(Boolean(twoValue.trim()));
+    setInputError(false);
+    setInput2Error(false);
+  } else if (resetKey !== previousResetKey) {
+    setPreviousResetKey(resetKey);
   }
 
   const handleConfirm = async () => {
     if (isProcessing) return;
+    const inputText = inputTextRef.current;
+    const inputText2 = inputText2Ref.current;
     if (!inputText.trim() || (twoInput && !inputText2.trim())) return;
 
     const hasInputError = inputType === 'email' && !isValidEmail(inputText);
@@ -96,7 +107,7 @@ export const TextInputModal = ({
     }
   };
 
-  const isConfirmDisabled = isProcessing || !inputText.trim() || (twoInput && !inputText2.trim());
+  const isConfirmDisabled = isProcessing || !hasInput || (twoInput && !hasInput2);
 
   return (
     <Dialog
@@ -120,9 +131,10 @@ export const TextInputModal = ({
             <Input
               nativeID="primaryInput"
               testID="primaryInput"
-              value={inputText}
+              defaultValue={value}
               onChangeText={(text) => {
-                setInputText(text);
+                inputTextRef.current = text;
+                setHasInput(Boolean(text.trim()));
                 if (inputError) setInputError(false);
               }}
               keyboardType={getKeyboardType(inputType)}
@@ -143,9 +155,10 @@ export const TextInputModal = ({
                 <Input
                   nativeID="twoInput"
                   testID="twoInput"
-                  value={inputText2}
+                  defaultValue={twoValue}
                   onChangeText={(text) => {
-                    setInputText2(text);
+                    inputText2Ref.current = text;
+                    setHasInput2(Boolean(text.trim()));
                     if (input2Error) setInput2Error(false);
                   }}
                   keyboardType={getKeyboardType(twoInputType)}
