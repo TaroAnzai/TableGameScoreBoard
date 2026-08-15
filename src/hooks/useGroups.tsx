@@ -101,10 +101,10 @@ export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = tru
     mutationFn: (data: GroupCreate) => {
       return postApiGroups(data);
     },
-    onSuccess: (data: Group) => {
+    onSuccess: async (data: Group) => {
       showSuccess(t('hooks.group.createSuccess'));
       if (data.owner_link) {
-        appStorage.addGroupKey(data.owner_link);
+        await appStorage.addGroupKey(data.owner_link);
       }
       onAfterCreate?.();
     },

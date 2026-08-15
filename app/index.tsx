@@ -135,18 +135,7 @@ export default function Index() {
   return (
     <>
       <MahjongContainer>
-        <ScrollView
-          contentContainerClassName="gap-6 pb-8"
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={() => {
-                void refresh();
-              }}
-            />
-          }
-        >
+        <View className="flex-1 gap-6">
           {/* Header */}
           <View className="relative h-12 flex-row items-center justify-center">
             <Text className="text-center text-xl font-bold text-on-surface">
@@ -194,69 +183,84 @@ export default function Index() {
               }
             />
 
-            <View className="gap-1">
-              {groups.length > 0 ? (
-                groups.map(
-                  (group) =>
-                    group && (
-                      <MahjongListItem
-                        key={group.id + getAccessLevelstring(group.group_links)}
-                        title={group.name}
-                        badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
-                        accessories={[
-                          group.created_at &&
-                            t('welcomPage.createdAt', {
-                              date: format(group.created_at, 'yyyy-MM-dd'),
-                            }),
-                          group.description && group.description,
-                        ]}
-                        onPress={() => handleEnterGroup(group)}
-                      />
-                    ),
-                )
-              ) : (
-                <View className="items-center justify-center gap-3 p-8">
-                  <Text className="text-muted-foreground">
-                    {t('welcomPage.noRegisteredGroups')}
+            <ScrollView
+              className="w-full flex-1"
+              contentContainerClassName="flex-grow pb-4"
+              keyboardShouldPersistTaps="handled"
+              alwaysBounceVertical
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={() => {
+                    void refresh();
+                  }}
+                />
+              }
+            >
+              <View className="gap-1">
+                {groups.length > 0 ? (
+                  groups.map(
+                    (group) =>
+                      group && (
+                        <MahjongListItem
+                          key={group.id + getAccessLevelstring(group.group_links)}
+                          title={group.name}
+                          badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
+                          accessories={[
+                            group.created_at &&
+                              t('welcomPage.createdAt', {
+                                date: format(group.created_at, 'yyyy-MM-dd'),
+                              }),
+                            group.description && group.description,
+                          ]}
+                          onPress={() => handleEnterGroup(group)}
+                        />
+                      ),
+                  )
+                ) : (
+                  <View className="items-center justify-center gap-3 p-8">
+                    <Text className="text-muted-foreground">
+                      {t('welcomPage.noRegisteredGroups')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              {pendingGroups.length > 0 && (
+                <View className="gap-3 align-center">
+                  <Text className="text-lg font-semibold">{t('welcomPage.pendingGroups')}</Text>
+                  <Text className="text-sm text-muted-foreground">
+                    {t('welcomPage.pendingGroupsDescription')}
                   </Text>
+                  <Button
+                    className="self-start"
+                    variant="outline"
+                    disabled={isRefreshing || isFetching}
+                    onPress={() => void refresh()}
+                  >
+                    {(isRefreshing || isFetching) && <ActivityIndicator />}
+                    <Text>
+                      {isRefreshing || isFetching
+                        ? t('welcomPage.refreshingPendingGroups')
+                        : t('welcomPage.refreshPendingGroups')}
+                    </Text>
+                  </Button>
+                  {pendingGroups.map((group) => (
+                    <MahjongListItem
+                      key={group.token}
+                      title={group.groupName}
+                      accessories={[
+                        group.expiresAt &&
+                          t('welcomPage.expiresAt', {
+                            date: format(group.expiresAt, 'yyyy-MM-dd HH:mm'),
+                          }),
+                      ]}
+                    />
+                  ))}
                 </View>
               )}
-            </View>
-            {pendingGroups.length > 0 && (
-              <View className="gap-3 align-center">
-                <Text className="text-lg font-semibold">{t('welcomPage.pendingGroups')}</Text>
-                <Text className="text-sm text-muted-foreground">
-                  {t('welcomPage.pendingGroupsDescription')}
-                </Text>
-                <Button
-                  className="self-start"
-                  variant="outline"
-                  disabled={isRefreshing || isFetching}
-                  onPress={() => void refresh()}
-                >
-                  {(isRefreshing || isFetching) && <ActivityIndicator />}
-                  <Text>
-                    {isRefreshing || isFetching
-                      ? t('welcomPage.refreshingPendingGroups')
-                      : t('welcomPage.refreshPendingGroups')}
-                  </Text>
-                </Button>
-                {pendingGroups.map((group) => (
-                  <MahjongListItem
-                    key={group.token}
-                    title={group.groupName}
-                    accessories={[
-                      group.expiresAt &&
-                        t('welcomPage.expiresAt', {
-                          date: format(group.expiresAt, 'yyyy-MM-dd HH:mm'),
-                        }),
-                    ]}
-                  />
-                ))}
-              </View>
-            )}
+            </ScrollView>
           </MahjongSection>
-        </ScrollView>
+        </View>
       </MahjongContainer>
       <SelectorModal
         title={t('welcomPage.SelectGroupToRemove')}

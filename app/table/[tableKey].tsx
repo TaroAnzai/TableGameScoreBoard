@@ -19,13 +19,13 @@ import TableScoreBoard from '@/components/TableScoreBoard';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import type { Player, ScoreInput, TablePlayerItem } from '@/src/api/generated/mahjongApi.schemas';
 import {
   useCreateGame,
   useDeleteGame,
   useGetTableGames,
   useUpdateGame,
-} from '@/src//hooks/useGames';
-import type { Player, ScoreInput, TablePlayerItem } from '@/src/api/generated/mahjongApi.schemas';
+} from '@/src/hooks/useGames';
 import {
   useAddTablePlayer,
   useDeleteTable,
@@ -168,10 +168,10 @@ export default function TablePage() {
     if (!tableKey) return;
     if (gameId === null) {
       const gameCreate = { scores: newScores };
-      await createGame({ tableKey: tableKey, gameCreate: gameCreate });
+      await createGame({ tableKey: tableKey, tournamentKey, gameCreate: gameCreate });
     } else {
       const data = { scores: newScores };
-      await updateGame({ tableKey: tableKey, gameId: gameId, gameUpdate: data });
+      await updateGame({ tableKey: tableKey, tournamentKey, gameId: gameId, gameUpdate: data });
     }
   };
 
@@ -198,7 +198,7 @@ export default function TablePage() {
     });
     if (!confirmed) return;
     try {
-      await deleteGame({ tableKey: tableKey!, gameId: game.id! });
+      await deleteGame({ tableKey: tableKey!, tournamentKey, gameId: game.id! });
       setShowDeleteGameModal(false);
     } catch {
       // The mutation hook shows the error. Keep the selector open for retrying.

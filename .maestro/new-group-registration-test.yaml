@@ -6,12 +6,11 @@ appId: com.anzaihome.mahjongapp.dev
     env:
       API_BASE_URL: 'http://localhost:6080'
 
-- runFlow:
-    when:
-      visible: 'この画面に戻る'
-    commands:
-      - tapOn: 'この画面に戻る'
+- launchApp
 
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
 - openLink:
     link: ${output.deepLink}
 
@@ -26,5 +25,9 @@ appId: com.anzaihome.mahjongapp.dev
     visible: '麻雀大会 集計'
     timeout: 30000
 - assertVisible: '登録グループ一覧'
-- assertVisible: ${output.groupName}
+- scrollUntilVisible:
+    element: ${output.groupName}
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 50
 - assertVisible: ${output.createdAtLabel}

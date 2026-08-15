@@ -9,7 +9,12 @@ appId: com.anzaihome.mahjongapp.dev
 # アプリ起動 → グループ一覧 → グループ画面
 - assertVisible: '麻雀大会 集計'
 - assertVisible: '登録グループ一覧'
-- assertVisible: ${output.groupName}
+- scrollUntilVisible:
+    element: ${output.groupName}
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 50
+
 - tapOn: ${output.groupName}
 - assertVisible: '大会一覧'
 - assertVisible: 'メンバー一覧'
@@ -57,9 +62,13 @@ appId: com.anzaihome.mahjongapp.dev
 - tapOn: ${output.tournamentName}
 - assertVisible:
     id: 'tournament-name-input'
-- tapOn:
+- longPressOn:
     id: 'tournament-name-input'
-- eraseText
+- tapOn:
+    text: 'その他のオプション|その他|More options'
+- tapOn:
+    text: 'すべて選択|Select [Aa]ll'
+- eraseText: 1
 - inputText: ${output.editedTournamentName}
 - tapOn:
     id: 'tournament-description-input'
@@ -161,7 +170,12 @@ appId: com.anzaihome.mahjongapp.dev
 - stopApp
 - runFlow: lunch-test.yaml
 - assertVisible: '登録グループ一覧'
-- assertVisible: ${output.groupName}
+- scrollUntilVisible:
+    element: ${output.groupName}
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 50
+
 - tapOn: ${output.groupName}
 - assertVisible: ${output.editedTournamentName}
 - tapOn: ${output.editedTournamentName}

@@ -8,6 +8,7 @@ import {
   getApiTablesTableKeyGames,
   getGetApiTablesTableKeyPlayersQueryKey,
   getGetApiTablesTableKeyQueryOptions,
+  getGetApiTournamentsTournamentKeyTablesQueryKey,
   postApiTablesTableKeyPlayers,
   postApiTournamentsTournamentKeyTables,
   putApiTablesTableKey,
@@ -43,18 +44,34 @@ export const useGetTables = (tournamentKey: string) => {
   };
 };
 
-export const useCreateTable = () => {
+type UseCreateTableOptions = {
+  navigateOnSuccess?: boolean;
+};
+
+export const useCreateTable = ({ navigateOnSuccess = true }: UseCreateTableOptions = {}) => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useMutationFeedback();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; tableCreate: TableCreate }) => {
       return postApiTournamentsTournamentKeyTables(data.tournamentKey, data.tableCreate);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data, variables) => {
       showSuccess(t('notifications.table.createSuccess'));
+      await queryClient.invalidateQueries({
+        queryKey: getGetApiTournamentsTournamentKeyTablesQueryKey(variables.tournamentKey),
+      });
       // 遷移
       const tableKey = getResourceKey(data);
-      if (tableKey) router.push(`/table/${tableKey}`);
+      if (tableKey && navigateOnSuccess) {
+        router.push({
+          pathname: '/table/[tableKey]',
+          params: {
+            tableKey,
+            parentTournamentKey: variables.tournamentKey,
+          },
+        });
+      }
     },
     onError: (error: any) => {
       console.error('Error creating table:', error);

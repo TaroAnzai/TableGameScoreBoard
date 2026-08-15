@@ -57,7 +57,9 @@ const GroupPage = () => {
   const { mutateAsync: deletePlayer, isPending: isDeletingPlayer } = useDeletePlayer(loadPlayers);
   const { mutateAsync: createTournament, isPending: isCreatingTournament } = useCreateTournament();
   const { mutateAsync: deleteTournament, isPending: isDeletingTournament } = useDeleteTournament();
-  const { mutateAsync: createChipTable, isPending: isCreatingChipTable } = useCreateTable();
+  const { mutateAsync: createChipTable, isPending: isCreatingChipTable } = useCreateTable({
+    navigateOnSuccess: false,
+  });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteTournamentModal, setShowDeleteTournamentModal] = useState(false);
