@@ -122,9 +122,32 @@ describe('useUpdateTable', () => {
     queryClient.clear();
   });
 
-  it('テーブル名更新後にテーブル詳細・記録用紙一覧・大会スコアボードを無効化する', async () => {
+  it('テーブル名更新後に全表示用キャッシュを即時更新してから無効化する', async () => {
     const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
-    mockPutTable.mockResolvedValue({ name: '変更後の卓名' });
+    const updatedTable = {
+      id: 1,
+      tournament_id: 10,
+      name: '変更後の卓名',
+      type: 'NORMAL',
+      parent_tournament_link: {},
+    };
+    queryClient.setQueryData(['/api/tables/table-owner-key'], {
+      ...updatedTable,
+      name: '変更前の卓名',
+    });
+    queryClient.setQueryData(['/api/tournaments/tournament-owner-key/tables'], [
+      { ...updatedTable, name: '変更前の卓名' },
+      { ...updatedTable, id: 2, name: '別の卓名' },
+    ]);
+    queryClient.setQueryData(['/api/tournaments/tournament-owner-key/score_map'], {
+      tournament_id: 10,
+      tables: [
+        { id: 1, name: '変更前の卓名', type: 'NORMAL' },
+        { id: 2, name: '別の卓名', type: 'NORMAL' },
+      ],
+      players: [],
+    });
+    mockPutTable.mockResolvedValue(updatedTable);
     const { result, unmount } = await renderHook(() => useUpdateTable(), { wrapper });
 
     await act(async () => {
@@ -136,6 +159,19 @@ describe('useUpdateTable', () => {
     });
 
     expect(mockPutTable).toHaveBeenCalledWith('table-owner-key', { name: '変更後の卓名' });
+    expect(queryClient.getQueryData(['/api/tables/table-owner-key'])).toEqual(updatedTable);
+    expect(queryClient.getQueryData(['/api/tournaments/tournament-owner-key/tables'])).toEqual([
+      updatedTable,
+      { ...updatedTable, id: 2, name: '別の卓名' },
+    ]);
+    expect(queryClient.getQueryData(['/api/tournaments/tournament-owner-key/score_map'])).toEqual({
+      tournament_id: 10,
+      tables: [
+        { id: 1, name: '変更後の卓名', type: 'NORMAL' },
+        { id: 2, name: '別の卓名', type: 'NORMAL' },
+      ],
+      players: [],
+    });
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: ['/api/tables/table-owner-key'],
     });

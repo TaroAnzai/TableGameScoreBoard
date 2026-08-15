@@ -18,9 +18,11 @@ import {
   useGetApiTournamentsTournamentKeyTables,
 } from '@/src/api/generated/mahjongApi';
 import type {
+  Table,
   TableCreate,
   TablePlayerItem,
   TableUpdate,
+  TournamentScoreMap,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useDeleteGame } from '@/src/hooks/useGames';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
@@ -102,20 +104,47 @@ export const useUpdateTable = () => {
     }) => {
       return putApiTablesTableKey(data.tableKey, data.tableUpdate);
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (data, variables) => {
       showSuccess(t('notifications.table.updateSuccess'));
+      const tableQueryKey = getGetApiTablesTableKeyQueryOptions(variables.tableKey).queryKey;
+
+      // The update response is authoritative. Write it through to every view that
+      // displays the table name so the UI does not depend on a follow-up request.
+      queryClient.setQueryData<Table>(tableQueryKey, data);
+
       const invalidations = [
         queryClient.invalidateQueries({
-          queryKey: getGetApiTablesTableKeyQueryOptions(variables.tableKey).queryKey,
+          queryKey: tableQueryKey,
         }),
       ];
       if (variables.tournamentKey) {
+        const tablesQueryKey = getGetApiTournamentsTournamentKeyTablesQueryKey(
+          variables.tournamentKey,
+        );
+        const scoreMapQueryKey = getGetApiTournamentsTournamentKeyScoreMapQueryKey(
+          variables.tournamentKey,
+        );
+
+        queryClient.setQueryData<Table[]>(tablesQueryKey, (tables) =>
+          tables?.map((table) => (table.id === data.id ? data : table)),
+        );
+        queryClient.setQueryData<TournamentScoreMap>(scoreMapQueryKey, (scoreMap) =>
+          scoreMap
+            ? {
+                ...scoreMap,
+                tables: scoreMap.tables.map((table) =>
+                  table.id === data.id ? { ...table, name: data.name, type: data.type } : table,
+                ),
+              }
+            : scoreMap,
+        );
+
         invalidations.push(
           queryClient.invalidateQueries({
-            queryKey: getGetApiTournamentsTournamentKeyTablesQueryKey(variables.tournamentKey),
+            queryKey: tablesQueryKey,
           }),
           queryClient.invalidateQueries({
-            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
+            queryKey: scoreMapQueryKey,
           }),
         );
       }

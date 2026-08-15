@@ -161,7 +161,7 @@
   "tablePage": {
     "errorInvalidTableKey": "不正なアクセスです（卓キーが指定されていません）",
     "errorTableNotFound": "卓が見つかりませんでした",
-    "scoreSheetTitle": "{{tableName}}記録表",
+    "scoreSheetTitle": "{{tableName}} 記録表",
 
     "buttonAddPlayer": "参加者を追加",
     "buttonDeletePlayer": "参加者を削除",

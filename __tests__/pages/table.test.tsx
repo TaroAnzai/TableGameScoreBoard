@@ -143,6 +143,17 @@ describe('卓詳細ページ', () => {
     });
   });
 
+  it('更新されたテーブル名をページタイトルと記録表セクションタイトルへ反映する', async () => {
+    mockUseTable.mockReturnValue({
+      ...tableState,
+      table: { ...tableState.table, name: '変更後の卓名' },
+    });
+    await render(<TablePage />);
+
+    expect(screen.getByText('変更後の卓名')).toBeTruthy();
+    expect(screen.getByText('変更後の卓名 記録表')).toBeTruthy();
+  });
+
   it('いずれかがローディング中ならローディングを表示する', async () => {
     mockUseGames.mockReturnValue({ ...gamesState, games: undefined, isLoadingGames: true });
     await render(<TablePage />);

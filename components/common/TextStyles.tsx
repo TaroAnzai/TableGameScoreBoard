@@ -10,7 +10,11 @@ type HeadingProps = {
 };
 
 export const MahjongSubTitle = ({ children, className }: HeadingProps) => {
-  return <Text className={cn('text-lg', className)}>{children}</Text>;
+  return (
+    <Text className={cn('text-lg', className)} numberOfLines={1}>
+      {children}
+    </Text>
+  );
 };
 
 type MahjongListProps = {
