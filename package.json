@@ -79,8 +79,11 @@
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
     ],
+    "transform": {
+      "^.+\\.mjs$": "babel-jest"
+    },
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|expo-.*|@expo(nent)?/.*|@rn-primitives/.*|react-native-.*|@react-navigation/.*)/)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|expo-.*|@expo(nent)?/.*|@rn-primitives/.*|react-native-.*|lucide-react-native|@react-navigation/.*)/)"
     ]
   },
   "private": true
