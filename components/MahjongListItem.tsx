@@ -38,7 +38,7 @@ export const MahjongListItem = ({
 
       <View className="w-full">
         <View className="flex-row gap-3 justify-between">
-          <Text className="grow font-semibold text-foreground" numberOfLines={1}>
+          <Text className="min-w-0 flex-1 font-semibold text-foreground" numberOfLines={1}>
             {title}
           </Text>
 

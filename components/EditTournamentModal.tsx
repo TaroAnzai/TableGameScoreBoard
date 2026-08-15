@@ -1,6 +1,6 @@
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { Calendar } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
 
@@ -57,8 +57,9 @@ const EditTournamentModal = ({
 }: EditTournamentModalProps) => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
-  const [name, setName] = useState(tournament.name || '');
-  const [description, setDescription] = useState(tournament.description || '');
+  const nameRef = useRef(tournament.name || '');
+  const descriptionRef = useRef(tournament.description || '');
+  const [hasName, setHasName] = useState(Boolean(tournament.name?.trim()));
   const [startedAt, setStartedAt] = useState(
     tournament.started_at ? tournament.started_at.substring(0, 10) : '',
   );
@@ -82,8 +83,8 @@ const EditTournamentModal = ({
     setIsSubmitting(true);
     try {
       await onConfirm({
-        name,
-        description,
+        name: nameRef.current,
+        description: descriptionRef.current,
         started_at: startDate?.toISOString() ?? null,
       });
     } finally {
@@ -109,9 +110,12 @@ const EditTournamentModal = ({
             <Label>{t('editTournamentModal.name')}</Label>
             <Input
               testID="tournament-name-input"
-              value={name}
+              defaultValue={tournament.name || ''}
               editable={!isProcessing}
-              onChangeText={setName}
+              onChangeText={(text) => {
+                nameRef.current = text;
+                setHasName(Boolean(text.trim()));
+              }}
               className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
           </View>
@@ -120,9 +124,11 @@ const EditTournamentModal = ({
             <Label>{t('editTournamentModal.memo')}</Label>
             <Input
               testID="tournament-description-input"
-              value={description}
+              defaultValue={tournament.description || ''}
               editable={!isProcessing}
-              onChangeText={setDescription}
+              onChangeText={(text) => {
+                descriptionRef.current = text;
+              }}
               multiline
               textAlignVertical="top"
               className="h-auto min-h-24 rounded-xl bg-surface py-3"
@@ -173,7 +179,7 @@ const EditTournamentModal = ({
           </Button>
           <Button
             className="h-auto min-h-12 rounded-xl py-3"
-            disabled={isProcessing || !name.trim()}
+            disabled={isProcessing || !hasName}
             onPress={() => void handleSubmit()}
           >
             {isProcessing && <ActivityIndicator color="white" />}

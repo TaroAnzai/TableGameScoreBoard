@@ -18,6 +18,7 @@ const mockUseTablePlayers = jest.fn();
 const mockUseGames = jest.fn();
 const mockUseTournamentPlayers = jest.fn();
 const mockUseDeleteTable = jest.fn();
+const mockUpdateTable = jest.fn();
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -26,7 +27,7 @@ jest.mock('expo-router', () => ({
 jest.mock('@/src/hooks/useTables', () => ({
   useGetTable: () => mockUseTable(),
   useGetTablePlayer: () => mockUseTablePlayers(),
-  useUpdateTable: () => ({ mutate: jest.fn() }),
+  useUpdateTable: () => ({ mutateAsync: mockUpdateTable }),
   useDeleteTable: () => mockUseDeleteTable(),
   useAddTablePlayer: () => ({ mutate: jest.fn() }),
   useDeleteTablePlayer: () => ({ mutate: jest.fn() }),
@@ -45,9 +46,23 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
   const { Pressable, Text, View } = jest.requireActual('react-native');
-  const MockPageTitleBar = ({ title, parentUrl }: { title: string; parentUrl?: string | null }) => (
+  const MockPageTitleBar = ({
+    title,
+    parentUrl,
+    onTitleChange,
+  }: {
+    title: string;
+    parentUrl?: string | null;
+    onTitleChange?: (title: string) => void;
+  }) => (
     <View>
       <Text>{title}</Text>
+      {onTitleChange && (
+        <Pressable
+          accessibilityLabel="テーブル名を変更"
+          onPress={() => onTitleChange('変更後の卓名')}
+        />
+      )}
       {parentUrl && <Pressable accessibilityLabel="親大会に戻る" />}
     </View>
   );
@@ -108,11 +123,24 @@ describe('卓詳細ページ', () => {
     mockUseGames.mockReturnValue(gamesState);
     mockUseTournamentPlayers.mockReturnValue(tournamentPlayersState);
     mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: false });
+    mockUpdateTable.mockResolvedValue(undefined);
   });
 
   it('全Query成功時に記録表を表示する', async () => {
     await render(<TablePage />);
     expect(screen.getByText('記録表本体')).toBeTruthy();
+  });
+
+  it('テーブル名変更時に親大会キーを更新処理へ渡す', async () => {
+    await render(<TablePage />);
+
+    await fireEvent.press(screen.getByLabelText('テーブル名を変更'));
+
+    expect(mockUpdateTable).toHaveBeenCalledWith({
+      tableKey: 'table-key',
+      tournamentKey: 'tournament-key',
+      tableUpdate: { name: '変更後の卓名' },
+    });
   });
 
   it('いずれかがローディング中ならローディングを表示する', async () => {

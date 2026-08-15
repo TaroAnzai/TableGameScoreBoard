@@ -1,6 +1,6 @@
 // src/pages/TournamentPage.jsx
 import { router, useLocalSearchParams } from 'expo-router';
-import { TriangleAlert, UserMinus, UserPlus } from 'lucide-react-native';
+import { Pencil, TriangleAlert, UserMinus, UserPlus } from 'lucide-react-native';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Keyboard, Pressable, View } from 'react-native';
@@ -227,11 +227,19 @@ const TournamentPage = () => {
     }
   };
   const handleTitleChange = async (newName: string) => {
-    await updateTournament({ tournamentKey: tournamentKey, tournament: { name: newName } });
+    await updateTournament({
+      tournamentKey,
+      groupKey: parentGroupKey ?? groupKey,
+      tournament: { name: newName },
+    });
   };
   const handleUpdateTournament = async (updates: TournamentUpdate) => {
     try {
-      await updateTournament({ tournamentKey: tournamentKey!, tournament: updates });
+      await updateTournament({
+        tournamentKey: tournamentKey!,
+        groupKey: parentGroupKey ?? groupKey,
+        tournament: updates,
+      });
       setShowEditModal(false);
     } catch {
       // The mutation hook shows the error. Keep the form open for retrying.
@@ -240,6 +248,7 @@ const TournamentPage = () => {
   const handleRateChange = async (newRate: number) => {
     await updateTournament({
       tournamentKey: tournamentKey!,
+      groupKey: parentGroupKey ?? groupKey,
       tournament: { rate: newRate },
     });
   };
@@ -260,8 +269,12 @@ const TournamentPage = () => {
   };
   const TitleWithModal = ({ onPress }: { onPress?: () => void }) =>
     onPress ? (
-      <Pressable className="mahjong-editable-title" onPress={onPress}>
+      <Pressable
+        className="mahjong-editable-title flex-row items-center gap-2"
+        onPress={onPress}
+      >
         <Text>{tournament?.name}</Text>
+        <Icon as={Pencil} className="text-on-surface-variant" size={18} />
       </Pressable>
     ) : (
       <Text>{tournament?.name}</Text>

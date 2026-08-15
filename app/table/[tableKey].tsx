@@ -120,7 +120,7 @@ export default function TablePage() {
     );
   }
   const handleTableNameChange = async (newTitle: string) => {
-    await updateTable({ tableKey: tableKey!, tableUpdate: { name: newTitle } });
+    await updateTable({ tableKey: tableKey!, tournamentKey, tableUpdate: { name: newTitle } });
   };
   // --- ④ データが存在しない ---
   if (!table && !isLoadingTable && !isErrorTable) {

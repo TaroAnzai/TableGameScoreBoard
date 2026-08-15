@@ -168,21 +168,29 @@ const TableScoreInputModal = ({
             </View>
           </ScrollView>
         </View>
-
-        <Text
-          className={[
-            'text-right text-base font-bold',
-            tableType !== 'NORMAL' || total === 0 ? 'text-success' : 'text-warning',
-          ].join(' ')}
-        >
-          {t('scoreBoard.totalLabel')}: {total.toLocaleString()}
-        </Text>
-        {tableType === 'NORMAL' && total !== 0 && (
-          <Text className="text-right text-sm text-warning">{t('scoreBoard.totalMustBeZero')}</Text>
-        )}
+        <View className="flex-row items-center align-right justify-end gap-4">
+          {tableType === 'NORMAL' && total !== 0 && (
+            <Text className="text-right text-sm text-warning">
+              {t('scoreBoard.totalMustBeZero')}
+            </Text>
+          )}
+          <Text
+            className={[
+              'text-right text-base font-bold',
+              tableType !== 'NORMAL' || total === 0 ? 'text-success' : 'text-warning',
+            ].join(' ')}
+          >
+            {t('scoreBoard.totalLabel')}: {total.toLocaleString()}
+          </Text>
+        </View>
 
         <DialogFooter>
-          <Button className="h-auto min-h-12 rounded-xl py-3" variant="outline" disabled={isSaving} onPress={onClose}>
+          <Button
+            className="h-auto min-h-12 rounded-xl py-3"
+            variant="outline"
+            disabled={isSaving}
+            onPress={onClose}
+          >
             <Text>{t('Common.Cancel')}</Text>
           </Button>
           <Button

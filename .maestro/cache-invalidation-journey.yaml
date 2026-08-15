@@ -1,0 +1,116 @@
+appId: com.anzaihome.mahjongapp.dev
+---
+# 前提:
+# - 日本語表示
+# - グループ作成API（http://localhost:6080）へ接続可能
+# - MetroとAndroid開発ビルドが起動済み
+- stopApp
+- runFlow: new-group-registration-test.yaml
+
+# E2E専用グループを開く
+- tapOn: ${output.groupName}
+- assertVisible: '大会一覧'
+- assertVisible: 'メンバー一覧'
+
+# グループ名を変更し、ルート画面の登録グループ一覧へ反映されることを確認
+- tapOn: '${output.groupName}を編集'
+- longPressOn: ${output.groupName}
+- tapOn:
+    text: 'その他のオプション|その他|More options'
+- tapOn:
+    text: 'すべて選択|Select [Aa]ll'
+- eraseText: 1
+- inputText: ${output.editedGroupName}
+- pressKey: Enter
+- pressKey: Enter
+- assertVisible: ${output.editedGroupName}
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: ${output.editedGroupName}
+    timeout: 15000
+
+# 大会を作成して自動遷移し、作成直後の大会一覧更新を確認
+- tapOn: ${output.editedGroupName}
+- tapOn: '大会新規作成'
+- assertVisible:
+    id: 'primaryInput'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.tournamentName}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.tournamentName}
+    timeout: 30000
+- assertVisible: '大会成績'
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: ${output.tournamentName}
+    timeout: 15000
+
+# 大会名を変更し、グループ画面の大会一覧へ反映されることを確認
+- tapOn: ${output.tournamentName}
+- tapOn: ${output.tournamentName}
+- assertVisible:
+    id: 'tournament-name-input'
+- longPressOn:
+    id: 'tournament-name-input'
+- tapOn:
+    text: 'その他のオプション|その他|More options'
+- tapOn:
+    text: 'すべて選択|Select [Aa]ll'
+- eraseText: 1
+- inputText: ${output.editedTournamentName}
+- tapOn: '保存'
+- assertVisible: ${output.editedTournamentName}
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: ${output.editedTournamentName}
+    timeout: 15000
+
+# 一意なグループメンバーを作成
+- tapOn: 'メンバー一覧'
+- tapOn: 'グループメンバー追加'
+- assertVisible:
+    id: 'primaryInput'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.player1}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.player1}
+    timeout: 15000
+
+# 作成済み大会へメンバーを追加
+- tapOn: '大会一覧'
+- tapOn: ${output.editedTournamentName}
+- tapOn: '大会新規作成'
+- assertVisible: '参加者を選択'
+- tapOn: ${output.player1}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.player1}
+    timeout: 15000
+
+# 記録用紙を作成して自動遷移し、作成直後のスコアボード更新を確認
+- tapOn: '記録用紙を新規作成'
+- extendedWaitUntil:
+    visible: '${output.tableName}記録表'
+    timeout: 30000
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: '${output.tableName}の記録用紙を開く'
+    timeout: 15000
+
+# 作成済み記録用紙を開いて名称変更
+- tapOn: '${output.tableName}の記録用紙を開く'
+- tapOn: '${output.tableName}を編集'
+- eraseText
+- inputText: ${output.editedTableName}
+- pressKey: Enter
+- assertVisible: ${output.editedTableName}
+
+# 大会画面へ戻り、スコアボードに変更後のテーブル名が表示されることを確認
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: '${output.editedTableName}の記録用紙を開く'
+    timeout: 15000

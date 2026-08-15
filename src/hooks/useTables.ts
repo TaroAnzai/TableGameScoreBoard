@@ -8,6 +8,7 @@ import {
   getApiTablesTableKeyGames,
   getGetApiTablesTableKeyPlayersQueryKey,
   getGetApiTablesTableKeyQueryOptions,
+  getGetApiTournamentsTournamentKeyScoreMapQueryKey,
   getGetApiTournamentsTournamentKeyTablesQueryKey,
   postApiTablesTableKeyPlayers,
   postApiTournamentsTournamentKeyTables,
@@ -58,9 +59,14 @@ export const useCreateTable = ({ navigateOnSuccess = true }: UseCreateTableOptio
     },
     onSuccess: async (data, variables) => {
       showSuccess(t('notifications.table.createSuccess'));
-      await queryClient.invalidateQueries({
-        queryKey: getGetApiTournamentsTournamentKeyTablesQueryKey(variables.tournamentKey),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: getGetApiTournamentsTournamentKeyTablesQueryKey(variables.tournamentKey),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
+        }),
+      ]);
       // 遷移
       const tableKey = getResourceKey(data);
       if (tableKey && navigateOnSuccess) {
@@ -89,14 +95,31 @@ export const useUpdateTable = () => {
   const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { tableKey: string; tableUpdate: TableUpdate }) => {
+    mutationFn: (data: {
+      tableKey: string;
+      tournamentKey?: string;
+      tableUpdate: TableUpdate;
+    }) => {
       return putApiTablesTableKey(data.tableKey, data.tableUpdate);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (_data, variables) => {
       showSuccess(t('notifications.table.updateSuccess'));
-      // キャッシュ更新
-      const queryKey = getGetApiTablesTableKeyQueryOptions(variables.tableKey).queryKey;
-      queryClient.invalidateQueries({ queryKey });
+      const invalidations = [
+        queryClient.invalidateQueries({
+          queryKey: getGetApiTablesTableKeyQueryOptions(variables.tableKey).queryKey,
+        }),
+      ];
+      if (variables.tournamentKey) {
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: getGetApiTournamentsTournamentKeyTablesQueryKey(variables.tournamentKey),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
+          }),
+        );
+      }
+      await Promise.all(invalidations);
     },
     onError: (error: any) => {
       console.error('Error updating table:', error);

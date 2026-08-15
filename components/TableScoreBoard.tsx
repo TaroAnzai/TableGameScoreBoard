@@ -20,6 +20,37 @@ import type {
 } from '@/src/api/generated/mahjongApi.schemas';
 import { mahjong } from '@/src/lib/theme';
 
+interface ScoreCellProps {
+  score: number | '';
+  isTotal: boolean;
+  hasBottomBorder?: boolean;
+}
+
+const ScoreCell = ({
+  score,
+  isTotal,
+  hasBottomBorder = true,
+}: ScoreCellProps) => (
+  <View
+    style={{
+      height: mahjong.tableHeaderHeight,
+      width: mahjong.scoreCellWidth,
+    }}
+    className={`items-center justify-center border-r border-outline px-2 py-1 ${
+      isTotal ? 'bg-surface-variant' : 'bg-surface'
+    } ${
+      hasBottomBorder ? 'border-b' : ''
+    }`}
+  >
+    <Text
+      className="text-center text-base font-bold leading-[22px] text-on-surface"
+      numberOfLines={1}
+    >
+      {score === '' ? '—' : score.toLocaleString()}
+    </Text>
+  </View>
+);
+
 interface TableScoreBoardProps {
   table: ScoreTable;
   players: readonly Player[];
@@ -216,18 +247,11 @@ const TableScoreBoard = ({
                         game?.scores?.find((s) => s.player_id === player.id)?.score ?? '';
 
                       return (
-                        <View
+                        <ScoreCell
                           key={`${index}-${player.id}`}
-                          style={{ width: mahjong.scoreCellWidth }}
-                          className="items-center justify-center border-b border-r border-outline bg-surface px-2 py-1"
-                        >
-                          <Text
-                            className="text-center text-base font-bold leading-[22px] text-on-surface"
-                            numberOfLines={1}
-                          >
-                            {score === '' ? '—' : Number(score).toLocaleString()}
-                          </Text>
-                        </View>
+                          score={score === '' ? '' : Number(score)}
+                          isTotal={false}
+                        />
                       );
                     })}
                   </Pressable>
@@ -237,18 +261,12 @@ const TableScoreBoard = ({
               {!isChipTable && (
                 <View className="flex-row">
                   {displayPlayers.map((player) => (
-                    <View
+                    <ScoreCell
                       key={`total-${player.id}`}
-                      style={{
-                        minHeight: mahjong.tableHeaderHeight,
-                        width: mahjong.scoreCellWidth,
-                      }}
-                      className="items-center justify-center border-r border-outline bg-surface-variant px-2 py-1"
-                    >
-                      <Text className="text-center text-base font-bold leading-[22px] text-on-surface">
-                        {(totalScores[player.id] ?? 0).toLocaleString()}
-                      </Text>
-                    </View>
+                      score={totalScores[player.id] ?? 0}
+                      isTotal
+                      hasBottomBorder={false}
+                    />
                   ))}
                 </View>
               )}

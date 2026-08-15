@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   deleteApiTournamentsTournamentKey,
   deleteApiTournamentsTournamentKeyParticipantsPlayerId,
+  getGetApiGroupsGroupKeyTournamentsQueryKey,
   getGetApiTournamentsTournamentKeyParticipantsQueryOptions,
   getGetApiTournamentsTournamentKeyQueryOptions,
   getGetApiTournamentsTournamentKeyScoreMapQueryOptions,
@@ -24,13 +25,17 @@ import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 export const useCreateTournament = () => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useMutationFeedback();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: { groupKey: string; tournament: TournamentCreate }) => {
       return postApiGroupsGroupKeyTournaments(data.groupKey, data.tournament);
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
       showSuccess(t('notifications.tournament.createSuccess'));
+      await queryClient.invalidateQueries({
+        queryKey: getGetApiGroupsGroupKeyTournamentsQueryKey(variables.groupKey),
+      });
     },
     onError: (error: any) => {
       console.error('Error creating tournament:', error);
@@ -66,10 +71,14 @@ export const useUpdateTournament = () => {
   const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { tournamentKey: string; tournament: TournamentUpdate }) => {
+    mutationFn: (data: {
+      tournamentKey: string;
+      groupKey: string;
+      tournament: TournamentUpdate;
+    }) => {
       return putApiTournamentsTournamentKey(data.tournamentKey, data.tournament);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (_data, variables) => {
       showSuccess(t('notifications.tournament.updateSuccess'));
       const queryKeytournament = getGetApiTournamentsTournamentKeyQueryOptions(
         variables.tournamentKey,
@@ -77,8 +86,13 @@ export const useUpdateTournament = () => {
       const queryKeyScore = getGetApiTournamentsTournamentKeyScoreMapQueryOptions(
         variables.tournamentKey,
       ).queryKey;
-      queryClient.invalidateQueries({ queryKey: queryKeytournament });
-      queryClient.invalidateQueries({ queryKey: queryKeyScore });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeytournament }),
+        queryClient.invalidateQueries({ queryKey: queryKeyScore }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiGroupsGroupKeyTournamentsQueryKey(variables.groupKey),
+        }),
+      ]);
     },
     onError: (error: any) => {
       console.error('Error updating tournament:', error);
