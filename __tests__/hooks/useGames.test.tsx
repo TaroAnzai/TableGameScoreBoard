@@ -18,6 +18,12 @@ jest.mock('@/src/api/generated/mahjongApi', () => ({
   getGetApiTournamentsTournamentKeyScoreMapQueryKey: (tournamentKey: string) => [
     `/api/tournaments/${tournamentKey}/score_map`,
   ],
+  getGetApiV2TablesTableKeyDashboardQueryKey: (tableKey: string) => [
+    `/api/v2/tables/${tableKey}/dashboard`,
+  ],
+  getGetApiV2TournamentsTournamentKeyDashboardQueryKey: (tournamentKey: string) => [
+    `/api/v2/tournaments/${tournamentKey}/dashboard`,
+  ],
 }));
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
   useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),

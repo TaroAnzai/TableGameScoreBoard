@@ -1,13 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
+import type { TableDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiTablesTableKeyGamesGameId,
+  getApiV2TablesTableKeyDashboard,
   getGetApiTablesTableKeyGamesQueryKey,
   getGetApiTournamentsTournamentKeyScoreMapQueryKey,
+  getGetApiV2TablesTableKeyDashboardQueryKey,
+  getGetApiV2TournamentsTournamentKeyDashboardQueryKey,
   postApiTablesTableKeyGames,
   putApiTablesTableKeyGamesGameId,
-  useGetApiTablesTableKeyGames,
 } from '@/src/api/generated/mahjongApi';
 import type { GameCreate, GameUpdate } from '@/src/api/generated/mahjongApi.schemas';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
@@ -30,11 +33,19 @@ export const useCreateGame = () => {
         queryClient.invalidateQueries({
           queryKey: getGetApiTablesTableKeyGamesQueryKey(variables.tableKey),
         }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+        }),
       ];
       if (variables.tournamentKey) {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(
+              variables.tournamentKey,
+            ),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
               variables.tournamentKey,
             ),
           }),
@@ -60,7 +71,13 @@ export const useGetTableGames = (tableKey: string, optins?: object) => {
     isFetching: isFetchingGames,
     error: gamesError,
     refetch: loadGames,
-  } = useGetApiTablesTableKeyGames(tableKey, optins);
+  } = useQuery({
+    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    enabled: !!tableKey,
+    select: (dashboard) => dashboard.games,
+    ...(optins ?? {}),
+  });
   return { games, isLoadingGames, isErrorGames, isFetchingGames, gamesError, loadGames };
 };
 export const useUpdateGame = () => {
@@ -82,11 +99,19 @@ export const useUpdateGame = () => {
         queryClient.invalidateQueries({
           queryKey: getGetApiTablesTableKeyGamesQueryKey(variables.tableKey),
         }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+        }),
       ];
       if (variables.tournamentKey) {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(
+              variables.tournamentKey,
+            ),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
               variables.tournamentKey,
             ),
           }),
@@ -119,11 +144,19 @@ export const useDeleteGame = () => {
         queryClient.invalidateQueries({
           queryKey: getGetApiTablesTableKeyGamesQueryKey(variables.tableKey),
         }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+        }),
       ];
       if (variables.tournamentKey) {
         invalidations.push(
           queryClient.invalidateQueries({
             queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(
+              variables.tournamentKey,
+            ),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
               variables.tournamentKey,
             ),
           }),

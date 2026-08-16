@@ -1,7 +1,11 @@
+import { useQuery } from '@tanstack/react-query';
+
+import type { TournamentDashboard } from '@/src/api/dashboardTypes';
 import {
+  getApiV2TournamentsTournamentKeyDashboard,
+  getGetApiV2TournamentsTournamentKeyDashboardQueryKey,
   useGetApiGroupsGroupKeyPlayerStats,
   useGetApiTournamentsTournamentKeyExport,
-  useGetApiTournamentsTournamentKeyScoreMap,
 } from '@/src/api/generated/mahjongApi';
 
 export const useGetTournamentScore = (tournamentKey: string) => {
@@ -24,7 +28,15 @@ export const useGetTournamentScoreMap = (tournamentKey: string) => {
     isFetching: isFetchingScoreMap,
     error: scoreMapError,
     refetch: loadScoreMap,
-  } = useGetApiTournamentsTournamentKeyScoreMap(tournamentKey);
+  } = useQuery({
+    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
+    queryFn: () =>
+      getApiV2TournamentsTournamentKeyDashboard(
+        tournamentKey,
+      ) as unknown as Promise<TournamentDashboard>,
+    enabled: !!tournamentKey,
+    select: (dashboard) => dashboard.score_map,
+  });
   return {
     scoreMap,
     isLoadingScoreMap,

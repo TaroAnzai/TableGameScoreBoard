@@ -30,11 +30,11 @@ import {
   useAddTablePlayer,
   useDeleteTable,
   useDeleteTablePlayer,
+  useGetAvailableTablePlayers,
   useGetTable,
   useGetTablePlayer,
   useUpdateTable,
 } from '@/src/hooks/useTables';
-import { useGetTournamentPlayers } from '@/src/hooks/useTournaments';
 import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
 
 export default function TablePage() {
@@ -85,10 +85,8 @@ export default function TablePage() {
     isFetchingPlayers,
     playersError: tournamentPlayersError,
     loadPlayers: loadTournamentPlayers,
-  } = useGetTournamentPlayers(tournamentKey ?? '', { enabled: !!tournamentKey });
-  const remainingPlayers = tournamentPlayers?.filter(
-    (p) => !tablePlayers?.find((t) => t.id === p.id),
-  );
+  } = useGetAvailableTablePlayers(tableKey ?? '', { enabled: !!tableKey });
+  const remainingPlayers = tournamentPlayers;
 
   const accessLevel = getAccessLevelstring(table?.table_links);
   const tableErrorPresentation = getUserFacingApiError(tableError, {

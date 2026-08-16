@@ -18,6 +18,13 @@ jest.mock('@/src/api/generated/mahjongApi', () => ({
     queryKey: [`/api/tournaments/${tournamentKey}/score_map`],
   }),
   postApiGroupsGroupKeyTournaments: (...args: unknown[]) => mockPostTournament(...args),
+  postApiV2GroupsGroupKeyTournaments: (...args: unknown[]) => mockPostTournament(...args),
+  getGetApiV2GroupsGroupKeyDashboardQueryKey: (groupKey: string) => [
+    `/api/v2/groups/${groupKey}/dashboard`,
+  ],
+  getGetApiV2TournamentsTournamentKeyDashboardQueryKey: (tournamentKey: string) => [
+    `/api/v2/tournaments/${tournamentKey}/dashboard`,
+  ],
   putApiTournamentsTournamentKey: (...args: unknown[]) => mockPutTournament(...args),
 }));
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
@@ -45,7 +52,9 @@ describe('useCreateTournament', () => {
 
   it('大会作成後に作成元グループの大会一覧を無効化する', async () => {
     const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
-    mockPostTournament.mockResolvedValue({ owner_link: 'new-tournament-owner-key' });
+    mockPostTournament.mockResolvedValue({
+      tournament: { owner_link: 'new-tournament-owner-key' },
+    });
     const { result, unmount } = await renderHook(() => useCreateTournament(), { wrapper });
 
     await act(async () => {
@@ -57,7 +66,7 @@ describe('useCreateTournament', () => {
 
     expect(mockPostTournament).toHaveBeenCalledWith('group-owner-key', { name: '大会1' });
     expect(invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['/api/groups/group-owner-key/tournaments'],
+      queryKey: ['/api/v2/groups/group-owner-key/dashboard'],
     });
     unmount();
   });
@@ -105,7 +114,10 @@ describe('useUpdateTournament', () => {
       queryKey: ['/api/tournaments/tournament-owner-key/score_map'],
     });
     expect(invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['/api/groups/group-owner-key/tournaments'],
+      queryKey: ['/api/v2/groups/group-owner-key/dashboard'],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['/api/v2/tournaments/tournament-owner-key/dashboard'],
     });
     unmount();
   });

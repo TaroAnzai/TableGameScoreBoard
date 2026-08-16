@@ -64,6 +64,7 @@ jest.mock('@/src/hooks/useTournaments', () => ({
   useDeleteTournament: () => mockTournamentMutations().delete,
 }));
 jest.mock('@/src/hooks/useGroups', () => ({
+  useGetGroupDashboard: () => mockUseGroup(),
   useUpdateGroup: () => ({ mutate: jest.fn() }),
 }));
 jest.mock('@/src/hooks/useTables', () => ({

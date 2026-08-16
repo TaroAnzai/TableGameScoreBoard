@@ -533,9 +533,7 @@ export type PatchApiAdminContactsContactIdMutationResult = NonNullable<
 >;
 export type PatchApiAdminContactsContactIdMutationBody = ContactUpdate;
 export type PatchApiAdminContactsContactIdMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 export const usePatchApiAdminContactsContactId = <
   TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
@@ -697,9 +695,7 @@ export type PostApiAdminLoginMutationResult = NonNullable<
 >;
 export type PostApiAdminLoginMutationBody = AdminLogin;
 export type PostApiAdminLoginMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 export const usePostApiAdminLogin = <
   TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,

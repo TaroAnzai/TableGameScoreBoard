@@ -36,6 +36,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams(),
 }));
 jest.mock('@/src/hooks/useTables', () => ({
+  useGetAvailableTablePlayers: () => mockUseTournamentPlayers(),
   useGetTable: () => mockUseTable(),
   useGetTablePlayer: () => mockUseTablePlayers(),
   useUpdateTable: () => ({ mutateAsync: mockUpdateTable }),

@@ -1,10 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
+import type { GroupDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiGroupsGroupKeyPlayersPlayerId,
+  getApiV2GroupsGroupKeyDashboard,
+  getGetApiV2GroupsGroupKeyDashboardQueryKey,
   postApiGroupsGroupKeyPlayers,
-  useGetApiGroupsGroupKeyPlayers,
 } from '@/src/api/generated/mahjongApi';
 import type { PlayerCreate } from '@/src/api/generated/mahjongApi.schemas';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
@@ -22,7 +24,13 @@ export const useGetPlayer = (groupKey: string) => {
     isFetching: isFetchingPlayers,
     error: playersError,
     refetch: loadPlayers,
-  } = useGetApiGroupsGroupKeyPlayers(groupKey);
+  } = useQuery({
+    queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
+    queryFn: () =>
+      getApiV2GroupsGroupKeyDashboard(groupKey) as unknown as Promise<GroupDashboard>,
+    enabled: !!groupKey,
+    select: (dashboard) => dashboard.players,
+  });
   return {
     players,
     isLoadingPlayers,

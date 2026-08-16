@@ -24,17 +24,16 @@ import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import {
   type Player,
-  type TablePlayerItem,
   TableType,
   type TournamentScoreMap,
   type TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
-import { useGetPlayer } from '@/src/hooks/usePlayers';
 import { useGetTournamentScoreMap } from '@/src/hooks/useScore';
-import { useAddTablePlayer, useCreateTable, useGetTables } from '@/src/hooks/useTables';
+import { useCreateTable, useGetTables } from '@/src/hooks/useTables';
 import {
   useAddTournamentPlayer,
   useDeleteTounamentsPlayer,
+  useGetAvailableTournamentPlayers,
   useGetTournament,
   useGetTournamentPlayers,
   useUpdateTournament,
@@ -93,7 +92,7 @@ const TournamentPage = () => {
     isFetchingPlayers: isFetchingGroupPlayers,
     playersError: groupPlayersError,
     loadPlayers: loadGroupPlayers,
-  } = useGetPlayer(groupKey);
+  } = useGetAvailableTournamentPlayers(tournamentKey);
   //Mutation系フック
   const { mutateAsync: addTournamentPlayer, isPending: isAddingTournamentPlayer } =
     useAddTournamentPlayer();
@@ -101,7 +100,6 @@ const TournamentPage = () => {
     useDeleteTounamentsPlayer();
   const { mutate: createTable, isPending: isCreatingTable } = useCreateTable();
   const { mutateAsync: updateTournament, isPending: isUpdatingTournament } = useUpdateTournament();
-  const { mutateAsync: addTablePlayer, isPending: isAddingTablePlayer } = useAddTablePlayer();
 
   //ローカルステート
 
@@ -114,9 +112,7 @@ const TournamentPage = () => {
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
   const parentPageUrl = parentGroupKey ? `/group/${parentGroupKey}` : null;
 
-  const candidatePlayers = groupPlayers?.filter(
-    (player) => !players?.some((p) => p.id === player.id),
-  );
+  const candidatePlayers = groupPlayers;
 
   const isLoading =
     isLoadingTournament ||
@@ -188,18 +184,6 @@ const TournamentPage = () => {
         tournamentKey: tournamentKey!,
         players: selectedPlayers,
       });
-      //CHIPテーブルにも追加する。
-      const chipTables = tables?.filter((t) => t.type === 'CHIP') ?? [];
-      await Promise.all(
-        chipTables.map(async (table) => {
-          const tableKey = table.edit_link;
-          if (!tableKey) return;
-          const tablePlayers = selectedPlayers.map<TablePlayerItem>((player) => ({
-            player_id: player.id,
-          }));
-          await addTablePlayer({ tableKey, tablePlayersItem: tablePlayers });
-        }),
-      );
       setShowAddPlayerModal(false);
     } catch {
       // The mutation hooks show the error. Keep the selection open for retrying.
@@ -371,7 +355,7 @@ const TournamentPage = () => {
                 <Button
                   accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
                   className="h-10 w-10 rounded-full p-0"
-                  disabled={isAddingTournamentPlayer || isAddingTablePlayer}
+                  disabled={isAddingTournamentPlayer}
                   size="icon"
                   variant="ghost"
                   onPress={handleOpenAddPlayerModal}
@@ -439,7 +423,7 @@ const TournamentPage = () => {
           items={candidatePlayers ?? []}
           onConfirm={handleAddPlayer}
           onClose={() => setShowAddPlayerModal(false)}
-          isPending={isAddingTournamentPlayer || isAddingTablePlayer}
+          isPending={isAddingTournamentPlayer}
           pendingText={t('Common.processing')}
         />
       )}

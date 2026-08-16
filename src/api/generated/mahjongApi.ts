@@ -32,6 +32,7 @@ import type {
   GameUpdate,
   GetApiGroupsGroupKeyPlayerStatsParams,
   Group,
+  GroupBatchGet,
   GroupCreate,
   GroupCreateStatus,
   GroupPlayerStats,
@@ -40,9 +41,12 @@ import type {
   GroupSummary,
   GroupUpdate,
   Message,
+  ParticipantBatchAdd,
   Player,
   PlayerCreate,
   PlayerUpdate,
+  StatusBatchRequest,
+  StatusBatchResponse,
   Table,
   TableCreate,
   TablePlayerCreate,
@@ -50,6 +54,7 @@ import type {
   TableUpdate,
   Tournament,
   TournamentCreate,
+  TournamentCreateV2,
   TournamentExport,
   TournamentParticipants,
   TournamentParticipantsCreate,
@@ -256,9 +261,7 @@ export type PutApiTournamentsTournamentKeyMutationResult = NonNullable<
 >;
 export type PutApiTournamentsTournamentKeyMutationBody = TournamentUpdate;
 export type PutApiTournamentsTournamentKeyMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 大会更新
@@ -587,9 +590,7 @@ export type PostApiTournamentsTournamentKeyTablesMutationResult = NonNullable<
 >;
 export type PostApiTournamentsTournamentKeyTablesMutationBody = TableCreate;
 export type PostApiTournamentsTournamentKeyTablesMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 大会共有キーから卓を作成
@@ -678,9 +679,7 @@ export const getPostApiGroupsMutationOptions = <
 export type PostApiGroupsMutationResult = NonNullable<Awaited<ReturnType<typeof postApiGroups>>>;
 export type PostApiGroupsMutationBody = GroupCreate;
 export type PostApiGroupsMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary グループ新規作成
@@ -771,9 +770,7 @@ export type PostApiGroupsRequestLinkMutationResult = NonNullable<
 >;
 export type PostApiGroupsRequestLinkMutationBody = GroupRequest;
 export type PostApiGroupsRequestLinkMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary グループ作成リンクをリクエストする
@@ -864,9 +861,7 @@ export type PostApiGroupsRequestLinkStatusMutationResult = NonNullable<
 >;
 export type PostApiGroupsRequestLinkStatusMutationBody = GroupCreate;
 export type PostApiGroupsRequestLinkStatusMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary グループ作成リンクのステータスをリクエストする
@@ -1085,9 +1080,7 @@ export type PutApiGroupsGroupKeyMutationResult = NonNullable<
 >;
 export type PutApiGroupsGroupKeyMutationBody = GroupUpdate;
 export type PutApiGroupsGroupKeyMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary グループ更新
@@ -1392,9 +1385,7 @@ export type PostApiGroupsGroupKeyTournamentsMutationResult = NonNullable<
 >;
 export type PostApiGroupsGroupKeyTournamentsMutationBody = TournamentCreate;
 export type PostApiGroupsGroupKeyTournamentsMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary グループ共有キーから大会を作成
@@ -1619,9 +1610,7 @@ export type PostApiGroupsGroupKeyPlayersMutationResult = NonNullable<
 >;
 export type PostApiGroupsGroupKeyPlayersMutationBody = PlayerCreate;
 export type PostApiGroupsGroupKeyPlayersMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary グループ共有キーからプレイヤー作成
@@ -1884,9 +1873,7 @@ export type PutApiGroupsGroupKeyPlayersPlayerIdMutationResult = NonNullable<
 >;
 export type PutApiGroupsGroupKeyPlayersPlayerIdMutationBody = PlayerUpdate;
 export type PutApiGroupsGroupKeyPlayersPlayerIdMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary プレイヤー更新
@@ -1971,8 +1958,7 @@ export type DeleteApiGroupsGroupKeyPlayersPlayerIdMutationResult = NonNullable<
 >;
 
 export type DeleteApiGroupsGroupKeyPlayersPlayerIdMutationError =
-  | ErrorResponse
-  | DefaultErrorResponse;
+  ErrorResponse | DefaultErrorResponse;
 
 /**
  * @summary プレイヤー削除
@@ -2191,9 +2177,7 @@ export type PutApiTablesTableKeyMutationResult = NonNullable<
 >;
 export type PutApiTablesTableKeyMutationBody = TableUpdate;
 export type PutApiTablesTableKeyMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 卓更新
@@ -2498,9 +2482,7 @@ export type PostApiTablesTableKeyGamesMutationResult = NonNullable<
 >;
 export type PostApiTablesTableKeyGamesMutationBody = GameCreate;
 export type PostApiTablesTableKeyGamesMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 卓共有キーから対局を作成
@@ -2731,9 +2713,7 @@ export type PutApiTablesTableKeyGamesGameIdMutationResult = NonNullable<
 >;
 export type PutApiTablesTableKeyGamesGameIdMutationBody = GameUpdate;
 export type PutApiTablesTableKeyGamesGameIdMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 対局更新
@@ -2902,8 +2882,7 @@ export type GetApiTournamentsTournamentKeyParticipantsQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>
 >;
 export type GetApiTournamentsTournamentKeyParticipantsQueryError =
-  | ErrorResponse
-  | DefaultErrorResponse;
+  ErrorResponse | DefaultErrorResponse;
 
 export function useGetApiTournamentsTournamentKeyParticipants<
   TData = Awaited<ReturnType<typeof getApiTournamentsTournamentKeyParticipants>>,
@@ -3069,9 +3048,7 @@ export type PostApiTournamentsTournamentKeyParticipantsMutationResult = NonNulla
 >;
 export type PostApiTournamentsTournamentKeyParticipantsMutationBody = TournamentParticipantsCreate;
 export type PostApiTournamentsTournamentKeyParticipantsMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 大会共有キーからプレイヤーを登録
@@ -3160,8 +3137,7 @@ export type DeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationResult 
 >;
 
 export type DeleteApiTournamentsTournamentKeyParticipantsPlayerIdMutationError =
-  | ErrorResponse
-  | DefaultErrorResponse;
+  ErrorResponse | DefaultErrorResponse;
 
 /**
  * @summary 参加者共有キーから削除
@@ -3387,9 +3363,7 @@ export type PostApiTablesTableKeyPlayersMutationResult = NonNullable<
 >;
 export type PostApiTablesTableKeyPlayersMutationBody = TablePlayerCreate;
 export type PostApiTablesTableKeyPlayersMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 /**
  * @summary 卓共有キーから大会参加者を登録
@@ -3474,8 +3448,7 @@ export type DeleteApiTablesTableKeyPlayersPlayerIdMutationResult = NonNullable<
 >;
 
 export type DeleteApiTablesTableKeyPlayersPlayerIdMutationError =
-  | ErrorResponse
-  | DefaultErrorResponse;
+  ErrorResponse | DefaultErrorResponse;
 
 /**
  * @summary 卓参加者共有キーから削除
@@ -4004,9 +3977,7 @@ export type GetApiGroupsGroupKeyPlayerStatsQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>
 >;
 export type GetApiGroupsGroupKeyPlayerStatsQueryError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 export function useGetApiGroupsGroupKeyPlayerStats<
   TData = Awaited<ReturnType<typeof getApiGroupsGroupKeyPlayerStats>>,
@@ -4586,9 +4557,7 @@ export type PatchApiAdminContactsContactIdMutationResult = NonNullable<
 >;
 export type PatchApiAdminContactsContactIdMutationBody = ContactUpdate;
 export type PatchApiAdminContactsContactIdMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 export const usePatchApiAdminContactsContactId = <
   TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
@@ -4747,9 +4716,7 @@ export type PostApiContactsMutationResult = NonNullable<
 >;
 export type PostApiContactsMutationBody = ContactCreate;
 export type PostApiContactsMutationError =
-  | ErrorResponse
-  | UnprocessableEntityResponse
-  | DefaultErrorResponse;
+  ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse;
 
 export const usePostApiContacts = <
   TError = ErrorResponse | UnprocessableEntityResponse | DefaultErrorResponse,
@@ -4775,3 +4742,914 @@ export const usePostApiContacts = <
 
   return useMutation(mutationOptions, queryClient);
 };
+
+export const postApiV2GroupsGroupKeyTournaments = (
+  groupKey: string,
+  tournamentCreateV2: TournamentCreateV2,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    {
+      url: `/api/v2/groups/${groupKey}/tournaments`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: tournamentCreateV2,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostApiV2GroupsGroupKeyTournamentsMutationOptions = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiV2GroupsGroupKeyTournaments>>,
+    TError,
+    { groupKey: string; data: TournamentCreateV2 },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiV2GroupsGroupKeyTournaments>>,
+  TError,
+  { groupKey: string; data: TournamentCreateV2 },
+  TContext
+> => {
+  const mutationKey = ['postApiV2GroupsGroupKeyTournaments'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiV2GroupsGroupKeyTournaments>>,
+    { groupKey: string; data: TournamentCreateV2 }
+  > = (props) => {
+    const { groupKey, data } = props ?? {};
+
+    return postApiV2GroupsGroupKeyTournaments(groupKey, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiV2GroupsGroupKeyTournamentsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiV2GroupsGroupKeyTournaments>>
+>;
+export type PostApiV2GroupsGroupKeyTournamentsMutationBody = TournamentCreateV2;
+export type PostApiV2GroupsGroupKeyTournamentsMutationError =
+  UnprocessableEntityResponse | DefaultErrorResponse;
+
+export const usePostApiV2GroupsGroupKeyTournaments = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiV2GroupsGroupKeyTournaments>>,
+      TError,
+      { groupKey: string; data: TournamentCreateV2 },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiV2GroupsGroupKeyTournaments>>,
+  TError,
+  { groupKey: string; data: TournamentCreateV2 },
+  TContext
+> => {
+  const mutationOptions = getPostApiV2GroupsGroupKeyTournamentsMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const postApiV2GroupsbatchGet = (
+  groupBatchGet: GroupBatchGet,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    {
+      url: `/api/v2/groups:batch-get`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: groupBatchGet,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostApiV2GroupsbatchGetMutationOptions = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiV2GroupsbatchGet>>,
+    TError,
+    { data: GroupBatchGet },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiV2GroupsbatchGet>>,
+  TError,
+  { data: GroupBatchGet },
+  TContext
+> => {
+  const mutationKey = ['postApiV2GroupsbatchGet'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiV2GroupsbatchGet>>,
+    { data: GroupBatchGet }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiV2GroupsbatchGet(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiV2GroupsbatchGetMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiV2GroupsbatchGet>>
+>;
+export type PostApiV2GroupsbatchGetMutationBody = GroupBatchGet;
+export type PostApiV2GroupsbatchGetMutationError =
+  UnprocessableEntityResponse | DefaultErrorResponse;
+
+export const usePostApiV2GroupsbatchGet = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiV2GroupsbatchGet>>,
+      TError,
+      { data: GroupBatchGet },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiV2GroupsbatchGet>>,
+  TError,
+  { data: GroupBatchGet },
+  TContext
+> => {
+  const mutationOptions = getPostApiV2GroupsbatchGetMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const getApiV2GroupsGroupKeyDashboard = (
+  groupKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    { url: `/api/v2/groups/${groupKey}/dashboard`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetApiV2GroupsGroupKeyDashboardQueryKey = (groupKey?: string) => {
+  return [`/api/v2/groups/${groupKey}/dashboard`] as const;
+};
+
+export const getGetApiV2GroupsGroupKeyDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>> = ({
+    signal,
+  }) => getApiV2GroupsGroupKeyDashboard(groupKey, requestOptions, signal);
+
+  return { queryKey, queryFn, enabled: !!groupKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiV2GroupsGroupKeyDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>
+>;
+export type GetApiV2GroupsGroupKeyDashboardQueryError = DefaultErrorResponse;
+
+export function useGetApiV2GroupsGroupKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  groupKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiV2GroupsGroupKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiV2GroupsGroupKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiV2GroupsGroupKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  groupKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiV2GroupsGroupKeyDashboardQueryOptions(groupKey, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const postApiV2GroupsRequestLinkStatusbatch = (
+  statusBatchRequest: StatusBatchRequest,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<StatusBatchResponse>(
+    {
+      url: `/api/v2/groups/request-link/status:batch`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: statusBatchRequest,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostApiV2GroupsRequestLinkStatusbatchMutationOptions = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiV2GroupsRequestLinkStatusbatch>>,
+    TError,
+    { data: StatusBatchRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiV2GroupsRequestLinkStatusbatch>>,
+  TError,
+  { data: StatusBatchRequest },
+  TContext
+> => {
+  const mutationKey = ['postApiV2GroupsRequestLinkStatusbatch'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiV2GroupsRequestLinkStatusbatch>>,
+    { data: StatusBatchRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postApiV2GroupsRequestLinkStatusbatch(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiV2GroupsRequestLinkStatusbatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiV2GroupsRequestLinkStatusbatch>>
+>;
+export type PostApiV2GroupsRequestLinkStatusbatchMutationBody = StatusBatchRequest;
+export type PostApiV2GroupsRequestLinkStatusbatchMutationError =
+  UnprocessableEntityResponse | DefaultErrorResponse;
+
+export const usePostApiV2GroupsRequestLinkStatusbatch = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiV2GroupsRequestLinkStatusbatch>>,
+      TError,
+      { data: StatusBatchRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiV2GroupsRequestLinkStatusbatch>>,
+  TError,
+  { data: StatusBatchRequest },
+  TContext
+> => {
+  const mutationOptions = getPostApiV2GroupsRequestLinkStatusbatchMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const postApiV2TournamentsTournamentKeyParticipantsbatchAdd = (
+  tournamentKey: string,
+  participantBatchAdd: ParticipantBatchAdd,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    {
+      url: `/api/v2/tournaments/${tournamentKey}/participants:batch-add`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: participantBatchAdd,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationOptions = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiV2TournamentsTournamentKeyParticipantsbatchAdd>>,
+    TError,
+    { tournamentKey: string; data: ParticipantBatchAdd },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiV2TournamentsTournamentKeyParticipantsbatchAdd>>,
+  TError,
+  { tournamentKey: string; data: ParticipantBatchAdd },
+  TContext
+> => {
+  const mutationKey = ['postApiV2TournamentsTournamentKeyParticipantsbatchAdd'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiV2TournamentsTournamentKeyParticipantsbatchAdd>>,
+    { tournamentKey: string; data: ParticipantBatchAdd }
+  > = (props) => {
+    const { tournamentKey, data } = props ?? {};
+
+    return postApiV2TournamentsTournamentKeyParticipantsbatchAdd(
+      tournamentKey,
+      data,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiV2TournamentsTournamentKeyParticipantsbatchAdd>>
+>;
+export type PostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationBody = ParticipantBatchAdd;
+export type PostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationError =
+  UnprocessableEntityResponse | DefaultErrorResponse;
+
+export const usePostApiV2TournamentsTournamentKeyParticipantsbatchAdd = <
+  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiV2TournamentsTournamentKeyParticipantsbatchAdd>>,
+      TError,
+      { tournamentKey: string; data: ParticipantBatchAdd },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiV2TournamentsTournamentKeyParticipantsbatchAdd>>,
+  TError,
+  { tournamentKey: string; data: ParticipantBatchAdd },
+  TContext
+> => {
+  const mutationOptions =
+    getPostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const deleteApiV2TournamentsTournamentKeyParticipantsPlayerId = (
+  tournamentKey: string,
+  playerId: number,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    { url: `/api/v2/tournaments/${tournamentKey}/participants/${playerId}`, method: 'DELETE' },
+    options,
+  );
+};
+
+export const getDeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationOptions = <
+  TError = DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiV2TournamentsTournamentKeyParticipantsPlayerId>>,
+    TError,
+    { tournamentKey: string; playerId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiV2TournamentsTournamentKeyParticipantsPlayerId>>,
+  TError,
+  { tournamentKey: string; playerId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteApiV2TournamentsTournamentKeyParticipantsPlayerId'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiV2TournamentsTournamentKeyParticipantsPlayerId>>,
+    { tournamentKey: string; playerId: number }
+  > = (props) => {
+    const { tournamentKey, playerId } = props ?? {};
+
+    return deleteApiV2TournamentsTournamentKeyParticipantsPlayerId(
+      tournamentKey,
+      playerId,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiV2TournamentsTournamentKeyParticipantsPlayerId>>
+>;
+
+export type DeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationError =
+  DefaultErrorResponse;
+
+export const useDeleteApiV2TournamentsTournamentKeyParticipantsPlayerId = <
+  TError = DefaultErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiV2TournamentsTournamentKeyParticipantsPlayerId>>,
+      TError,
+      { tournamentKey: string; playerId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiV2TournamentsTournamentKeyParticipantsPlayerId>>,
+  TError,
+  { tournamentKey: string; playerId: number },
+  TContext
+> => {
+  const mutationOptions =
+    getDeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const getApiV2TournamentsTournamentKeyDashboard = (
+  tournamentKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    { url: `/api/v2/tournaments/${tournamentKey}/dashboard`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetApiV2TournamentsTournamentKeyDashboardQueryKey = (tournamentKey?: string) => {
+  return [`/api/v2/tournaments/${tournamentKey}/dashboard`] as const;
+};
+
+export const getGetApiV2TournamentsTournamentKeyDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>
+  > = ({ signal }) =>
+    getApiV2TournamentsTournamentKeyDashboard(tournamentKey, requestOptions, signal);
+
+  return { queryKey, queryFn, enabled: !!tournamentKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiV2TournamentsTournamentKeyDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>
+>;
+export type GetApiV2TournamentsTournamentKeyDashboardQueryError = DefaultErrorResponse;
+
+export function useGetApiV2TournamentsTournamentKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiV2TournamentsTournamentKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiV2TournamentsTournamentKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiV2TournamentsTournamentKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tournamentKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiV2TournamentsTournamentKeyDashboardQueryOptions(
+    tournamentKey,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const deleteApiV2TablesTableKey = (
+  tableKey: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    { url: `/api/v2/tables/${tableKey}`, method: 'DELETE' },
+    options,
+  );
+};
+
+export const getDeleteApiV2TablesTableKeyMutationOptions = <
+  TError = DefaultErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>,
+    TError,
+    { tableKey: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>,
+  TError,
+  { tableKey: string },
+  TContext
+> => {
+  const mutationKey = ['deleteApiV2TablesTableKey'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>,
+    { tableKey: string }
+  > = (props) => {
+    const { tableKey } = props ?? {};
+
+    return deleteApiV2TablesTableKey(tableKey, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteApiV2TablesTableKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>
+>;
+
+export type DeleteApiV2TablesTableKeyMutationError = DefaultErrorResponse;
+
+export const useDeleteApiV2TablesTableKey = <TError = DefaultErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>,
+      TError,
+      { tableKey: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>,
+  TError,
+  { tableKey: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteApiV2TablesTableKeyMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const getApiV2TablesTableKeyDashboard = (
+  tableKey: string,
+  options?: SecondParameter<typeof customFetch>,
+  signal?: AbortSignal,
+) => {
+  return customFetch<DefaultErrorResponse>(
+    { url: `/api/v2/tables/${tableKey}/dashboard`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetApiV2TablesTableKeyDashboardQueryKey = (tableKey?: string) => {
+  return [`/api/v2/tables/${tableKey}/dashboard`] as const;
+};
+
+export const getGetApiV2TablesTableKeyDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetApiV2TablesTableKeyDashboardQueryKey(tableKey);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>> = ({
+    signal,
+  }) => getApiV2TablesTableKeyDashboard(tableKey, requestOptions, signal);
+
+  return { queryKey, queryFn, enabled: !!tableKey, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiV2TablesTableKeyDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>
+>;
+export type GetApiV2TablesTableKeyDashboardQueryError = DefaultErrorResponse;
+
+export function useGetApiV2TablesTableKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tableKey: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiV2TablesTableKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetApiV2TablesTableKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetApiV2TablesTableKeyDashboard<
+  TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
+  TError = DefaultErrorResponse,
+>(
+  tableKey: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetApiV2TablesTableKeyDashboardQueryOptions(tableKey, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}

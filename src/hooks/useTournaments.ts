@@ -1,23 +1,25 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
+import type { GroupDashboard, TournamentDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiTournamentsTournamentKey,
-  deleteApiTournamentsTournamentKeyParticipantsPlayerId,
-  getGetApiGroupsGroupKeyTournamentsQueryKey,
+  deleteApiV2TournamentsTournamentKeyParticipantsPlayerId,
+  getApiV2GroupsGroupKeyDashboard,
+  getApiV2TournamentsTournamentKeyDashboard,
   getGetApiTournamentsTournamentKeyParticipantsQueryOptions,
   getGetApiTournamentsTournamentKeyQueryOptions,
   getGetApiTournamentsTournamentKeyScoreMapQueryOptions,
-  postApiGroupsGroupKeyTournaments,
-  postApiTournamentsTournamentKeyParticipants,
+  getGetApiV2GroupsGroupKeyDashboardQueryKey,
+  getGetApiV2TournamentsTournamentKeyDashboardQueryKey,
+  postApiV2GroupsGroupKeyTournaments,
+  postApiV2TournamentsTournamentKeyParticipantsbatchAdd,
   putApiTournamentsTournamentKey,
-  useGetApiGroupsGroupKeyTournaments,
-  useGetApiTournamentsTournamentKey,
-  useGetApiTournamentsTournamentKeyParticipants,
 } from '@/src/api/generated/mahjongApi';
 import type {
   Player,
-  TournamentCreate,
+  Tournament,
+  TournamentCreateV2,
   TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
@@ -28,13 +30,16 @@ export const useCreateTournament = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { groupKey: string; tournament: TournamentCreate }) => {
-      return postApiGroupsGroupKeyTournaments(data.groupKey, data.tournament);
+    mutationFn: (data: { groupKey: string; tournament: TournamentCreateV2 }) => {
+      return postApiV2GroupsGroupKeyTournaments(
+        data.groupKey,
+        data.tournament,
+      ) as unknown as Promise<{ tournament: Tournament }>;
     },
     onSuccess: async (_data, variables) => {
       showSuccess(t('notifications.tournament.createSuccess'));
       await queryClient.invalidateQueries({
-        queryKey: getGetApiGroupsGroupKeyTournamentsQueryKey(variables.groupKey),
+        queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(variables.groupKey),
       });
     },
     onError: (error: any) => {
@@ -56,7 +61,13 @@ export const useGetTournaments = (groupKey: string) => {
     isFetching: isFetchingTournaments,
     error: tournamentsError,
     refetch: loadTournaments,
-  } = useGetApiGroupsGroupKeyTournaments(groupKey);
+  } = useQuery({
+    queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
+    queryFn: () =>
+      getApiV2GroupsGroupKeyDashboard(groupKey) as unknown as Promise<GroupDashboard>,
+    enabled: !!groupKey,
+    select: (dashboard) => dashboard.tournaments,
+  });
   return {
     tournaments,
     isLoadingTournaments,
@@ -90,7 +101,12 @@ export const useUpdateTournament = () => {
         queryClient.invalidateQueries({ queryKey: queryKeytournament }),
         queryClient.invalidateQueries({ queryKey: queryKeyScore }),
         queryClient.invalidateQueries({
-          queryKey: getGetApiGroupsGroupKeyTournamentsQueryKey(variables.groupKey),
+          queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(variables.groupKey),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
+            variables.tournamentKey,
+          ),
         }),
       ]);
     },
@@ -133,7 +149,15 @@ export const useGetTournament = (tournamentKey: string) => {
     isFetching: isFetchingTournament,
     error: tournamentError,
     refetch: loadTournament,
-  } = useGetApiTournamentsTournamentKey(tournamentKey);
+  } = useQuery({
+    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
+    queryFn: () =>
+      getApiV2TournamentsTournamentKeyDashboard(
+        tournamentKey,
+      ) as unknown as Promise<TournamentDashboard>,
+    enabled: !!tournamentKey,
+    select: (dashboard) => dashboard.tournament,
+  });
   return {
     tournament,
     isLoadingTournament,
@@ -152,8 +176,17 @@ export const useGetTournamentPlayers = (tournamentKey: string, options?: object)
     isFetching: isFetchingPlayers,
     error: playersError,
     refetch: loadPlayers,
-  } = useGetApiTournamentsTournamentKeyParticipants(tournamentKey, options);
-  const players = data?.participants;
+  } = useQuery({
+    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
+    queryFn: () =>
+      getApiV2TournamentsTournamentKeyDashboard(
+        tournamentKey,
+      ) as unknown as Promise<TournamentDashboard>,
+    enabled: !!tournamentKey,
+    select: (dashboard) => dashboard.participants,
+    ...(options ?? {}),
+  });
+  const players = data;
   return {
     players,
     isLoadingPlayers,
@@ -161,6 +194,26 @@ export const useGetTournamentPlayers = (tournamentKey: string, options?: object)
     isFetchingPlayers,
     playersError,
     loadPlayers,
+  };
+};
+
+export const useGetAvailableTournamentPlayers = (tournamentKey: string) => {
+  const query = useQuery({
+    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
+    queryFn: () =>
+      getApiV2TournamentsTournamentKeyDashboard(
+        tournamentKey,
+      ) as unknown as Promise<TournamentDashboard>,
+    enabled: !!tournamentKey,
+    select: (dashboard) => dashboard.available_group_players,
+  });
+  return {
+    players: query.data,
+    isLoadingPlayers: query.isLoading,
+    isErrorPlayers: query.isError,
+    isFetchingPlayers: query.isFetching,
+    playersError: query.error,
+    loadPlayers: query.refetch,
   };
 };
 
@@ -178,7 +231,10 @@ export const useAddTournamentPlayer = () => {
           return { player_id: player.id };
         }),
       };
-      return postApiTournamentsTournamentKeyParticipants(data.tournamentKey, payload);
+      return postApiV2TournamentsTournamentKeyParticipantsbatchAdd(data.tournamentKey, {
+        ...payload,
+        propagate_to: { table_types: ['CHIP'] },
+      });
     },
     onSuccess: (data, variables) => {
       showSuccess(t('notifications.tournament.addPlayerSuccess'));
@@ -191,6 +247,9 @@ export const useAddTournamentPlayer = () => {
       ).queryKey;
       queryClient.invalidateQueries({ queryKey: queryKeyScore });
       queryClient.invalidateQueries({ queryKey: queryKeyPlayer });
+      queryClient.invalidateQueries({
+        queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
+      });
     },
     onError: (error: any) => {
       console.error('Error adding player:', error);
@@ -209,7 +268,7 @@ export const useDeleteTounamentsPlayer = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { tournamentKey: string; playerId: number }) => {
-      return deleteApiTournamentsTournamentKeyParticipantsPlayerId(
+      return deleteApiV2TournamentsTournamentKeyParticipantsPlayerId(
         data.tournamentKey,
         data.playerId,
       );
@@ -224,6 +283,9 @@ export const useDeleteTounamentsPlayer = () => {
       ).queryKey;
       queryClient.invalidateQueries({ queryKey: queryKeyScore });
       queryClient.invalidateQueries({ queryKey: queryKeyPlayer });
+      queryClient.invalidateQueries({
+        queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
+      });
     },
     onError: (error: any) => {
       console.error('Error deleting player from tournament:', error);

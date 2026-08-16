@@ -19,11 +19,9 @@ import { Icon } from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
-import { useGetApiGroupsGroupKey } from '@/src/api/generated/mahjongApi';
 import { Player, Tournament } from '@/src/api/generated/mahjongApi.schemas';
-import { useUpdateGroup } from '@/src/hooks/useGroups';
+import { useGetGroupDashboard, useUpdateGroup } from '@/src/hooks/useGroups';
 import { useCreatePlayer, useDeletePlayer, useGetPlayer } from '@/src/hooks/usePlayers';
-import { useCreateTable } from '@/src/hooks/useTables';
 import {
   useCreateTournament,
   useDeleteTournament,
@@ -60,15 +58,12 @@ const GroupPage = () => {
     isFetching: isFetchingGroup,
     error: groupError,
     refetch: refetchGroup,
-  } = useGetApiGroupsGroupKey(groupKey);
+  } = useGetGroupDashboard(groupKey);
   const { mutateAsync: updateGroup } = useUpdateGroup(refetchGroup);
   const { mutateAsync: createPlayer, isPending: isCreatingPlayer } = useCreatePlayer(loadPlayers);
   const { mutateAsync: deletePlayer, isPending: isDeletingPlayer } = useDeletePlayer(loadPlayers);
   const { mutateAsync: createTournament, isPending: isCreatingTournament } = useCreateTournament();
   const { mutateAsync: deleteTournament, isPending: isDeletingTournament } = useDeleteTournament();
-  const { mutateAsync: createChipTable, isPending: isCreatingChipTable } = useCreateTable({
-    navigateOnSuccess: false,
-  });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteTournamentModal, setShowDeleteTournamentModal] = useState(false);
@@ -185,15 +180,16 @@ const GroupPage = () => {
   const handleCreateTournament = async (name: string) => {
     if (!name) return;
     try {
-      const payload = { groupKey: groupKey, tournament: { name: name } };
+      const payload = {
+        groupKey,
+        tournament: {
+          name,
+          initial_tables: [{ client_id: 'chip', name: t('Common.chip'), type: 'CHIP' as const }],
+        },
+      };
       const data = await createTournament(payload);
-      //CHIPテーブルを作成
-      const tournamentKey = getResourceKey(data);
+      const tournamentKey = getResourceKey(data.tournament);
       if (!tournamentKey) return;
-      await createChipTable({
-        tournamentKey,
-        tableCreate: { name: t('Common.chip'), type: 'CHIP' },
-      });
       setIsCreateTournamentModalOpen(false);
       await navigateAway(() =>
         router.push({
@@ -270,7 +266,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
                       className="h-10 w-10 rounded-full p-0"
-                      disabled={isCreatingTournament || isCreatingChipTable}
+                      disabled={isCreatingTournament}
                       size="icon"
                       variant="ghost"
                       onPress={() => setIsCreateTournamentModalOpen(true)}
@@ -436,7 +432,7 @@ const GroupPage = () => {
         onClose={() => setIsCreateTournamentModalOpen(false)}
         title={t('groupPage.modalCreateTournamentTitle')}
         discription={t('groupPage.modalCreateTournamentDescription')}
-        isPending={isCreatingTournament || isCreatingChipTable}
+        isPending={isCreatingTournament}
         pendingText={t('groupPage.creatingTournament')}
       />
     </MahjongContainer>

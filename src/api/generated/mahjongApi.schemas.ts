@@ -93,10 +93,10 @@ export interface Tournament {
   rate: number;
   /** 作成時のKey */
   readonly created_by?: string;
-  /** 大会作成日時（ISO 8601形式） */
+  /** 大会作成日時（RFC 3339形式） */
   readonly created_at?: string;
   /**
-   * 大会開始日時（ISO 8601形式）
+   * 大会開始日時（RFC 3339形式）
    * @nullable
    */
   started_at?: string | null;
@@ -117,7 +117,7 @@ export interface TournamentUpdate {
   /** レート */
   rate?: number;
   /**
-   * 大会開始日時（ISO 8601形式）
+   * 大会開始日時（RFC 3339形式）
    * @nullable
    */
   started_at?: string | null;
@@ -166,7 +166,7 @@ export interface Table {
   type: TableType;
   /** 作成時のKey */
   readonly created_by?: string;
-  /** 卓作成日時（ISO 8601形式） */
+  /** 卓作成日時（RFC 3339形式） */
   readonly created_at?: string;
   /** 卓が所属する大会の情報 */
   readonly parent_tournament_link: TournamentLink;
@@ -218,7 +218,7 @@ export interface Group {
 export interface GroupRequest {
   /** グループ名 */
   name: string;
-  /** メールアドレス一覧 */
+  /** メールアドレス */
   email: string;
   /** ユーザーのタイムゾーン（例: 'Asia/Tokyo'） */
   timezone?: string;
@@ -589,8 +589,7 @@ export interface Contact {
  * @nullable
  */
 export type ContactUpdateStatus =
-  | (typeof ContactUpdateStatus)[keyof typeof ContactUpdateStatus]
-  | null;
+  (typeof ContactUpdateStatus)[keyof typeof ContactUpdateStatus] | null;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ContactUpdateStatus = {
@@ -649,6 +648,98 @@ export interface ContactCreate {
   message: string;
   /** reCAPTCHAのトークン */
   recaptcha_token: string;
+}
+
+export type InitialTableType = (typeof InitialTableType)[keyof typeof InitialTableType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const InitialTableType = {
+  NORMAL: 'NORMAL',
+  CHIP: 'CHIP',
+} as const;
+
+export interface InitialTable {
+  client_id: string;
+  name: string;
+  type?: InitialTableType;
+}
+
+export interface TournamentCreateV2 {
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  rate?: number;
+  initial_tables?: InitialTable[];
+}
+
+export interface GroupBatchItem {
+  client_id: string;
+  group_key: string;
+}
+
+export interface GroupBatchGet {
+  /** @maxItems 50 */
+  items: GroupBatchItem[];
+}
+
+export interface StatusBatchItem {
+  client_id: string;
+  token: string;
+}
+
+export interface StatusBatchRequest {
+  /** @maxItems 50 */
+  items: StatusBatchItem[];
+}
+
+export type StatusResultStatus = (typeof StatusResultStatus)[keyof typeof StatusResultStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const StatusResultStatus = {
+  pending: 'pending',
+  ready: 'ready',
+  expired: 'expired',
+  invalid_token: 'invalid_token',
+} as const;
+
+export interface StatusResult {
+  client_id: string;
+  status: StatusResultStatus;
+  owner_link?: string;
+}
+
+export interface StatusBatchResponse {
+  results: StatusResult[];
+}
+
+export interface ParticipantItem {
+  player_id: number;
+}
+
+export type PropagateTableTypesItem =
+  (typeof PropagateTableTypesItem)[keyof typeof PropagateTableTypesItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PropagateTableTypesItem = {
+  NORMAL: 'NORMAL',
+  CHIP: 'CHIP',
+} as const;
+
+export interface Propagate {
+  table_types: PropagateTableTypesItem[];
+}
+
+/**
+ * @nullable
+ */
+export type ParticipantBatchAddPropagateToAnyOf = { [key: string]: unknown } | null;
+
+export type ParticipantBatchAddPropagateTo = ParticipantBatchAddPropagateToAnyOf | Propagate;
+
+export interface ParticipantBatchAdd {
+  /** @minItems 1 */
+  participants: ParticipantItem[];
+  propagate_to?: ParticipantBatchAddPropagateTo;
 }
 
 /**

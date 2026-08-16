@@ -1,21 +1,18 @@
 // src/hooks/useGroups.tsx
 
 import {
-  DefinedUseQueryResult,
   useMutation,
-  useQueries,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
+import type { GroupDashboard } from '@/src/api/dashboardTypes';
 import type {
-  DefaultErrorResponse,
-  ErrorResponse,
   Group,
   GroupCreate,
   GroupRequest,
@@ -27,13 +24,23 @@ import { appStorage, PendingGroup } from '@/src/storage/appStorage';
 import { syncPendingGroups } from '@/src/utils/groupSync';
 
 import {
-  getGetApiGroupsGroupKeyQueryKey,
-  getGetApiGroupsGroupKeyQueryOptions,
+  getApiV2GroupsGroupKeyDashboard,
+  getGetApiV2GroupsGroupKeyDashboardQueryKey,
   postApiGroups,
   postApiGroupsRequestLink,
+  postApiV2GroupsbatchGet,
   putApiGroupsGroupKey,
 } from '../api/generated/mahjongApi';
 import { formatLocalDateTime, toLocalDate } from '../utils/date_utils';
+
+export const useGetGroupDashboard = (groupKey: string) =>
+  useQuery({
+    queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
+    queryFn: () =>
+      getApiV2GroupsGroupKeyDashboard(groupKey) as unknown as Promise<GroupDashboard>,
+    enabled: !!groupKey,
+    select: (dashboard) => dashboard.group,
+  });
 
 /**
  * Hook to create a new group.
@@ -151,13 +158,13 @@ export const getKeyType = (data: Group): 'OWNER' | 'EDIT' | 'VIEW' | '' => {
   return '';
 };
 
-type ApiError = { status?: number };
-
-const isNotFoundError = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && (error as ApiError).status === 404;
 const GROUP_KEYS_QUERY_KEY = ['groupKeysAndPendingGroups'] as const;
 const EMPTY_GROUP_KEYS: string[] = [];
 const EMPTY_PENDING_GROUPS: PendingGroup[] = [];
+const GROUP_BATCH_QUERY_KEY = ['groupsBatch'] as const;
+type GroupBatchResult =
+  | { client_id: string; status: 'ok'; group: Group }
+  | { client_id: string; status: 'not_found' | 'forbidden' | 'error' };
 export const useGroupQueries = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -201,34 +208,25 @@ export const useGroupQueries = () => {
   const groupKeys = groupKeysQuery.data?.keys ?? EMPTY_GROUP_KEYS;
   const pendingGroups = groupKeysQuery.data?.validPendingGroups ?? EMPTY_PENDING_GROUPS;
 
-  const groupQueryOptions = useMemo(
-    () =>
-      groupKeys.map((key) => ({
-        ...getGetApiGroupsGroupKeyQueryOptions(key),
-        retry: 1,
-      })),
-    [groupKeys],
-  );
-
-  // useQueries は queries/combine の参照も再計算条件にするため、キー変更時だけ更新する。
-  const combineGroupQueries = useCallback(
-    (results: DefinedUseQueryResult<Group, ErrorResponse | DefaultErrorResponse>[]) => ({
-      isLoading: results.some((query) => query.isLoading),
-      isFetching: results.some((query) => query.isFetching),
-      isError: results.some((query) => query.isError && !isNotFoundError(query.error)),
-      error: results.find((query) => query.isError && !isNotFoundError(query.error))?.error,
-      groups: results.filter((query) => query.isSuccess).map((query) => query.data),
-      notFoundKeys: results
-        .map((query, index) => (isNotFoundError(query.error) ? groupKeys[index] : null))
-        .filter((key): key is string => key !== null),
-    }),
-    [groupKeys],
-  );
-
-  const { isLoading, isFetching, isError, error, groups, notFoundKeys } = useQueries({
-    queries: groupQueryOptions,
-    combine: combineGroupQueries,
+  const groupsQuery = useQuery({
+    queryKey: [...GROUP_BATCH_QUERY_KEY, ...groupKeys],
+    enabled: groupKeys.length > 0,
+    retry: 1,
+    queryFn: () =>
+      postApiV2GroupsbatchGet({
+        items: groupKeys.map((groupKey, index) => ({
+          client_id: String(index),
+          group_key: groupKey,
+        })),
+      }) as unknown as Promise<{ results: GroupBatchResult[] }>,
   });
+  const batchResults = groupsQuery.data?.results ?? [];
+  const groups = batchResults.flatMap((result) =>
+    result.status === 'ok' ? [result.group] : [],
+  );
+  const notFoundKeys = batchResults.flatMap((result) =>
+    result.status === 'not_found' ? [groupKeys[Number(result.client_id)]] : [],
+  );
 
   const notFoundKeysSignal = notFoundKeys.join(',');
 
@@ -262,20 +260,7 @@ export const useGroupQueries = () => {
   const refetch = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
 
-    const latestGroupKeys =
-      queryClient.getQueryData<{ keys: string[] }>(GROUP_KEYS_QUERY_KEY)?.keys ?? EMPTY_GROUP_KEYS;
-
-    /*
-     * ストレージ同期後の最新キーを使い、グループ本体の最新情報を取得する。
-     */
-    await Promise.all(
-      latestGroupKeys.map((key) =>
-        queryClient.invalidateQueries({
-          queryKey: getGetApiGroupsGroupKeyQueryKey(key),
-          exact: true,
-        }),
-      ),
-    );
+    await queryClient.invalidateQueries({ queryKey: GROUP_BATCH_QUERY_KEY });
   }, [queryClient]);
 
   const refresh = useCallback(async () => {
@@ -291,10 +276,10 @@ export const useGroupQueries = () => {
   return {
     groupKeys,
     pendingGroups,
-    isLoading: isLoading || groupKeysQuery.isLoading,
-    isFetching: isFetching || groupKeysQuery.isFetching,
-    isError: isError || groupKeysQuery.isError,
-    error: groupKeysQuery.error ?? error,
+    isLoading: groupsQuery.isLoading || groupKeysQuery.isLoading,
+    isFetching: groupsQuery.isFetching || groupKeysQuery.isFetching,
+    isError: groupsQuery.isError || groupKeysQuery.isError,
+    error: groupKeysQuery.error ?? groupsQuery.error,
     isRefreshing,
     groups,
     refetch,

@@ -7,6 +7,7 @@ import { useCreateGroup, useCreateGroupRequest, useGroupQueries } from '@/src/ho
 
 const mockPostApiGroups = jest.fn();
 const mockPostGroupRequest = jest.fn();
+const mockBatchGetGroups = jest.fn();
 const mockAddGroupKey = jest.fn();
 const mockRemoveGroupKey = jest.fn();
 const mockAlertDialog = jest.fn();
@@ -17,6 +18,7 @@ let mockStoredGroupKeys: string[] = [];
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   postApiGroups: (...args: unknown[]) => mockPostApiGroups(...args),
   postApiGroupsRequestLink: (...args: unknown[]) => mockPostGroupRequest(...args),
+  postApiV2GroupsbatchGet: (...args: unknown[]) => mockBatchGetGroups(...args),
   getGetApiGroupsGroupKeyQueryKey: (key: string) => [`/api/groups/${key}`],
   getGetApiGroupsGroupKeyQueryOptions: (key: string) => ({
     queryKey: [`/api/groups/${key}`],
@@ -146,6 +148,12 @@ describe('useGroupQueries', () => {
     mockStoredGroupKeys = ['missing-owner-key', 'missing-view-key'];
     mockRemoveGroupKey.mockResolvedValue(undefined);
     mockAlertDialog.mockResolvedValue(true);
+    mockBatchGetGroups.mockResolvedValue({
+      results: [
+        { client_id: '0', status: 'not_found' },
+        { client_id: '1', status: 'not_found' },
+      ],
+    });
   });
 
   it('404になったキーをすべて削除してから1つのダイアログにまとめて表示する', async () => {

@@ -1,21 +1,23 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import type { TableDashboard, TournamentDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiTablesTableKey,
   deleteApiTablesTableKeyPlayersPlayerId,
-  getApiTablesTableKeyGames,
+  deleteApiV2TablesTableKey,
+  getApiV2TablesTableKeyDashboard,
+  getApiV2TournamentsTournamentKeyDashboard,
   getGetApiTablesTableKeyPlayersQueryKey,
   getGetApiTablesTableKeyQueryOptions,
   getGetApiTournamentsTournamentKeyScoreMapQueryKey,
   getGetApiTournamentsTournamentKeyTablesQueryKey,
+  getGetApiV2TablesTableKeyDashboardQueryKey,
+  getGetApiV2TournamentsTournamentKeyDashboardQueryKey,
   postApiTablesTableKeyPlayers,
   postApiTournamentsTournamentKeyTables,
   putApiTablesTableKey,
-  useGetApiTablesTableKey,
-  useGetApiTablesTableKeyPlayers,
-  useGetApiTournamentsTournamentKeyTables,
 } from '@/src/api/generated/mahjongApi';
 import type {
   Table,
@@ -24,7 +26,6 @@ import type {
   TableUpdate,
   TournamentScoreMap,
 } from '@/src/api/generated/mahjongApi.schemas';
-import { useDeleteGame } from '@/src/hooks/useGames';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { getResourceKey } from '@/src/utils/accessLevel_utils';
 
@@ -36,7 +37,15 @@ export const useGetTables = (tournamentKey: string) => {
     isFetching: isFetchingTables,
     error: tablesError,
     refetch: loadTables,
-  } = useGetApiTournamentsTournamentKeyTables(tournamentKey);
+  } = useQuery({
+    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
+    queryFn: () =>
+      getApiV2TournamentsTournamentKeyDashboard(
+        tournamentKey,
+      ) as unknown as Promise<TournamentDashboard>,
+    enabled: !!tournamentKey,
+    select: (dashboard) => dashboard.tables,
+  });
   return {
     tables,
     isLoadingTables,
@@ -67,6 +76,9 @@ export const useCreateTable = ({ navigateOnSuccess = true }: UseCreateTableOptio
         }),
         queryClient.invalidateQueries({
           queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
         }),
       ]);
       // 遷移
@@ -116,6 +128,9 @@ export const useUpdateTable = () => {
         queryClient.invalidateQueries({
           queryKey: tableQueryKey,
         }),
+        queryClient.invalidateQueries({
+          queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+        }),
       ];
       if (variables.tournamentKey) {
         const tablesQueryKey = getGetApiTournamentsTournamentKeyTablesQueryKey(
@@ -146,6 +161,11 @@ export const useUpdateTable = () => {
           queryClient.invalidateQueries({
             queryKey: scoreMapQueryKey,
           }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
+              variables.tournamentKey,
+            ),
+          }),
         );
       }
       await Promise.all(invalidations);
@@ -169,7 +189,13 @@ export const useGetTable = (tableKey: string, optins?: object) => {
     isFetching: isFetchingTable,
     error: tableError,
     refetch: loadTable,
-  } = useGetApiTablesTableKey(tableKey, optins);
+  } = useQuery({
+    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    enabled: !!tableKey,
+    select: (dashboard) => dashboard.table,
+    ...(optins ?? {}),
+  });
   return {
     table,
     isLoadingTable,
@@ -209,8 +235,14 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
     isFetching: isFetchingPlayers,
     error: playersError,
     refetch: loadPlayers,
-  } = useGetApiTablesTableKeyPlayers(tableKey, optins);
-  const players = data?.table_players;
+  } = useQuery({
+    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    enabled: !!tableKey,
+    select: (dashboard) => dashboard.table_players,
+    ...(optins ?? {}),
+  });
+  const players = data;
   return {
     players,
     isLoadingPlayers,
@@ -218,6 +250,24 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
     isFetchingPlayers,
     playersError,
     loadPlayers,
+  };
+};
+
+export const useGetAvailableTablePlayers = (tableKey: string, optins?: object) => {
+  const query = useQuery({
+    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    enabled: !!tableKey,
+    select: (dashboard) => dashboard.available_tournament_players,
+    ...(optins ?? {}),
+  });
+  return {
+    players: query.data,
+    isLoadingPlayers: query.isLoading,
+    isErrorPlayers: query.isError,
+    isFetchingPlayers: query.isFetching,
+    playersError: query.error,
+    loadPlayers: query.refetch,
   };
 };
 
@@ -234,6 +284,9 @@ export const useAddTablePlayer = () => {
       // キャッシュ更新
       const queryKey = getGetApiTablesTableKeyPlayersQueryKey(variables.tableKey);
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({
+        queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+      });
     },
     onError: (error: any) => {
       console.error('Error adding players to table:', error);
@@ -259,6 +312,9 @@ export const useDeleteTablePlayer = () => {
       // キャッシュ更新
       const queryKey = getGetApiTablesTableKeyPlayersQueryKey(variables.tableKey);
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({
+        queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+      });
     },
     onError: (error: any) => {
       console.error('Error removing players from table:', error);
@@ -274,22 +330,8 @@ export const useDeleteTablePlayer = () => {
 export const useDeleteChipTableWithScores = () => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useMutationFeedback();
-  // チップテーブルのスコアデータとテーブル自体を削除する。
-  const { mutateAsync: deleteScores } = useDeleteGame();
-
   return useMutation({
-    mutationFn: async (tableKey: string) => {
-      // 1. まず、該当テーブルの全ゲームを取得
-      const games = await getApiTablesTableKeyGames(tableKey);
-      // 2. 各ゲームを削除
-      for (const game of games) {
-        if (game.id) {
-          await deleteScores({ tableKey, gameId: game.id });
-        }
-      }
-      // 3. 最後にテーブル自体を削除
-      return deleteApiTablesTableKey(tableKey);
-    },
+    mutationFn: (tableKey: string) => deleteApiV2TablesTableKey(tableKey),
     onSuccess: () => {
       showSuccess(t('notifications.table.deleteSuccess'));
     },

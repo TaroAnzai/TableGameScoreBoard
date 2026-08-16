@@ -38,6 +38,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams(),
 }));
 jest.mock('@/src/hooks/useTournaments', () => ({
+  useGetAvailableTournamentPlayers: () => mockUseGroupPlayers(),
   useGetTournament: () => mockUseTournament(),
   useGetTournamentPlayers: () => mockUseTournamentPlayers(),
   useAddTournamentPlayer: () => ({ mutateAsync: jest.fn() }),
@@ -310,7 +311,7 @@ describe('大会詳細ページ', () => {
   it('追加可能な参加者がいない場合は共通ダイアログを表示する', async () => {
     mockUseGroupPlayers.mockReturnValue({
       ...groupPlayersState,
-      players: [{ id: 1, name: '参加者1' }],
+      players: [],
     });
     await render(<TournamentPage />);
 
