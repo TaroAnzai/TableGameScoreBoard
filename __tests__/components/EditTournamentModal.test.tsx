@@ -78,4 +78,34 @@ describe('EditTournamentModal', () => {
       started_at: null,
     });
   });
+
+  it('V2レスポンスの大会開始日を初期表示して保存時にも維持する', async () => {
+    const user = userEvent.setup();
+    const onConfirm = jest.fn();
+    const tournamentV2 = {
+      id: 1,
+      group_id: 1,
+      name: 'V2大会',
+      description: null,
+      rate: 50,
+      started_at: '2026-08-10T09:00:00+09:00',
+      created_at: '2026-08-01T00:00:00Z',
+      tournament_links: [],
+    };
+
+    await render(
+      <EditTournamentModal
+        open
+        tournament={tournamentV2}
+        onConfirm={onConfirm}
+        onClose={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('2026-08-10')).toBeTruthy();
+    await user.press(screen.getByRole('button', { name: '保存' }));
+    expect(onConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({ started_at: '2026-08-10T00:00:00.000Z' }),
+    );
+  });
 });

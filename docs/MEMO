@@ -21,7 +21,7 @@ Android APKを作成
 npx eas-cli@latest build --platform android --profile preview
 
 本番用
-npx eas-cli@latest build --platform android --profile production
+eas build --platform android --profile production
 
 ローカルでbuildする場合
 npx eas-cli@latest build --platform android --profile preview　--local

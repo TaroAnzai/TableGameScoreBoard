@@ -650,6 +650,9 @@ export interface ContactCreate {
   recaptcha_token: string;
 }
 
+/**
+ * 卓の種類です。NORMALは通常卓、CHIPはチップ集計卓を表します。
+ */
 export type InitialTableType = (typeof InitialTableType)[keyof typeof InitialTableType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -659,39 +662,264 @@ export const InitialTableType = {
 } as const;
 
 export interface InitialTable {
+  /** クライアントが初期卓と作成結果を対応付けるための一時IDです。 */
   client_id: string;
+  /** 作成する卓の表示名です。 */
   name: string;
+  /** 卓の種類です。NORMALは通常卓、CHIPはチップ集計卓を表します。 */
   type?: InitialTableType;
 }
 
 export interface TournamentCreateV2 {
+  /** 作成する大会の表示名です。 */
   name: string;
-  /** @nullable */
+  /**
+   * 大会の任意説明です。
+   * @nullable
+   */
   description?: string | null;
+  /** スコアを収支へ換算する際のレートです。 */
   rate?: number;
+  /** 大会と同じトランザクションで作成する初期卓の一覧です。 */
   initial_tables?: InitialTable[];
 }
 
-export interface GroupBatchItem {
+/**
+ * エラーに関連する卓IDなどの追加情報です。
+ */
+export type V2ErrorDetails = { [key: string]: unknown };
+
+export interface V2Error {
+  /** クライアントがエラー種別を判定するための機械可読コードです。 */
+  code: string;
+  /** 利用者または開発者向けのエラー説明です。 */
+  message: string;
+  /** エラーに関連する卓IDなどの追加情報です。 */
+  details?: V2ErrorDetails;
+}
+
+/**
+ * 共有キーに付与されたVIEW、EDIT、OWNERのアクセスレベルです。
+ */
+export type ShareLinkV2AccessLevel =
+  (typeof ShareLinkV2AccessLevel)[keyof typeof ShareLinkV2AccessLevel];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ShareLinkV2AccessLevel = {
+  VIEW: 'VIEW',
+  EDIT: 'EDIT',
+  OWNER: 'OWNER',
+} as const;
+
+export interface ShareLinkV2 {
+  /** リソースへアクセスするための短縮共有キーです。 */
+  short_key: string;
+  /** 共有キーに付与されたVIEW、EDIT、OWNERのアクセスレベルです。 */
+  access_level: ShareLinkV2AccessLevel;
+}
+
+export interface TournamentV2 {
+  /**
+   * 大会IDです。
+   * @minimum 1
+   */
+  id: number;
+  /**
+   * 大会が所属するグループIDです。
+   * @minimum 1
+   */
+  group_id: number;
+  /** 大会の表示名です。 */
+  name: string;
+  /**
+   * 大会の説明です。
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * スコア換算レートです。
+   * @nullable
+   */
+  rate?: number | null;
+  /**
+   * 大会開始日時です。
+   * @nullable
+   */
+  started_at?: string | null;
+  /**
+   * 大会作成日時です。
+   * @nullable
+   */
+  created_at?: string | null;
+  /** リクエストに使用したアクセスレベル以下の大会共有リンク一覧です。 */
+  tournament_links?: ShareLinkV2[];
+}
+
+/**
+ * 卓の種類です。
+ */
+export type TableV2Type = (typeof TableV2Type)[keyof typeof TableV2Type];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const TableV2Type = {
+  NORMAL: 'NORMAL',
+  CHIP: 'CHIP',
+} as const;
+
+export interface TableV2 {
+  /**
+   * 卓IDです。
+   * @minimum 1
+   */
+  id: number;
+  /**
+   * 卓が所属する大会IDです。
+   * @minimum 1
+   */
+  tournament_id: number;
+  /** 卓の表示名です。 */
+  name: string;
+  /** 卓の種類です。 */
+  type: TableV2Type;
+  /**
+   * 卓作成日時です。
+   * @nullable
+   */
+  created_at?: string | null;
+  /** リクエストに使用したアクセスレベル以下の卓共有リンク一覧です。 */
+  table_links?: ShareLinkV2[];
+}
+
+export interface CreatedTable {
+  /** リクエストの初期卓に指定された対応付け用IDです。 */
   client_id: string;
+  /** 作成された卓です。 */
+  table: TableV2;
+}
+
+export interface TournamentCreateV2Response {
+  /** 作成された大会です。 */
+  tournament: TournamentV2;
+  /** 大会と同時に作成された初期卓です。 */
+  created_tables: CreatedTable[];
+}
+
+export interface GroupBatchItem {
+  /** クライアントが入力と結果を対応付けるためのIDです。 */
+  client_id: string;
+  /** 取得対象グループへのアクセス権を持つ共有キーです。 */
   group_key: string;
 }
 
 export interface GroupBatchGet {
-  /** @maxItems 50 */
+  /**
+   * 一括取得するグループ指定です。最大50件です。
+   * @maxItems 50
+   */
   items: GroupBatchItem[];
 }
 
-export interface StatusBatchItem {
+export interface GroupV2 {
+  /**
+   * グループIDです。
+   * @minimum 1
+   */
+  id: number;
+  /** グループの表示名です。 */
+  name: string;
+  /**
+   * グループの説明です。
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * グループ作成日時です。
+   * @nullable
+   */
+  created_at?: string | null;
+  /** グループに発行された共有リンク一覧です。 */
+  group_links: ShareLinkV2[];
+}
+
+export interface GroupLookupError {
+  /** 検索結果単位のエラーコードです。 */
+  code: string;
+  /** 検索失敗の説明です。 */
+  message: string;
+}
+
+/**
+ * グループごとの検索状態です。
+ */
+export type GroupBatchResultStatus =
+  (typeof GroupBatchResultStatus)[keyof typeof GroupBatchResultStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GroupBatchResultStatus = {
+  ok: 'ok',
+  not_found: 'not_found',
+  forbidden: 'forbidden',
+  error: 'error',
+} as const;
+
+export interface GroupBatchResult {
+  /** リクエストで指定された対応付け用IDです。 */
   client_id: string;
+  /** グループごとの検索状態です。 */
+  status: GroupBatchResultStatus;
+  /** 取得できたグループです。statusがokの場合に返します。 */
+  group?: GroupV2;
+  /** 検索中のエラー情報です。statusがerrorの場合に返します。 */
+  error?: GroupLookupError;
+}
+
+export interface GroupBatchGetResponse {
+  /** 指定されたグループごとの検索結果です。 */
+  results: GroupBatchResult[];
+}
+
+export interface PlayerV2 {
+  /**
+   * プレイヤーIDです。
+   * @minimum 1
+   */
+  id: number;
+  /**
+   * プレイヤーが所属するグループIDです。
+   * @minimum 1
+   */
+  group_id: number;
+  /** プレイヤーの表示名です。 */
+  name: string;
+}
+
+export interface GroupDashboardResponse {
+  /** 画面表示対象のグループです。 */
+  group: GroupV2;
+  /** グループ配下の大会一覧です。 */
+  tournaments: TournamentV2[];
+  /** グループに所属するプレイヤー一覧です。 */
+  players: PlayerV2[];
+}
+
+export interface StatusBatchItem {
+  /** クライアントが入力と結果を対応付けるためのIDです。 */
+  client_id: string;
+  /** 状態を確認するグループ作成トークンです。 */
   token: string;
 }
 
 export interface StatusBatchRequest {
-  /** @maxItems 50 */
+  /**
+   * 状態を一括確認するトークン指定です。最大50件です。
+   * @maxItems 50
+   */
   items: StatusBatchItem[];
 }
 
+/**
+ * 作成状態です。pending、ready、expired、invalid_tokenのいずれかです。
+ */
 export type StatusResultStatus = (typeof StatusResultStatus)[keyof typeof StatusResultStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -703,43 +931,207 @@ export const StatusResultStatus = {
 } as const;
 
 export interface StatusResult {
+  /** リクエストで指定された対応付け用IDです。 */
   client_id: string;
+  /** 作成状態です。pending、ready、expired、invalid_tokenのいずれかです。 */
   status: StatusResultStatus;
+  /** 作成完了時に返されるグループのオーナー共有キーです。 */
   owner_link?: string;
 }
 
 export interface StatusBatchResponse {
+  /** トークンごとの作成状態です。 */
   results: StatusResult[];
 }
 
 export interface ParticipantItem {
+  /**
+   * 大会へ追加するグループプレイヤーのIDです。
+   * @minimum 1
+   */
   player_id: number;
 }
 
-export type PropagateTableTypesItem =
-  (typeof PropagateTableTypesItem)[keyof typeof PropagateTableTypesItem];
+export interface ParticipantBatchAdd {
+  /**
+   * 大会へ一括追加する参加者の一覧です。
+   * @minItems 1
+   */
+  participants: ParticipantItem[];
+}
+
+/**
+ * 同期対象の卓種別です。
+ */
+export type PropagatedTableType = (typeof PropagatedTableType)[keyof typeof PropagatedTableType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PropagateTableTypesItem = {
+export const PropagatedTableType = {
   NORMAL: 'NORMAL',
   CHIP: 'CHIP',
 } as const;
 
-export interface Propagate {
-  table_types: PropagateTableTypesItem[];
+export interface PropagatedTable {
+  /**
+   * 同期対象の卓IDです。
+   * @minimum 1
+   */
+  table_id: number;
+  /** 同期対象の卓種別です。 */
+  type: PropagatedTableType;
+  /** この卓へ新たに追加された参加者数です。 */
+  added_count: number;
+}
+
+export interface ParticipantBatchAddResponse {
+  /**
+   * 参加者を追加した大会IDです。
+   * @minimum 1
+   */
+  tournament_id: number;
+  /** 指定後の対象参加者一覧です。 */
+  participants: PlayerV2[];
+  /** 大会へ新たに追加された人数です。 */
+  added_count: number;
+  /** すでに大会へ登録済みだった人数です。 */
+  already_registered_count: number;
+  /** 参加者登録を同期した卓ごとの結果です。 */
+  propagated_tables: PropagatedTable[];
+}
+
+export interface ParticipantDeletedResource {
+  /**
+   * 参加者を削除した大会IDです。
+   * @minimum 1
+   */
+  tournament_id: number;
+  /**
+   * 削除したプレイヤーIDです。
+   * @minimum 1
+   */
+  player_id: number;
+  /** 参加者削除を同期した卓ID一覧です。 */
+  propagated_table_ids: number[];
+}
+
+export interface ParticipantDeleteResponse {
+  /** 削除された大会参加者と同期結果です。 */
+  deleted: ParticipantDeletedResource;
 }
 
 /**
- * @nullable
+ * 卓IDごとの合計スコアです。
  */
-export type ParticipantBatchAddPropagateToAnyOf = { [key: string]: unknown } | null;
+export type PlayerScoreMapV2Scores = { [key: string]: number };
 
-export type ParticipantBatchAddPropagateTo = ParticipantBatchAddPropagateToAnyOf | Propagate;
+export interface PlayerScoreMapV2 {
+  /**
+   * プレイヤーIDです。
+   * @minimum 1
+   */
+  id: number;
+  /** プレイヤーの表示名です。 */
+  name: string;
+  /** 卓IDごとの合計スコアです。 */
+  scores: PlayerScoreMapV2Scores;
+  /** 全卓の合計スコアです。 */
+  total: number;
+  /** レートを適用した換算後の合計です。 */
+  converted_total: number;
+}
 
-export interface ParticipantBatchAdd {
-  /** @minItems 1 */
-  participants: ParticipantItem[];
-  propagate_to?: ParticipantBatchAddPropagateTo;
+export interface TournamentScoreMapV2 {
+  /**
+   * 集計対象の大会IDです。
+   * @minimum 1
+   */
+  tournament_id: number;
+  /** 集計対象の卓一覧です。 */
+  tables: TableV2[];
+  /** プレイヤーごとのスコア集計です。 */
+  players: PlayerScoreMapV2[];
+  /** 換算に使用した大会レートです。 */
+  rate: number;
+}
+
+export interface TournamentDashboardResponse {
+  /** 画面表示対象の大会です。 */
+  tournament: TournamentV2;
+  /** 大会参加者一覧です。 */
+  participants: PlayerV2[];
+  /** グループ所属者のうち大会へ未参加のプレイヤーです。 */
+  available_group_players: PlayerV2[];
+  /** 大会配下の卓一覧です。 */
+  tables: TableV2[];
+  /** 大会全体のスコア集計です。 */
+  score_map: TournamentScoreMapV2;
+}
+
+export interface TableDeletedResource {
+  /**
+   * 削除した卓IDです。
+   * @minimum 1
+   */
+  table_id: number;
+  /** 削除したゲーム数です。 */
+  game_count: number;
+  /** 削除したスコア数です。 */
+  score_count: number;
+  /** 削除した卓参加者数です。 */
+  participant_count: number;
+}
+
+export interface TableDeleteResponse {
+  /** カスケード削除された卓と配下データの件数です。 */
+  deleted: TableDeletedResource;
+}
+
+export interface GameScoreV2 {
+  /**
+   * 得点対象のプレイヤーIDです。
+   * @minimum 1
+   */
+  player_id: number;
+  /** このゲームでの得点です。 */
+  score: number;
+}
+
+export interface GameV2 {
+  /**
+   * ゲームIDです。
+   * @minimum 1
+   */
+  id: number;
+  /**
+   * ゲームが属する卓IDです。
+   * @minimum 1
+   */
+  table_id: number;
+  /** 卓内でのゲーム順です。 */
+  game_index: number;
+  /**
+   * ゲームに記録された任意メモです。
+   * @nullable
+   */
+  memo?: string | null;
+  /**
+   * 対局日時です。
+   * @nullable
+   */
+  played_at?: string | null;
+  /** ゲームに登録されたプレイヤー別得点です。 */
+  scores: GameScoreV2[];
+}
+
+export interface TableDashboardResponse {
+  /** 画面表示対象の卓です。 */
+  table: TableV2;
+  /** 現在卓へ登録されているプレイヤーです。 */
+  table_players: PlayerV2[];
+  /** 大会参加者のうち卓へ未登録のプレイヤーです。 */
+  available_tournament_players: PlayerV2[];
+  /** 卓で記録されたゲームとスコア一覧です。 */
+  games: GameV2[];
 }
 
 /**

@@ -14,9 +14,12 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type {
   Game,
+  GameV2,
   Player,
+  PlayerV2,
   ScoreInput,
   Table as ScoreTable,
+  TableV2,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { mahjong } from '@/src/lib/theme';
 
@@ -52,9 +55,9 @@ const ScoreCell = ({
 );
 
 interface TableScoreBoardProps {
-  table: ScoreTable;
-  players: readonly Player[];
-  games: Game[];
+  table: ScoreTable | TableV2;
+  players: readonly (Player | PlayerV2)[];
+  games: (Game | GameV2)[];
   onUpdateGame: (gameId: number | null, scores: ScoreInput[]) => Promise<void>;
   disabled?: boolean;
 }
@@ -85,7 +88,7 @@ const TableScoreBoard = ({
     }
   }
 
-  const displayGames: (Game | null)[] = [...games];
+  const displayGames: (Game | GameV2 | null)[] = [...games];
 
   if (!isChipTable) {
     const targetLength = games.length <= 3 ? 4 : games.length + 1;

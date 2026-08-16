@@ -66,7 +66,6 @@ const TournamentPage = () => {
     tournamentError,
     loadTournament,
   } = useGetTournament(tournamentKey);
-  const groupKey = getResourceKey(tournament?.parent_group_link) ?? '';
   const {
     players,
     isLoadingPlayers,
@@ -119,14 +118,14 @@ const TournamentPage = () => {
     isLoadingPlayers ||
     isLoadingTables ||
     isLoadingScoreMap ||
-    (!!groupKey && isLoadingGroupPlayers);
+    isLoadingGroupPlayers;
 
   const isError =
     isErrorTournament ||
     isErrorPlayers ||
     isErrorTables ||
     isErrorScoreMap ||
-    (!!groupKey && isErrorGroupPlayers);
+    isErrorGroupPlayers;
 
   const isRetrying =
     isError &&
@@ -134,7 +133,7 @@ const TournamentPage = () => {
       isFetchingPlayers ||
       isFetchingTables ||
       isFetchingScoreMap ||
-      (!!groupKey && isFetchingGroupPlayers));
+      isFetchingGroupPlayers);
 
   const tournamentErrorPresentation = getUserFacingApiError(tournamentError, {
     messageOverrides: {
@@ -162,7 +161,7 @@ const TournamentPage = () => {
       loadTables(),
       loadScoreMap(),
     ];
-    if (groupKey) requests.push(loadGroupPlayers());
+    requests.push(loadGroupPlayers());
     await Promise.all(requests);
   };
 
@@ -241,7 +240,7 @@ const TournamentPage = () => {
   const handleTitleChange = async (newName: string) => {
     await updateTournament({
       tournamentKey,
-      groupKey: parentGroupKey ?? groupKey,
+      groupKey: parentGroupKey,
       tournament: { name: newName },
     });
   };
@@ -249,7 +248,7 @@ const TournamentPage = () => {
     try {
       await updateTournament({
         tournamentKey: tournamentKey!,
-        groupKey: parentGroupKey ?? groupKey,
+        groupKey: parentGroupKey,
         tournament: updates,
       });
       setShowEditModal(false);
@@ -260,7 +259,7 @@ const TournamentPage = () => {
   const handleRateChange = async (newRate: number) => {
     await updateTournament({
       tournamentKey: tournamentKey!,
-      groupKey: parentGroupKey ?? groupKey,
+      groupKey: parentGroupKey,
       tournament: { rate: newRate },
     });
   };
@@ -275,7 +274,7 @@ const TournamentPage = () => {
       params: {
         tableKey: table_key,
         parentTournamentKey: tournamentKey,
-        parentGroupKey: parentGroupKey ?? groupKey,
+        ...(parentGroupKey ? { parentGroupKey } : {}),
       },
     });
   };
@@ -332,7 +331,7 @@ const TournamentPage = () => {
         {tournament && (
           <EditableRate
             key={`${tournament.id}-${tournament.rate}`}
-            rate={tournament.rate}
+            rate={tournament.rate ?? 1}
             label={t('tournamentPage.rate')}
             onChange={accessLevel === 'VIEW' ? undefined : handleRateChange}
           />

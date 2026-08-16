@@ -17,11 +17,15 @@ import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Text } from '@/components/ui/text';
-import type { Tournament, TournamentUpdate } from '@/src/api/generated/mahjongApi.schemas';
+import type {
+  Tournament,
+  TournamentUpdate,
+  TournamentV2,
+} from '@/src/api/generated/mahjongApi.schemas';
 import { componentSize, radius } from '@/src/lib/theme';
 
 interface EditTournamentModalProps {
-  tournament: Tournament;
+  tournament: Tournament | TournamentV2;
   open: boolean;
   onConfirm: (updates: TournamentUpdate) => void | Promise<void>;
   onClose: () => void;

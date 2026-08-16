@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import type { GroupDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiGroupsGroupKeyPlayersPlayerId,
   getApiV2GroupsGroupKeyDashboard,
@@ -27,7 +26,7 @@ export const useGetPlayer = (groupKey: string) => {
   } = useQuery({
     queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
     queryFn: () =>
-      getApiV2GroupsGroupKeyDashboard(groupKey) as unknown as Promise<GroupDashboard>,
+      getApiV2GroupsGroupKeyDashboard(groupKey),
     enabled: !!groupKey,
     select: (dashboard) => dashboard.players,
   });

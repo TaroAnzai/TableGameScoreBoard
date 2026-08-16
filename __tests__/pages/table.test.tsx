@@ -8,6 +8,7 @@ const mockPush = jest.fn();
 const mockParams = jest.fn(
   (): { tableKey: string; parentTournamentKey?: string; parentGroupKey?: string } => ({
     tableKey: 'table-key',
+    parentTournamentKey: 'tournament-key',
   }),
 );
 const loadTable = jest.fn(() => Promise.resolve());
@@ -91,9 +92,9 @@ jest.mock('@/components/SelectorModal', () => () => null);
 const tableState = {
   table: {
     id: 1,
+    tournament_id: 10,
     name: '卓1',
     type: 'NORMAL',
-    parent_tournament_link: { edit_link: 'tournament-key' },
     table_links: [{ access_level: 'EDIT', short_key: 'table-key' }],
   },
   isLoadingTable: false,
@@ -133,7 +134,10 @@ const tournamentPlayersState = {
 describe('卓詳細ページ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockParams.mockReturnValue({ tableKey: 'table-key' });
+    mockParams.mockReturnValue({
+      tableKey: 'table-key',
+      parentTournamentKey: 'tournament-key',
+    });
     mockUseTable.mockReturnValue(tableState);
     mockUseTablePlayers.mockReturnValue(tablePlayersState);
     mockUseGames.mockReturnValue(gamesState);
@@ -268,24 +272,17 @@ describe('卓詳細ページ', () => {
     });
   });
 
-  it('親大会へ戻るときはオーナーキーを優先する', async () => {
-    mockUseTable.mockReturnValue({
-      ...tableState,
-      table: {
-        ...tableState.table,
-        parent_tournament_link: {
-          owner_link: 'tournament-owner-key',
-          edit_link: 'tournament-edit-key',
-          view_link: 'tournament-view-key',
-        },
-      },
+  it('親大会へ戻るときは親から渡されたキーを使用する', async () => {
+    mockParams.mockReturnValue({
+      tableKey: 'table-key',
+      parentTournamentKey: 'tournament-parent-key',
     });
     mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: true });
     await render(<TablePage />);
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/tournament/[tournamentKey]',
-      params: { tournamentKey: 'tournament-owner-key' },
+      params: { tournamentKey: 'tournament-parent-key' },
     });
   });
 
@@ -297,10 +294,7 @@ describe('卓詳細ページ', () => {
     });
     mockUseTable.mockReturnValue({
       ...tableState,
-      table: {
-        ...tableState.table,
-        parent_tournament_link: { edit_link: 'different-tournament-edit-key' },
-      },
+      table: { ...tableState.table },
     });
     await render(<TablePage />);
 
@@ -308,6 +302,7 @@ describe('卓詳細ページ', () => {
   });
 
   it('共有リンクから卓を開いた場合は親大会への戻る操作を表示しない', async () => {
+    mockParams.mockReturnValue({ tableKey: 'table-key' });
     await render(<TablePage />);
 
     expect(screen.queryByLabelText('親大会に戻る')).toBeNull();

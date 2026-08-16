@@ -33,8 +33,10 @@ import type {
   GetApiGroupsGroupKeyPlayerStatsParams,
   Group,
   GroupBatchGet,
+  GroupBatchGetResponse,
   GroupCreate,
   GroupCreateStatus,
+  GroupDashboardResponse,
   GroupPlayerStats,
   GroupRequest,
   GroupResponse,
@@ -42,6 +44,8 @@ import type {
   GroupUpdate,
   Message,
   ParticipantBatchAdd,
+  ParticipantBatchAddResponse,
+  ParticipantDeleteResponse,
   Player,
   PlayerCreate,
   PlayerUpdate,
@@ -49,18 +53,23 @@ import type {
   StatusBatchResponse,
   Table,
   TableCreate,
+  TableDashboardResponse,
+  TableDeleteResponse,
   TablePlayerCreate,
   TablePlayers,
   TableUpdate,
   Tournament,
   TournamentCreate,
   TournamentCreateV2,
+  TournamentCreateV2Response,
+  TournamentDashboardResponse,
   TournamentExport,
   TournamentParticipants,
   TournamentParticipantsCreate,
   TournamentScoreMap,
   TournamentUpdate,
   UnprocessableEntityResponse,
+  V2Error,
 } from './mahjongApi.schemas';
 
 import { customFetch } from '../customFetch';
@@ -4743,13 +4752,17 @@ export const usePostApiContacts = <
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * 指定グループに大会を作成し、initial_tablesで指定された卓も同じDBトランザクション内で作成します。途中で失敗した場合は大会を含むすべての作成をロールバックします。
+ * @summary 大会と初期卓を一括作成
+ */
 export const postApiV2GroupsGroupKeyTournaments = (
   groupKey: string,
   tournamentCreateV2: TournamentCreateV2,
   options?: SecondParameter<typeof customFetch>,
   signal?: AbortSignal,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<TournamentCreateV2Response>(
     {
       url: `/api/v2/groups/${groupKey}/tournaments`,
       method: 'POST',
@@ -4762,7 +4775,7 @@ export const postApiV2GroupsGroupKeyTournaments = (
 };
 
 export const getPostApiV2GroupsGroupKeyTournamentsMutationOptions = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -4802,10 +4815,13 @@ export type PostApiV2GroupsGroupKeyTournamentsMutationResult = NonNullable<
 >;
 export type PostApiV2GroupsGroupKeyTournamentsMutationBody = TournamentCreateV2;
 export type PostApiV2GroupsGroupKeyTournamentsMutationError =
-  UnprocessableEntityResponse | DefaultErrorResponse;
+  V2Error | UnprocessableEntityResponse | DefaultErrorResponse;
 
+/**
+ * @summary 大会と初期卓を一括作成
+ */
 export const usePostApiV2GroupsGroupKeyTournaments = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(
   options?: {
@@ -4829,12 +4845,16 @@ export const usePostApiV2GroupsGroupKeyTournaments = <
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * 共有キーをリクエストbodyで最大50件受け取り、client_idに対応する検索結果を返します。一部のキーが無効でもHTTP 200で他の結果を返します。
+ * @summary 複数のグループを一括取得
+ */
 export const postApiV2GroupsbatchGet = (
   groupBatchGet: GroupBatchGet,
   options?: SecondParameter<typeof customFetch>,
   signal?: AbortSignal,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<GroupBatchGetResponse>(
     {
       url: `/api/v2/groups:batch-get`,
       method: 'POST',
@@ -4847,7 +4867,7 @@ export const postApiV2GroupsbatchGet = (
 };
 
 export const getPostApiV2GroupsbatchGetMutationOptions = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -4887,10 +4907,13 @@ export type PostApiV2GroupsbatchGetMutationResult = NonNullable<
 >;
 export type PostApiV2GroupsbatchGetMutationBody = GroupBatchGet;
 export type PostApiV2GroupsbatchGetMutationError =
-  UnprocessableEntityResponse | DefaultErrorResponse;
+  V2Error | UnprocessableEntityResponse | DefaultErrorResponse;
 
+/**
+ * @summary 複数のグループを一括取得
+ */
 export const usePostApiV2GroupsbatchGet = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(
   options?: {
@@ -4914,12 +4937,16 @@ export const usePostApiV2GroupsbatchGet = <
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * グループ本体、配下の大会一覧、所属プレイヤー一覧を画面初期表示用の一貫したレスポンスとして返します。
+ * @summary グループ画面用データを一括取得
+ */
 export const getApiV2GroupsGroupKeyDashboard = (
   groupKey: string,
   options?: SecondParameter<typeof customFetch>,
   signal?: AbortSignal,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<GroupDashboardResponse>(
     { url: `/api/v2/groups/${groupKey}/dashboard`, method: 'GET', signal },
     options,
   );
@@ -4931,7 +4958,7 @@ export const getGetApiV2GroupsGroupKeyDashboardQueryKey = (groupKey?: string) =>
 
 export const getGetApiV2GroupsGroupKeyDashboardQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   groupKey: string,
   options?: {
@@ -4959,11 +4986,11 @@ export const getGetApiV2GroupsGroupKeyDashboardQueryOptions = <
 export type GetApiV2GroupsGroupKeyDashboardQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>
 >;
-export type GetApiV2GroupsGroupKeyDashboardQueryError = DefaultErrorResponse;
+export type GetApiV2GroupsGroupKeyDashboardQueryError = V2Error | DefaultErrorResponse;
 
 export function useGetApiV2GroupsGroupKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   groupKey: string,
   options: {
@@ -4984,7 +5011,7 @@ export function useGetApiV2GroupsGroupKeyDashboard<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiV2GroupsGroupKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   groupKey: string,
   options?: {
@@ -5005,7 +5032,7 @@ export function useGetApiV2GroupsGroupKeyDashboard<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiV2GroupsGroupKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   groupKey: string,
   options?: {
@@ -5016,10 +5043,13 @@ export function useGetApiV2GroupsGroupKeyDashboard<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary グループ画面用データを一括取得
+ */
 
 export function useGetApiV2GroupsGroupKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2GroupsGroupKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   groupKey: string,
   options?: {
@@ -5041,6 +5071,10 @@ export function useGetApiV2GroupsGroupKeyDashboard<
   return query;
 }
 
+/**
+ * 複数のグループ作成トークンを最大50件確認し、pending、ready、expired、invalid_tokenの状態をclient_idごとに返します。
+ * @summary グループ作成状態を一括確認
+ */
 export const postApiV2GroupsRequestLinkStatusbatch = (
   statusBatchRequest: StatusBatchRequest,
   options?: SecondParameter<typeof customFetch>,
@@ -5059,7 +5093,7 @@ export const postApiV2GroupsRequestLinkStatusbatch = (
 };
 
 export const getPostApiV2GroupsRequestLinkStatusbatchMutationOptions = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -5099,10 +5133,13 @@ export type PostApiV2GroupsRequestLinkStatusbatchMutationResult = NonNullable<
 >;
 export type PostApiV2GroupsRequestLinkStatusbatchMutationBody = StatusBatchRequest;
 export type PostApiV2GroupsRequestLinkStatusbatchMutationError =
-  UnprocessableEntityResponse | DefaultErrorResponse;
+  V2Error | UnprocessableEntityResponse | DefaultErrorResponse;
 
+/**
+ * @summary グループ作成状態を一括確認
+ */
 export const usePostApiV2GroupsRequestLinkStatusbatch = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(
   options?: {
@@ -5126,13 +5163,17 @@ export const usePostApiV2GroupsRequestLinkStatusbatch = <
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * 複数プレイヤーを冪等に大会へ追加し、大会配下のすべてのCHIP卓にも同じDBトランザクションで必ず登録します。
+ * @summary 大会参加者を一括追加して卓へ同期
+ */
 export const postApiV2TournamentsTournamentKeyParticipantsbatchAdd = (
   tournamentKey: string,
   participantBatchAdd: ParticipantBatchAdd,
   options?: SecondParameter<typeof customFetch>,
   signal?: AbortSignal,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<ParticipantBatchAddResponse>(
     {
       url: `/api/v2/tournaments/${tournamentKey}/participants:batch-add`,
       method: 'POST',
@@ -5145,7 +5186,7 @@ export const postApiV2TournamentsTournamentKeyParticipantsbatchAdd = (
 };
 
 export const getPostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationOptions = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -5189,10 +5230,13 @@ export type PostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationResult 
 >;
 export type PostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationBody = ParticipantBatchAdd;
 export type PostApiV2TournamentsTournamentKeyParticipantsbatchAddMutationError =
-  UnprocessableEntityResponse | DefaultErrorResponse;
+  V2Error | UnprocessableEntityResponse | DefaultErrorResponse;
 
+/**
+ * @summary 大会参加者を一括追加して卓へ同期
+ */
 export const usePostApiV2TournamentsTournamentKeyParticipantsbatchAdd = <
-  TError = UnprocessableEntityResponse | DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(
   options?: {
@@ -5217,19 +5261,23 @@ export const usePostApiV2TournamentsTournamentKeyParticipantsbatchAdd = <
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * 大会参加者と大会配下のすべてのCHIP卓の参加者登録を同時に削除します。対象CHIP卓にスコアが存在する場合は409 Conflictを返します。
+ * @summary 大会参加者を削除してチップ卓へ同期
+ */
 export const deleteApiV2TournamentsTournamentKeyParticipantsPlayerId = (
   tournamentKey: string,
   playerId: number,
   options?: SecondParameter<typeof customFetch>,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<ParticipantDeleteResponse>(
     { url: `/api/v2/tournaments/${tournamentKey}/participants/${playerId}`, method: 'DELETE' },
     options,
   );
 };
 
 export const getDeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationOptions = <
-  TError = DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -5273,10 +5321,13 @@ export type DeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationResul
 >;
 
 export type DeleteApiV2TournamentsTournamentKeyParticipantsPlayerIdMutationError =
-  DefaultErrorResponse;
+  V2Error | UnprocessableEntityResponse | DefaultErrorResponse;
 
+/**
+ * @summary 大会参加者を削除してチップ卓へ同期
+ */
 export const useDeleteApiV2TournamentsTournamentKeyParticipantsPlayerId = <
-  TError = DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(
   options?: {
@@ -5301,12 +5352,16 @@ export const useDeleteApiV2TournamentsTournamentKeyParticipantsPlayerId = <
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * 大会、参加者、未参加のグループプレイヤー、卓一覧、スコアマップを画面初期表示用の一貫したレスポンスとして返します。
+ * @summary 大会画面用データを一括取得
+ */
 export const getApiV2TournamentsTournamentKeyDashboard = (
   tournamentKey: string,
   options?: SecondParameter<typeof customFetch>,
   signal?: AbortSignal,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<TournamentDashboardResponse>(
     { url: `/api/v2/tournaments/${tournamentKey}/dashboard`, method: 'GET', signal },
     options,
   );
@@ -5318,7 +5373,7 @@ export const getGetApiV2TournamentsTournamentKeyDashboardQueryKey = (tournamentK
 
 export const getGetApiV2TournamentsTournamentKeyDashboardQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tournamentKey: string,
   options?: {
@@ -5352,11 +5407,11 @@ export const getGetApiV2TournamentsTournamentKeyDashboardQueryOptions = <
 export type GetApiV2TournamentsTournamentKeyDashboardQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>
 >;
-export type GetApiV2TournamentsTournamentKeyDashboardQueryError = DefaultErrorResponse;
+export type GetApiV2TournamentsTournamentKeyDashboardQueryError = V2Error | DefaultErrorResponse;
 
 export function useGetApiV2TournamentsTournamentKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tournamentKey: string,
   options: {
@@ -5381,7 +5436,7 @@ export function useGetApiV2TournamentsTournamentKeyDashboard<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiV2TournamentsTournamentKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tournamentKey: string,
   options?: {
@@ -5406,7 +5461,7 @@ export function useGetApiV2TournamentsTournamentKeyDashboard<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiV2TournamentsTournamentKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tournamentKey: string,
   options?: {
@@ -5421,10 +5476,13 @@ export function useGetApiV2TournamentsTournamentKeyDashboard<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 大会画面用データを一括取得
+ */
 
 export function useGetApiV2TournamentsTournamentKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TournamentsTournamentKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tournamentKey: string,
   options?: {
@@ -5453,18 +5511,22 @@ export function useGetApiV2TournamentsTournamentKeyDashboard<
   return query;
 }
 
+/**
+ * 卓、卓参加者、ゲーム、スコア、共有リンクを同じDBトランザクションで削除し、削除した各データの件数を返します。
+ * @summary 卓と配下データをカスケード削除
+ */
 export const deleteApiV2TablesTableKey = (
   tableKey: string,
   options?: SecondParameter<typeof customFetch>,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<TableDeleteResponse>(
     { url: `/api/v2/tables/${tableKey}`, method: 'DELETE' },
     options,
   );
 };
 
 export const getDeleteApiV2TablesTableKeyMutationOptions = <
-  TError = DefaultErrorResponse,
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -5503,9 +5565,16 @@ export type DeleteApiV2TablesTableKeyMutationResult = NonNullable<
   Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>
 >;
 
-export type DeleteApiV2TablesTableKeyMutationError = DefaultErrorResponse;
+export type DeleteApiV2TablesTableKeyMutationError =
+  V2Error | UnprocessableEntityResponse | DefaultErrorResponse;
 
-export const useDeleteApiV2TablesTableKey = <TError = DefaultErrorResponse, TContext = unknown>(
+/**
+ * @summary 卓と配下データをカスケード削除
+ */
+export const useDeleteApiV2TablesTableKey = <
+  TError = V2Error | UnprocessableEntityResponse | DefaultErrorResponse,
+  TContext = unknown,
+>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteApiV2TablesTableKey>>,
@@ -5527,12 +5596,16 @@ export const useDeleteApiV2TablesTableKey = <TError = DefaultErrorResponse, TCon
   return useMutation(mutationOptions, queryClient);
 };
 
+/**
+ * 卓、卓参加者、卓へ未登録の大会参加者、ゲームとスコアを画面初期表示用の一貫したレスポンスとして返します。
+ * @summary 卓画面用データを一括取得
+ */
 export const getApiV2TablesTableKeyDashboard = (
   tableKey: string,
   options?: SecondParameter<typeof customFetch>,
   signal?: AbortSignal,
 ) => {
-  return customFetch<DefaultErrorResponse>(
+  return customFetch<TableDashboardResponse>(
     { url: `/api/v2/tables/${tableKey}/dashboard`, method: 'GET', signal },
     options,
   );
@@ -5544,7 +5617,7 @@ export const getGetApiV2TablesTableKeyDashboardQueryKey = (tableKey?: string) =>
 
 export const getGetApiV2TablesTableKeyDashboardQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tableKey: string,
   options?: {
@@ -5572,11 +5645,11 @@ export const getGetApiV2TablesTableKeyDashboardQueryOptions = <
 export type GetApiV2TablesTableKeyDashboardQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>
 >;
-export type GetApiV2TablesTableKeyDashboardQueryError = DefaultErrorResponse;
+export type GetApiV2TablesTableKeyDashboardQueryError = V2Error | DefaultErrorResponse;
 
 export function useGetApiV2TablesTableKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tableKey: string,
   options: {
@@ -5597,7 +5670,7 @@ export function useGetApiV2TablesTableKeyDashboard<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiV2TablesTableKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tableKey: string,
   options?: {
@@ -5618,7 +5691,7 @@ export function useGetApiV2TablesTableKeyDashboard<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetApiV2TablesTableKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tableKey: string,
   options?: {
@@ -5629,10 +5702,13 @@ export function useGetApiV2TablesTableKeyDashboard<
   },
   queryClient?: QueryClient,
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary 卓画面用データを一括取得
+ */
 
 export function useGetApiV2TablesTableKeyDashboard<
   TData = Awaited<ReturnType<typeof getApiV2TablesTableKeyDashboard>>,
-  TError = DefaultErrorResponse,
+  TError = V2Error | DefaultErrorResponse,
 >(
   tableKey: string,
   options?: {

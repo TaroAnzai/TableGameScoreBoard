@@ -25,12 +25,12 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
-import { Group } from '@/src/api/generated/mahjongApi.schemas';
+import { GroupV2 } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
 import { appStorage } from '@/src/storage/appStorage';
 import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
 
-type RemovableGroup = Omit<Group, 'id'> & { id: string | number };
+type RemovableGroup = Omit<GroupV2, 'id'> & { id: string | number };
 
 export default function Index() {
   const { t } = useTranslation();
@@ -110,7 +110,7 @@ export default function Index() {
       // The mutation hook displays the API error dialog. Keep the form open for retrying.
     }
   };
-  const handleEnterGroup = (group: Group) => {
+  const handleEnterGroup = (group: GroupV2) => {
     const key = getResourceKey(group);
     if (!key) return;
     router.push(`/group/${key}`);
@@ -221,7 +221,7 @@ export default function Index() {
                           accessories={[
                             group.created_at &&
                               t('welcomPage.createdAt', {
-                                date: format(group.created_at, 'yyyy-MM-dd'),
+                                date: format(new Date(group.created_at), 'yyyy-MM-dd'),
                               }),
                             group.description && group.description,
                           ]}

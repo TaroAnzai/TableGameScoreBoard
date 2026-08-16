@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { TournamentDashboard } from '@/src/api/dashboardTypes';
 import {
   getApiV2TournamentsTournamentKeyDashboard,
   getGetApiV2TournamentsTournamentKeyDashboardQueryKey,
@@ -31,9 +30,7 @@ export const useGetTournamentScoreMap = (tournamentKey: string) => {
   } = useQuery({
     queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
     queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(
-        tournamentKey,
-      ) as unknown as Promise<TournamentDashboard>,
+      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
     enabled: !!tournamentKey,
     select: (dashboard) => dashboard.score_map,
   });

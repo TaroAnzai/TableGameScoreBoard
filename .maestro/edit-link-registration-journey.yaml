@@ -1,0 +1,103 @@
+appId: com.anzaihome.mahjongapp.dev
+---
+# 前提:
+# - 日本語表示
+# - グループ作成API（http://localhost:6080）へ接続可能
+# - MetroとAndroid開発ビルドが起動済み
+- stopApp
+- runScript: scripts/create-group-fixture.js
+- runScript:
+    file: scripts/create-group-via-api.js
+    env:
+      API_BASE_URL: 'http://localhost:6080'
+
+# APIで作成したグループをeditリンクから直接開く
+- launchApp
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- openLink:
+    link: ${output.groupEditDeepLink}
+- extendedWaitUntil:
+    visible: ${output.groupName}
+    timeout: 30000
+- assertVisible: 'アプリに登録'
+
+# editリンクを登録し、ルートの登録一覧からグループへ入り直す
+- tapOn: 'アプリに登録'
+- assertVisible: '登録グループ追加'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 15000
+- scrollUntilVisible:
+    element: ${output.groupName}
+    direction: DOWN
+    timeout: 20000
+    visibilityPercentage: 50
+- tapOn: ${output.groupName}
+- assertVisible: '大会一覧'
+- assertVisible: 'メンバー一覧'
+
+# グループメンバーを1名追加
+- tapOn: 'メンバー一覧'
+- tapOn: 'グループメンバー追加'
+- assertVisible:
+    id: 'primaryInput'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.player1}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.player1}
+    timeout: 15000
+
+# 大会を作成し、作成したメンバーを大会参加者へ追加
+- tapOn: '大会一覧'
+- tapOn: '大会新規作成'
+- assertVisible:
+    id: 'primaryInput'
+- tapOn:
+    id: 'primaryInput'
+- inputText: ${output.tournamentName}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.tournamentName}
+    timeout: 30000
+- assertVisible: '大会成績'
+- tapOn: '大会新規作成'
+- assertVisible: '参加者を選択'
+- tapOn: ${output.player1}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.player1}
+    timeout: 15000
+
+# 通常卓を作成し、大会参加者を卓へ追加
+- tapOn: '記録用紙を新規作成'
+- extendedWaitUntil:
+    visible: '${output.tableName} 記録表'
+    timeout: 30000
+- tapOn: '参加者を追加'
+- assertVisible: '参加者を選択'
+- tapOn: ${output.player1}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.player1}
+    timeout: 15000
+
+# 親から渡されたキーで卓→大会→グループ→ルートへ戻れることを確認
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: '大会成績'
+    timeout: 15000
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: '大会一覧'
+    timeout: 15000
+- assertVisible: ${output.groupName}
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 15000
+- assertVisible: ${output.groupName}

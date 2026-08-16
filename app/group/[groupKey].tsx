@@ -19,7 +19,7 @@ import { Icon } from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
-import { Player, Tournament } from '@/src/api/generated/mahjongApi.schemas';
+import { Player, TournamentV2 } from '@/src/api/generated/mahjongApi.schemas';
 import { useGetGroupDashboard, useUpdateGroup } from '@/src/hooks/useGroups';
 import { useCreatePlayer, useDeletePlayer, useGetPlayer } from '@/src/hooks/usePlayers';
 import {
@@ -202,7 +202,7 @@ const GroupPage = () => {
     }
   };
 
-  const handleDeleteTournament = async (tournament: Tournament) => {
+  const handleDeleteTournament = async (tournament: TournamentV2) => {
     const tournamentKey = getResourceKey(tournament);
     if (!tournamentKey) return;
 

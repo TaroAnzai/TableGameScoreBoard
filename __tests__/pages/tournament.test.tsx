@@ -103,9 +103,9 @@ jest.mock('@/components/SelectorModal', () => () => null);
 const tournamentState = {
   tournament: {
     id: 1,
+    group_id: 10,
     name: '大会1',
     rate: 50,
-    parent_group_link: { edit_link: 'group-key' },
     tournament_links: [{ access_level: 'EDIT', short_key: 'tournament-key' }],
   },
   isLoadingTournament: false,

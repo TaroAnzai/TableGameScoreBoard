@@ -2,11 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
-import { useCreateTable, useUpdateTable } from '@/src/hooks/useTables';
+import { useCreateTable, useDeleteTable, useUpdateTable } from '@/src/hooks/useTables';
 
 const mockPush = jest.fn();
 const mockPostTable = jest.fn();
 const mockPutTable = jest.fn();
+const mockDeleteTableV2 = jest.fn();
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -14,6 +15,7 @@ jest.mock('expo-router', () => ({
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   postApiTournamentsTournamentKeyTables: (...args: unknown[]) => mockPostTable(...args),
   putApiTablesTableKey: (...args: unknown[]) => mockPutTable(...args),
+  deleteApiV2TablesTableKey: (...args: unknown[]) => mockDeleteTableV2(...args),
   getGetApiTablesTableKeyQueryOptions: (tableKey: string) => ({
     queryKey: [`/api/tables/${tableKey}`],
   }),
@@ -197,6 +199,35 @@ describe('useUpdateTable', () => {
       queryKey: ['/api/v2/tournaments/tournament-owner-key/dashboard'],
     });
     expect(invalidateQueries).toHaveBeenCalledTimes(5);
+    unmount();
+  });
+});
+
+describe('useDeleteTable', () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { mutations: { gcTime: Infinity, retry: false } },
+  });
+  const wrapper = ({ children }: PropsWithChildren) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    queryClient.clear();
+  });
+
+  it('ゲームを含むV2カスケード削除APIを使用する', async () => {
+    mockDeleteTableV2.mockResolvedValue({ deleted_game_count: 2 });
+    const { result, unmount } = await renderHook(() => useDeleteTable(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({ tableKey: 'table-owner-key' });
+    });
+
+    expect(mockDeleteTableV2).toHaveBeenCalledWith('table-owner-key');
     unmount();
   });
 });

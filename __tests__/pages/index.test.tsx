@@ -62,12 +62,31 @@ jest.mock('@/components/TextInputModal', () => {
   };
 });
 jest.mock('@/components/MahjongListItem', () => {
-  const { Text } = jest.requireActual('react-native');
+  const { Text, View } = jest.requireActual('react-native');
   return {
-    MahjongListItem: ({ title, onPress }: { title: string; onPress?: () => void }) => (
-      <Text accessibilityRole={onPress ? 'button' : undefined} onPress={onPress}>
-        {title}
-      </Text>
+    MahjongListItem: ({
+      title,
+      accessories,
+      onPress,
+    }: {
+      title: string;
+      accessories?: React.ReactNode[];
+      onPress?: () => void;
+    }) => (
+      <View>
+        <Text accessibilityRole={onPress ? 'button' : undefined} onPress={onPress}>
+          {title}
+        </Text>
+        {accessories?.map((accessory, index) => (
+          <View key={index}>
+            {typeof accessory === 'string' || typeof accessory === 'number' ? (
+              <Text>{accessory}</Text>
+            ) : (
+              accessory
+            )}
+          </View>
+        ))}
+      </View>
     ),
   };
 });
@@ -80,6 +99,7 @@ const defaultState = {
     {
       id: 1,
       name: 'テストグループ',
+      created_at: '2026-08-15T12:34:56Z',
       edit_link: 'group-edit-key',
       group_links: [{ access_level: 'EDIT', short_key: 'group-edit-key' }],
     },
@@ -108,6 +128,7 @@ describe('ホームページ', () => {
   it('正常取得したグループを表示して詳細へ遷移する', async () => {
     await render(<Index />);
 
+    expect(screen.getByText('作成日: 2026-08-15')).toBeTruthy();
     fireEvent.press(screen.getByText('テストグループ'));
     expect(mockPush).toHaveBeenCalledWith('/group/group-edit-key');
   });

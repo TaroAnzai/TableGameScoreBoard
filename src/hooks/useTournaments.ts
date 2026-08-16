@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import type { GroupDashboard, TournamentDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiTournamentsTournamentKey,
   deleteApiV2TournamentsTournamentKeyParticipantsPlayerId,
@@ -18,7 +17,6 @@ import {
 } from '@/src/api/generated/mahjongApi';
 import type {
   Player,
-  Tournament,
   TournamentCreateV2,
   TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
@@ -31,10 +29,7 @@ export const useCreateTournament = () => {
 
   return useMutation({
     mutationFn: (data: { groupKey: string; tournament: TournamentCreateV2 }) => {
-      return postApiV2GroupsGroupKeyTournaments(
-        data.groupKey,
-        data.tournament,
-      ) as unknown as Promise<{ tournament: Tournament }>;
+      return postApiV2GroupsGroupKeyTournaments(data.groupKey, data.tournament);
     },
     onSuccess: async (_data, variables) => {
       showSuccess(t('notifications.tournament.createSuccess'));
@@ -64,7 +59,7 @@ export const useGetTournaments = (groupKey: string) => {
   } = useQuery({
     queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
     queryFn: () =>
-      getApiV2GroupsGroupKeyDashboard(groupKey) as unknown as Promise<GroupDashboard>,
+      getApiV2GroupsGroupKeyDashboard(groupKey),
     enabled: !!groupKey,
     select: (dashboard) => dashboard.tournaments,
   });
@@ -84,7 +79,7 @@ export const useUpdateTournament = () => {
   return useMutation({
     mutationFn: (data: {
       tournamentKey: string;
-      groupKey: string;
+      groupKey?: string;
       tournament: TournamentUpdate;
     }) => {
       return putApiTournamentsTournamentKey(data.tournamentKey, data.tournament);
@@ -101,14 +96,16 @@ export const useUpdateTournament = () => {
         queryClient.invalidateQueries({ queryKey: queryKeytournament }),
         queryClient.invalidateQueries({ queryKey: queryKeyScore }),
         queryClient.invalidateQueries({
-          queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(variables.groupKey),
-        }),
-        queryClient.invalidateQueries({
           queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
             variables.tournamentKey,
           ),
         }),
       ]);
+      if (variables.groupKey) {
+        await queryClient.invalidateQueries({
+          queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(variables.groupKey),
+        });
+      }
     },
     onError: (error: any) => {
       console.error('Error updating tournament:', error);
@@ -152,9 +149,7 @@ export const useGetTournament = (tournamentKey: string) => {
   } = useQuery({
     queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
     queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(
-        tournamentKey,
-      ) as unknown as Promise<TournamentDashboard>,
+      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
     enabled: !!tournamentKey,
     select: (dashboard) => dashboard.tournament,
   });
@@ -179,9 +174,7 @@ export const useGetTournamentPlayers = (tournamentKey: string, options?: object)
   } = useQuery({
     queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
     queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(
-        tournamentKey,
-      ) as unknown as Promise<TournamentDashboard>,
+      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
     enabled: !!tournamentKey,
     select: (dashboard) => dashboard.participants,
     ...(options ?? {}),
@@ -201,9 +194,7 @@ export const useGetAvailableTournamentPlayers = (tournamentKey: string) => {
   const query = useQuery({
     queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
     queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(
-        tournamentKey,
-      ) as unknown as Promise<TournamentDashboard>,
+      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
     enabled: !!tournamentKey,
     select: (dashboard) => dashboard.available_group_players,
   });
@@ -231,10 +222,7 @@ export const useAddTournamentPlayer = () => {
           return { player_id: player.id };
         }),
       };
-      return postApiV2TournamentsTournamentKeyParticipantsbatchAdd(data.tournamentKey, {
-        ...payload,
-        propagate_to: { table_types: ['CHIP'] },
-      });
+      return postApiV2TournamentsTournamentKeyParticipantsbatchAdd(data.tournamentKey, payload);
     },
     onSuccess: (data, variables) => {
       showSuccess(t('notifications.tournament.addPlayerSuccess'));

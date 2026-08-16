@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import type { TableDashboard } from '@/src/api/dashboardTypes';
 import {
   deleteApiTablesTableKeyGamesGameId,
   getApiV2TablesTableKeyDashboard,
@@ -73,7 +72,7 @@ export const useGetTableGames = (tableKey: string, optins?: object) => {
     refetch: loadGames,
   } = useQuery({
     queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
     enabled: !!tableKey,
     select: (dashboard) => dashboard.games,
     ...(optins ?? {}),

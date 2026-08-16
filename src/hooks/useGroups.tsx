@@ -11,7 +11,6 @@ import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
-import type { GroupDashboard } from '@/src/api/dashboardTypes';
 import type {
   Group,
   GroupCreate,
@@ -37,7 +36,7 @@ export const useGetGroupDashboard = (groupKey: string) =>
   useQuery({
     queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
     queryFn: () =>
-      getApiV2GroupsGroupKeyDashboard(groupKey) as unknown as Promise<GroupDashboard>,
+      getApiV2GroupsGroupKeyDashboard(groupKey),
     enabled: !!groupKey,
     select: (dashboard) => dashboard.group,
   });
@@ -162,9 +161,6 @@ const GROUP_KEYS_QUERY_KEY = ['groupKeysAndPendingGroups'] as const;
 const EMPTY_GROUP_KEYS: string[] = [];
 const EMPTY_PENDING_GROUPS: PendingGroup[] = [];
 const GROUP_BATCH_QUERY_KEY = ['groupsBatch'] as const;
-type GroupBatchResult =
-  | { client_id: string; status: 'ok'; group: Group }
-  | { client_id: string; status: 'not_found' | 'forbidden' | 'error' };
 export const useGroupQueries = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -218,11 +214,11 @@ export const useGroupQueries = () => {
           client_id: String(index),
           group_key: groupKey,
         })),
-      }) as unknown as Promise<{ results: GroupBatchResult[] }>,
+      }),
   });
   const batchResults = groupsQuery.data?.results ?? [];
   const groups = batchResults.flatMap((result) =>
-    result.status === 'ok' ? [result.group] : [],
+    result.status === 'ok' && result.group ? [result.group] : [],
   );
   const notFoundKeys = batchResults.flatMap((result) =>
     result.status === 'not_found' ? [groupKeys[Number(result.client_id)]] : [],

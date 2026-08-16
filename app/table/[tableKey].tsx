@@ -35,7 +35,7 @@ import {
   useGetTablePlayer,
   useUpdateTable,
 } from '@/src/hooks/useTables';
-import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
+import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 
 export default function TablePage() {
   const { alertDialog } = useAlertDialog();
@@ -77,7 +77,7 @@ export default function TablePage() {
     useGetTableGames(tableKey ?? '', { enabled: !!tableKey });
 
   const isChipTable = table?.type === 'CHIP';
-  const tournamentKey = parentTournamentKey ?? getResourceKey(table?.parent_tournament_link);
+  const tournamentKey = parentTournamentKey;
   const {
     players: tournamentPlayers,
     isLoadingPlayers,

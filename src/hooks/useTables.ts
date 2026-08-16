@@ -2,9 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import type { TableDashboard, TournamentDashboard } from '@/src/api/dashboardTypes';
 import {
-  deleteApiTablesTableKey,
   deleteApiTablesTableKeyPlayersPlayerId,
   deleteApiV2TablesTableKey,
   getApiV2TablesTableKeyDashboard,
@@ -40,9 +38,7 @@ export const useGetTables = (tournamentKey: string) => {
   } = useQuery({
     queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
     queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(
-        tournamentKey,
-      ) as unknown as Promise<TournamentDashboard>,
+      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
     enabled: !!tournamentKey,
     select: (dashboard) => dashboard.tables,
   });
@@ -191,7 +187,7 @@ export const useGetTable = (tableKey: string, optins?: object) => {
     refetch: loadTable,
   } = useQuery({
     queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
     enabled: !!tableKey,
     select: (dashboard) => dashboard.table,
     ...(optins ?? {}),
@@ -211,7 +207,7 @@ export const useDeleteTable = () => {
   const { showError, showSuccess } = useMutationFeedback();
   return useMutation({
     mutationFn: (data: { tableKey: string }) => {
-      return deleteApiTablesTableKey(data.tableKey);
+      return deleteApiV2TablesTableKey(data.tableKey);
     },
     onSuccess: () => {
       showSuccess(t('notifications.table.deleteSuccess'));
@@ -237,7 +233,7 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
     refetch: loadPlayers,
   } = useQuery({
     queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
     enabled: !!tableKey,
     select: (dashboard) => dashboard.table_players,
     ...(optins ?? {}),
@@ -256,7 +252,7 @@ export const useGetTablePlayer = (tableKey: string, optins?: object) => {
 export const useGetAvailableTablePlayers = (tableKey: string, optins?: object) => {
   const query = useQuery({
     queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey) as unknown as Promise<TableDashboard>,
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
     enabled: !!tableKey,
     select: (dashboard) => dashboard.available_tournament_players,
     ...(optins ?? {}),
@@ -328,20 +324,12 @@ export const useDeleteTablePlayer = () => {
 };
 
 export const useDeleteChipTableWithScores = () => {
-  const { t } = useTranslation();
-  const { showError, showSuccess } = useMutationFeedback();
-  return useMutation({
-    mutationFn: (tableKey: string) => deleteApiV2TablesTableKey(tableKey),
-    onSuccess: () => {
-      showSuccess(t('notifications.table.deleteSuccess'));
-    },
-    onError: (error: any) => {
-      console.error('Error deleting table:', error);
-      showError({
-        title: t('notifications.table.deleteErrorTitle'),
-        error,
-        fallback: t('notifications.common.unknownError'),
-      });
-    },
-  });
+  const mutation = useDeleteTable();
+  return {
+    ...mutation,
+    mutate: (tableKey: string, options?: Parameters<typeof mutation.mutate>[1]) =>
+      mutation.mutate({ tableKey }, options),
+    mutateAsync: (tableKey: string, options?: Parameters<typeof mutation.mutateAsync>[1]) =>
+      mutation.mutateAsync({ tableKey }, options),
+  };
 };
