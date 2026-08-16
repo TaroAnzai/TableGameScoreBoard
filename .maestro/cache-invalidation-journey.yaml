@@ -94,7 +94,7 @@ appId: com.anzaihome.mahjongapp.dev
 # 記録用紙を作成して自動遷移し、作成直後のスコアボード更新を確認
 - tapOn: '記録用紙を新規作成'
 - extendedWaitUntil:
-    visible: '${output.tableName}記録表'
+    visible: '${output.tableName} 記録表'
     timeout: 30000
 - tapOn: '上の階層へ移動'
 - extendedWaitUntil:

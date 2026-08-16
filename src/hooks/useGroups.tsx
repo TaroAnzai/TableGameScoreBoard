@@ -161,6 +161,7 @@ const EMPTY_PENDING_GROUPS: PendingGroup[] = [];
 export const useGroupQueries = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { alertDialog } = useAlertDialog();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // AsyncStorageからGroup Keyとpending groupsを取得
@@ -239,15 +240,24 @@ export const useGroupQueries = () => {
     }
 
     const removeInvalidGroupKeys = async () => {
-      for (const key of notFoundKeysSignal.split(',')) {
+      const invalidGroupKeys = notFoundKeysSignal.split(',');
+
+      for (const key of invalidGroupKeys) {
         await appStorage.removeGroupKey(key);
       }
+
+      void alertDialog({
+        title: t('hooks.group.fetchNotFoundTitle'),
+        description: t('hooks.group.fetchNotFoundDescription'),
+        text1: invalidGroupKeys.map((key) => `- ${key}`).join('\n'),
+        showCancelButton: false,
+      });
 
       await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
     };
 
     void removeInvalidGroupKeys();
-  }, [notFoundKeysSignal, queryClient]);
+  }, [alertDialog, notFoundKeysSignal, queryClient, t]);
 
   const refetch = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });

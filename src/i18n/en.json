@@ -341,7 +341,9 @@
       "createErrorTitle": "Error creating group",
       "updateErrorTitle": "Error updating group",
       "unknownError": "Unknown error",
-      "expiredPendingGroup": "Expired pending group"
+      "expiredPendingGroup": "Expired pending group",
+      "fetchNotFoundTitle": "Error Loading Groups",
+      "fetchNotFoundDescription": "The data associated with the following keys has been deleted from the server, so the group access keys have been removed from this app."
     }
   },
   "scoreTable": {

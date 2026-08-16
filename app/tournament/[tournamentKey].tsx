@@ -512,10 +512,12 @@ const EditableRate = ({
         <Text>{label}:</Text>
         {onChange ? (
           <Input
+            testID="tournament-rate-input"
             className="w-20 text-right"
             keyboardType="numeric"
             value={editedRate.toString()}
             editable={!isSaving}
+            selectTextOnFocus
             onChangeText={handleRateChange}
             onBlur={() => {
               handleRateBlur();

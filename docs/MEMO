@@ -51,3 +51,8 @@ maestro --no-ansi test .maestro/new-group-request-test.yaml
 
 apkのバージョンなどの情報を取得
 ~/Android/Sdk/build-tools/<バージョン>/aapt dump badging app.apk
+
+codex gitコミットプロンプトテンプレ
+現在の変更をすべて適切なメッセージでコミットしてください。
+メッセージは英文で作成してください。
+メッセージには変更の詳細を追加してください。

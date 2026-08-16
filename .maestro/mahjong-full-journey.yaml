@@ -88,7 +88,7 @@ appId: com.anzaihome.mahjongapp.dev
 
 # 卓作成（作成後は記録表へ自動遷移）→ 卓へ参加者4名を追加
 - tapOn: '記録用紙を新規作成'
-- assertVisible: '卓1記録表'
+- assertVisible: '卓1 記録表'
 - tapOn: '参加者を追加'
 - assertVisible: '参加者を選択'
 - tapOn: ${output.player1}
@@ -143,12 +143,65 @@ appId: com.anzaihome.mahjongapp.dev
 - assertVisible: '25,000'
 - assertVisible: '-35,000'
 
-# グループ画面へ戻り、成績と個人成績を検証
+# チップを3人分入力（合計が0ではない状態）
 - tapOn: '上の階層へ移動'
 - assertVisible: '大会成績'
-- assertVisible: '25,000'
-- assertVisible: '15,000'
-- assertVisible: '-5,000'
+- tapOn: 'チップの記録用紙を開く'
+- tapOn: 'チップのスコアを編集'
+- tapOn: '${output.player1}の点数'
+- inputText: '10'
+- tapOn: '${output.player2}の点数'
+- inputText: '-3'
+- tapOn: '${output.player3}の点数'
+- inputText: '-2'
+- assertVisible: '合計: 5'
+- tapOn: '確定'
+- assertVisible: '10'
+- assertVisible: '-3'
+- assertVisible: '-2'
+
+# 大会画面でチップ合計不一致を確認
+- tapOn: '上の階層へ移動'
+- assertVisible: 'チップ合計が一致していません'
+- assertVisible: '参加者のチップ合計が0ではありません。入力漏れや符号の間違いがないか確認してください。'
+
+# チップを修正して合計を0にする
+- tapOn: 'チップの記録用紙を開く'
+- tapOn: 'チップのスコアを編集'
+- tapOn: '${output.player3}の点数'
+- eraseText
+- inputText: '-7'
+- assertVisible: '合計: 0'
+- tapOn: '確定'
+- assertVisible: '10'
+- assertVisible: '-3'
+- assertVisible: '-7'
+
+# 大会画面でチップ修正と警告消去を確認
+- tapOn: '上の階層へ移動'
+- assertNotVisible: 'チップ合計が一致していません'
+- assertVisible: '25,010'
+- assertVisible: '14,997'
+- assertVisible: '-5,007'
+- assertVisible: '-35,000'
+
+# レートを5に変更して換算点の更新を確認
+- tapOn:
+    id: 'tournament-rate-input'
+- eraseText
+- inputText: '5'
+- pressKey: Enter
+- assertVisible: '5'
+- assertVisible: '125,050'
+- assertVisible: '74,985'
+- assertVisible: '-25,035'
+- assertVisible: '-175,000'
+
+# グループ画面へ戻り、成績と個人成績を検証
+- assertVisible: '大会成績'
+- assertVisible: '25,010'
+- assertVisible: '14,997'
+- assertVisible: '-5,007'
 - assertVisible: '-35,000'
 - tapOn: '上の階層へ移動'
 - assertVisible: ${output.groupName}
