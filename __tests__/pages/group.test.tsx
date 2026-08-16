@@ -2,6 +2,7 @@ import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/
 import React from 'react';
 
 import GroupPage from '@/app/group/[groupKey]';
+import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -25,6 +26,16 @@ const mockDeleteTournament = jest.fn();
 const mockCreateChipTable = jest.fn();
 const mockPlayerMutations = jest.fn();
 const mockTournamentMutations = jest.fn();
+
+const createApiError = (kind: 'network' | 'http', status?: number) =>
+  new ApiError({
+    kind,
+    message: 'technical error',
+    url: 'https://example.com/api/groups/group-key',
+    method: 'GET',
+    status,
+    retryable: kind === 'network' || status === 500,
+  });
 
 type NavigationEvent = {
   data: { action: { type: string } };
@@ -142,6 +153,7 @@ const groupState = {
   isLoading: false,
   isError: false,
   isFetching: false,
+  error: undefined,
   refetch: mockRefetchGroup,
 };
 const playersState = {
@@ -149,6 +161,7 @@ const playersState = {
   isLoadingPlayers: false,
   isErrorPlayers: false,
   isFetchingPlayers: false,
+  playersError: undefined,
   loadPlayers: mockLoadPlayers,
 };
 const tournamentsState = {
@@ -156,6 +169,7 @@ const tournamentsState = {
   isLoadingTournaments: false,
   isErrorTournaments: false,
   isFetchingTournaments: false,
+  tournamentsError: undefined,
   loadTournaments: mockLoadTournaments,
 };
 
@@ -226,30 +240,53 @@ describe('グループ詳細ページ', () => {
     expect(screen.getByText('プレイヤー1')).toBeTruthy();
   });
 
-  it.each(['HTTPエラー', '通信エラー'])(
-    '%sで大会取得に失敗すると大会セクションだけエラーにする',
-    async () => {
-      mockUseTournaments.mockReturnValue({
-        ...tournamentsState,
-        tournaments: undefined,
-        isErrorTournaments: true,
-      });
-      await render(<GroupPage />);
-
-      expect(screen.getAllByText(/データを取得できませんでした/)).toHaveLength(1);
-      expect(screen.getByText('プレイヤー1')).toBeTruthy();
-    },
-  );
-
-  it('グループ本体取得失敗では両セクションをエラーにする', async () => {
-    mockUseGroup.mockReturnValue({ ...groupState, data: undefined, isError: true });
+  it.each([
+    ['HTTPエラー', createApiError('http', 500), /サーバーで問題が発生しました/],
+    ['通信エラー', createApiError('network'), /通信できませんでした/],
+  ])('%sで大会取得に失敗すると大会セクションだけエラーにする', async (_, error, message) => {
+    mockUseTournaments.mockReturnValue({
+      ...tournamentsState,
+      tournaments: undefined,
+      isErrorTournaments: true,
+      tournamentsError: error,
+    });
     await render(<GroupPage />);
 
-    expect(screen.getAllByText(/データを取得できませんでした/)).toHaveLength(2);
+    expect(screen.getAllByText(message)).toHaveLength(1);
+    expect(screen.getByText('プレイヤー1')).toBeTruthy();
+  });
+
+  it('グループ本体取得失敗では両セクションをエラーにする', async () => {
+    mockUseGroup.mockReturnValue({
+      ...groupState,
+      data: undefined,
+      isError: true,
+      error: createApiError('network'),
+    });
+    await render(<GroupPage />);
+
+    expect(screen.getAllByText(/通信できませんでした/)).toHaveLength(2);
+  });
+
+  it('グループが存在しない場合は専用メッセージを表示して再取得を案内しない', async () => {
+    mockUseGroup.mockReturnValue({
+      ...groupState,
+      data: undefined,
+      isError: true,
+      error: createApiError('http', 404),
+    });
+    await render(<GroupPage />);
+
+    expect(screen.getAllByText(/グループが見つかりませんでした/)).toHaveLength(2);
+    expect(screen.queryByText('再取得')).toBeNull();
   });
 
   it('大会セクションの再取得でグループと大会を取得する', async () => {
-    mockUseTournaments.mockReturnValue({ ...tournamentsState, isErrorTournaments: true });
+    mockUseTournaments.mockReturnValue({
+      ...tournamentsState,
+      isErrorTournaments: true,
+      tournamentsError: createApiError('network'),
+    });
     await render(<GroupPage />);
 
     fireEvent.press(screen.getByText('再取得'));

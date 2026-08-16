@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import React from 'react';
 
 import GroupCreatePage from '@/app/group/create';
+import { ApiError } from '@/src/api/apiError';
 
 const mockReplace = jest.fn();
 const mockParams = jest.fn(() => ({ token: 'valid-token' }));
@@ -39,9 +40,7 @@ describe('招待グループ作成ページ', () => {
 
   it('再レンダーされても作成APIを重複実行しない', async () => {
     let resolveRequest: (value: { owner_link: string }) => void = () => undefined;
-    mockCreateGroup.mockImplementation(
-      () => new Promise((resolve) => (resolveRequest = resolve)),
-    );
+    mockCreateGroup.mockImplementation(() => new Promise((resolve) => (resolveRequest = resolve)));
     const result = await render(<GroupCreatePage />);
 
     await result.rerender(<GroupCreatePage />);
@@ -54,7 +53,9 @@ describe('招待グループ作成ページ', () => {
     mockCreateGroup.mockReturnValue(new Promise(() => undefined));
     await render(<GroupCreatePage />);
 
-    const beforeRemove = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const beforeRemove = mockAddListener.mock.calls.find(
+      ([event]) => event === 'beforeRemove',
+    )?.[1];
     const preventDefault = jest.fn();
     expect(beforeRemove).toBeDefined();
     beforeRemove?.({ preventDefault });
@@ -66,7 +67,9 @@ describe('招待グループ作成ページ', () => {
     mockParams.mockReturnValue({ token: '' });
     await render(<GroupCreatePage />);
 
-    expect(await screen.findByText('招待リンクが無効です。リンクを確認して、もう一度開いてください。')).toBeTruthy();
+    expect(
+      await screen.findByText('招待リンクが無効です。リンクを確認して、もう一度開いてください。'),
+    ).toBeTruthy();
     expect(screen.getByText('再試行')).toBeDisabled();
     expect(mockCreateGroup).not.toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
@@ -75,18 +78,46 @@ describe('招待グループ作成ページ', () => {
     expect(mockReplace).toHaveBeenCalledWith('/');
   });
 
-  it('APIエラーの理由を表示し、再試行できる', async () => {
+  it('通信エラーでは安全な案内を表示し、再試行できる', async () => {
     mockCreateGroup
-      .mockRejectedValueOnce({ body: { message: '招待の有効期限が切れています' } })
+      .mockRejectedValueOnce(
+        new ApiError({
+          kind: 'network',
+          message: 'Network request failed: internal-host',
+          url: 'https://example.com/api/groups',
+          method: 'POST',
+          retryable: true,
+        }),
+      )
       .mockResolvedValueOnce({ owner_link: 'owner-key' });
     await render(<GroupCreatePage />);
 
-    expect(await screen.findByText('招待の有効期限が切れています')).toBeTruthy();
+    expect(await screen.findByText(/通信できませんでした/)).toBeTruthy();
+    expect(screen.queryByText(/internal-host/)).toBeNull();
     expect(mockReplace).not.toHaveBeenCalled();
 
     fireEvent.press(screen.getByText('再試行'));
 
     await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledTimes(2));
     expect(mockReplace).toHaveBeenCalledWith('/group/owner-key');
+  });
+
+  it('期限切れの招待リンクでは文脈固有の案内を表示して再試行を無効化する', async () => {
+    mockCreateGroup.mockRejectedValueOnce(
+      new ApiError({
+        kind: 'http',
+        message: 'HTTP 410 Gone',
+        url: 'https://example.com/api/groups',
+        method: 'POST',
+        status: 410,
+        retryable: false,
+        body: { message: 'internal invitation detail' },
+      }),
+    );
+    await render(<GroupCreatePage />);
+
+    expect(await screen.findByText(/招待リンクが無効です/)).toBeTruthy();
+    expect(screen.getByText('再試行')).toBeDisabled();
+    expect(screen.queryByText(/internal invitation detail/)).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
 import TablePage from '@/app/table/[tableKey]';
+import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockParams = jest.fn(
@@ -19,6 +20,16 @@ const mockUseGames = jest.fn();
 const mockUseTournamentPlayers = jest.fn();
 const mockUseDeleteTable = jest.fn();
 const mockUpdateTable = jest.fn();
+
+const createApiError = (kind: 'network' | 'http', status?: number) =>
+  new ApiError({
+    kind,
+    message: 'technical error',
+    url: 'https://example.com/api/tables/table-key',
+    method: 'GET',
+    status,
+    retryable: kind === 'network' || status === 500,
+  });
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -87,6 +98,7 @@ const tableState = {
   isLoadingTable: false,
   isErrorTable: false,
   isFetchingTable: false,
+  tableError: undefined,
   loadTable,
 };
 const tablePlayersState = {
@@ -94,6 +106,7 @@ const tablePlayersState = {
   isLoadingPlayers: false,
   isErrorPlayers: false,
   isFetchingPlayers: false,
+  playersError: undefined,
   loadPlayers: loadTablePlayers,
 };
 const gamesState = {
@@ -101,6 +114,7 @@ const gamesState = {
   isLoadingGames: false,
   isErrorGames: false,
   isFetchingGames: false,
+  gamesError: undefined,
   loadGames,
 };
 const tournamentPlayersState = {
@@ -111,6 +125,7 @@ const tournamentPlayersState = {
   isLoadingPlayers: false,
   isErrorPlayers: false,
   isFetchingPlayers: false,
+  playersError: undefined,
   loadPlayers: loadTournamentPlayers,
 };
 
@@ -160,16 +175,28 @@ describe('卓詳細ページ', () => {
     expect(screen.getByText('読み込み中...')).toBeTruthy();
   });
 
-  it.each(['HTTPエラー', '通信エラー'])('%sでは記録表セクションだけをエラー表示する', async () => {
-    mockUseGames.mockReturnValue({ ...gamesState, games: undefined, isErrorGames: true });
+  it.each([
+    ['HTTPエラー', createApiError('http', 500), /サーバーで問題が発生しました/],
+    ['通信エラー', createApiError('network'), /通信できませんでした/],
+  ])('%sでは記録表セクションだけをエラー表示する', async (_, error, message) => {
+    mockUseGames.mockReturnValue({
+      ...gamesState,
+      games: undefined,
+      isErrorGames: true,
+      gamesError: error,
+    });
     await render(<TablePage />);
 
-    expect(screen.getByText(/データを取得できませんでした/)).toBeTruthy();
+    expect(screen.getByText(message)).toBeTruthy();
     expect(screen.getByText('卓1')).toBeTruthy();
   });
 
   it('再取得で関連するすべてのQueryを呼ぶ', async () => {
-    mockUseTablePlayers.mockReturnValue({ ...tablePlayersState, isErrorPlayers: true });
+    mockUseTablePlayers.mockReturnValue({
+      ...tablePlayersState,
+      isErrorPlayers: true,
+      playersError: createApiError('network'),
+    });
     await render(<TablePage />);
 
     fireEvent.press(screen.getByText('再取得'));
@@ -180,12 +207,30 @@ describe('卓詳細ページ', () => {
   });
 
   it('再取得中はボタンを無効化する', async () => {
-    mockUseGames.mockReturnValue({ ...gamesState, isErrorGames: true, isFetchingGames: true });
+    mockUseGames.mockReturnValue({
+      ...gamesState,
+      isErrorGames: true,
+      isFetchingGames: true,
+      gamesError: createApiError('network'),
+    });
     await render(<TablePage />);
 
     expect(screen.getByText('再取得中...')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: /再取得中/ }));
     expect(loadGames).not.toHaveBeenCalled();
+  });
+
+  it('卓が存在しない場合は専用メッセージを表示して再取得を案内しない', async () => {
+    mockUseTable.mockReturnValue({
+      ...tableState,
+      table: undefined,
+      isErrorTable: true,
+      tableError: createApiError('http', 404),
+    });
+    await render(<TablePage />);
+
+    expect(screen.getByText('卓が見つかりませんでした')).toBeTruthy();
+    expect(screen.queryByText('再取得')).toBeNull();
   });
 
   it('VIEW権限では編集操作を無効化する', async () => {

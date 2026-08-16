@@ -6,6 +6,7 @@ import MahjongSection from '@/components/MahjongSection';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
 import { PlayerStatsTable } from '@/components/PlayerStatsTable';
 import { Text } from '@/components/ui/text';
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { useGetPlayerStats } from '@/src/hooks/useScore';
 
 const GroupPlayerStatsPage = () => {
@@ -16,8 +17,14 @@ const GroupPlayerStatsPage = () => {
     isLoadingPlayerStats,
     isErrorPlayerStats,
     isFetchingPlayerStats,
+    playerStatsError,
     loadPlayerStats,
   } = useGetPlayerStats(groupKey);
+  const errorPresentation = getUserFacingApiError(playerStatsError, {
+    messageOverrides: {
+      notFound: t('groupPage.groupNotFound'),
+    },
+  });
   if (!groupKey)
     return (
       <MahjongContainer>
@@ -34,7 +41,8 @@ const GroupPlayerStatsPage = () => {
         isLoading={isLoadingPlayerStats && !isErrorPlayerStats}
         isError={isErrorPlayerStats}
         isRetrying={isErrorPlayerStats && isFetchingPlayerStats}
-        onRetry={() => void loadPlayerStats()}
+        errorMessage={errorPresentation.message}
+        onRetry={errorPresentation.canRetry ? () => void loadPlayerStats() : undefined}
       >
         {playerStats?.players?.length ? (
           <PlayerStatsTable playerStatsList={playerStats.players} />

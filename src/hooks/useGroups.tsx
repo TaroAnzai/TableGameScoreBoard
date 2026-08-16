@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import type {
   DefaultErrorResponse,
   ErrorResponse,
@@ -77,18 +78,17 @@ export const useCreateGroupRequest = () => {
 
       //
     },
-    onError: (error: any) => {
-      const message =
-        error.status === 422
-          ? t('hooks.groupRequest.invalidEmail')
-          : (error.body?.errors?.json?.message?.[0] ??
-            error.body?.message ??
-            error.statusText ??
-            t('hooks.groupRequest.unknownError'));
+    onError: (error: unknown) => {
+      const presentation = getUserFacingApiError(error, {
+        messageOverrides: {
+          validation: t('hooks.groupRequest.invalidEmail'),
+        },
+        unknownMessage: t('hooks.groupRequest.unknownError'),
+      });
       showError({
         title: t('hooks.groupRequest.createErrorTitle'),
         fallback: t('hooks.groupRequest.unknownError'),
-        message,
+        message: presentation.message,
       });
     },
   });

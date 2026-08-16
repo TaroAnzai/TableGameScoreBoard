@@ -1,15 +1,7 @@
 import Toast from 'react-native-toast-message';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
-
-type ApiError = {
-  body?: {
-    errors?: { json?: { message?: string[]; scores?: string[] } };
-    message?: string;
-  };
-  message?: string;
-  statusText?: string;
-};
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 
 export const getMutationErrorMessage = (
   error: unknown,
@@ -17,17 +9,7 @@ export const getMutationErrorMessage = (
   preferredMessage?: string,
 ) => {
   if (preferredMessage) return preferredMessage;
-  if (!error || typeof error !== 'object') return fallback;
-
-  const apiError = error as ApiError;
-  return (
-    apiError.body?.errors?.json?.scores?.[0] ??
-    apiError.body?.errors?.json?.message?.[0] ??
-    apiError.body?.message ??
-    apiError.statusText ??
-    apiError.message ??
-    fallback
-  );
+  return getUserFacingApiError(error, { unknownMessage: fallback }).message;
 };
 
 export const useMutationFeedback = () => {

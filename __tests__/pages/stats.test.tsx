@@ -2,10 +2,21 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
 import GroupPlayerStatsPage from '@/app/group/stats/[groupKey]';
+import { ApiError } from '@/src/api/apiError';
 
 const mockParams = jest.fn(() => ({ groupKey: 'group-key' }));
 const loadPlayerStats = jest.fn(() => Promise.resolve());
 const mockUsePlayerStats = jest.fn();
+
+const createApiError = (kind: 'network' | 'http', status?: number) =>
+  new ApiError({
+    kind,
+    message: 'technical error',
+    url: 'https://example.com/api/groups/group-key/player-stats',
+    method: 'GET',
+    status,
+    retryable: kind === 'network' || status === 500,
+  });
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams(),
@@ -34,6 +45,7 @@ const defaultState = {
   isLoadingPlayerStats: false,
   isErrorPlayerStats: false,
   isFetchingPlayerStats: false,
+  playerStatsError: undefined,
   loadPlayerStats,
 };
 
@@ -65,20 +77,21 @@ describe('統計ページ', () => {
     expect(screen.getByText('統計データがありません。')).toBeTruthy();
   });
 
-  it.each(['HTTPエラー', '通信エラー'])(
-    '%sでは無限ローディングではなくエラーを表示する',
-    async () => {
-      mockUsePlayerStats.mockReturnValue({
-        ...defaultState,
-        playerStats: undefined,
-        isErrorPlayerStats: true,
-      });
-      await render(<GroupPlayerStatsPage />);
+  it.each([
+    ['HTTPエラー', createApiError('http', 500), /サーバーで問題が発生しました/],
+    ['通信エラー', createApiError('network'), /通信できませんでした/],
+  ])('%sでは無限ローディングではなくエラーを表示する', async (_, error, message) => {
+    mockUsePlayerStats.mockReturnValue({
+      ...defaultState,
+      playerStats: undefined,
+      isErrorPlayerStats: true,
+      playerStatsError: error,
+    });
+    await render(<GroupPlayerStatsPage />);
 
-      expect(screen.getByText(/データを取得できませんでした/)).toBeTruthy();
-      expect(screen.queryByText('読み込み中...')).toBeNull();
-    },
-  );
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(screen.queryByText('読み込み中...')).toBeNull();
+  });
 
   it('エラーとローディングが同時に真でもエラーを優先して表示する', async () => {
     mockUsePlayerStats.mockReturnValue({
@@ -86,15 +99,20 @@ describe('統計ページ', () => {
       playerStats: undefined,
       isLoadingPlayerStats: true,
       isErrorPlayerStats: true,
+      playerStatsError: createApiError('network'),
     });
     await render(<GroupPlayerStatsPage />);
 
-    expect(screen.getByText(/データを取得できませんでした/)).toBeTruthy();
+    expect(screen.getByText(/通信できませんでした/)).toBeTruthy();
     expect(screen.queryByText('読み込み中...')).toBeNull();
   });
 
   it('再取得ボタンで統計を再取得する', async () => {
-    mockUsePlayerStats.mockReturnValue({ ...defaultState, isErrorPlayerStats: true });
+    mockUsePlayerStats.mockReturnValue({
+      ...defaultState,
+      isErrorPlayerStats: true,
+      playerStatsError: createApiError('network'),
+    });
     await render(<GroupPlayerStatsPage />);
 
     fireEvent.press(screen.getByText('再取得'));
@@ -106,11 +124,25 @@ describe('統計ページ', () => {
       ...defaultState,
       isErrorPlayerStats: true,
       isFetchingPlayerStats: true,
+      playerStatsError: createApiError('network'),
     });
     await render(<GroupPlayerStatsPage />);
 
     fireEvent.press(screen.getByRole('button', { name: /再取得中/ }));
     expect(loadPlayerStats).not.toHaveBeenCalled();
+  });
+
+  it('グループが存在しない場合は専用メッセージを表示して再取得を案内しない', async () => {
+    mockUsePlayerStats.mockReturnValue({
+      ...defaultState,
+      playerStats: undefined,
+      isErrorPlayerStats: true,
+      playerStatsError: createApiError('http', 404),
+    });
+    await render(<GroupPlayerStatsPage />);
+
+    expect(screen.getByText(/グループが見つかりませんでした/)).toBeTruthy();
+    expect(screen.queryByText('再取得')).toBeNull();
   });
 
   it('グループキーがない場合は不正アクセスを表示する', async () => {

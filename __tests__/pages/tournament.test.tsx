@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
 import TournamentPage from '@/app/tournament/[tournamentKey]';
+import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockParams = jest.fn<{ tournamentKey: string; parentGroupKey?: string }, []>(() => ({
@@ -21,6 +22,16 @@ const mockUseGroupPlayers = jest.fn();
 const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 const mockCreateTable = jest.fn();
 let mockIsCreatingTable = false;
+
+const createApiError = (kind: 'network' | 'http', status?: number) =>
+  new ApiError({
+    kind,
+    message: 'technical error',
+    url: 'https://example.com/api/tournaments/tournament-key',
+    method: 'GET',
+    status,
+    retryable: kind === 'network' || status === 500,
+  });
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -99,6 +110,7 @@ const tournamentState = {
   isLoadingTournament: false,
   isErrorTournament: false,
   isFetchingTournament: false,
+  tournamentError: undefined,
   loadTournament,
 };
 const playersState = {
@@ -106,6 +118,7 @@ const playersState = {
   isLoadingPlayers: false,
   isErrorPlayers: false,
   isFetchingPlayers: false,
+  playersError: undefined,
   loadPlayers: loadTournamentPlayers,
 };
 const tablesState = {
@@ -113,6 +126,7 @@ const tablesState = {
   isLoadingTables: false,
   isErrorTables: false,
   isFetchingTables: false,
+  tablesError: undefined,
   loadTables,
 };
 const scoreMapState = {
@@ -123,6 +137,7 @@ const scoreMapState = {
   isLoadingScoreMap: false,
   isErrorScoreMap: false,
   isFetchingScoreMap: false,
+  scoreMapError: undefined,
   loadScoreMap,
 };
 const groupPlayersState = {
@@ -133,6 +148,7 @@ const groupPlayersState = {
   isLoadingPlayers: false,
   isErrorPlayers: false,
   isFetchingPlayers: false,
+  playersError: undefined,
   loadPlayers: loadGroupPlayers,
 };
 
@@ -209,18 +225,40 @@ describe('大会詳細ページ', () => {
   });
 
   it.each([
-    ['HTTPエラー', { ...scoreMapState, scoreMap: undefined, isErrorScoreMap: true }],
-    ['通信エラー', { ...scoreMapState, scoreMap: undefined, isErrorScoreMap: true }],
-  ])('%sではスコアセクションだけをエラー表示する', async (_, errorState) => {
+    [
+      'HTTPエラー',
+      {
+        ...scoreMapState,
+        scoreMap: undefined,
+        isErrorScoreMap: true,
+        scoreMapError: createApiError('http', 500),
+      },
+      /サーバーで問題が発生しました/,
+    ],
+    [
+      '通信エラー',
+      {
+        ...scoreMapState,
+        scoreMap: undefined,
+        isErrorScoreMap: true,
+        scoreMapError: createApiError('network'),
+      },
+      /通信できませんでした/,
+    ],
+  ])('%sではスコアセクションだけをエラー表示する', async (_, errorState, message) => {
     mockUseScoreMap.mockReturnValue(errorState);
     await render(<TournamentPage />);
 
-    expect(screen.getByText(/データを取得できませんでした/)).toBeTruthy();
+    expect(screen.getByText(message)).toBeTruthy();
     expect(screen.getByText('大会1')).toBeTruthy();
   });
 
   it('再取得でセクションに必要なすべてのQueryを呼ぶ', async () => {
-    mockUseTables.mockReturnValue({ ...tablesState, isErrorTables: true });
+    mockUseTables.mockReturnValue({
+      ...tablesState,
+      isErrorTables: true,
+      tablesError: createApiError('network'),
+    });
     await render(<TournamentPage />);
 
     fireEvent.press(screen.getByText('再取得'));
@@ -232,7 +270,12 @@ describe('大会詳細ページ', () => {
   });
 
   it('再取得中はボタンを無効化する', async () => {
-    mockUseTables.mockReturnValue({ ...tablesState, isErrorTables: true, isFetchingTables: true });
+    mockUseTables.mockReturnValue({
+      ...tablesState,
+      isErrorTables: true,
+      isFetchingTables: true,
+      tablesError: createApiError('network'),
+    });
     await render(<TournamentPage />);
 
     expect(screen.getByText('再取得中...')).toBeTruthy();
@@ -280,16 +323,29 @@ describe('大会詳細ページ', () => {
     );
   });
 
-  it('大会が存在しない場合は専用メッセージと再取得導線を表示する', async () => {
+  it('大会が存在しない場合は専用メッセージを表示して再取得を案内しない', async () => {
     mockUseTournament.mockReturnValue({
       ...tournamentState,
       tournament: undefined,
       isErrorTournament: true,
-      tournamentError: { status: 404 },
+      tournamentError: createApiError('http', 404),
     });
     await render(<TournamentPage />);
 
     expect(screen.getByText(/大会が見つかりませんでした/)).toBeTruthy();
+    expect(screen.queryByText('再取得')).toBeNull();
+  });
+
+  it('大会本体の一時的な取得エラーでは分類したメッセージと再取得を表示する', async () => {
+    mockUseTournament.mockReturnValue({
+      ...tournamentState,
+      tournament: undefined,
+      isErrorTournament: true,
+      tournamentError: createApiError('http', 500),
+    });
+    await render(<TournamentPage />);
+
+    expect(screen.getByText(/サーバーで問題が発生しました/)).toBeTruthy();
     fireEvent.press(screen.getByText('再取得'));
     expect(loadTournament).toHaveBeenCalledTimes(1);
   });

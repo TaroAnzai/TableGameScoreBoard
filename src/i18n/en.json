@@ -18,6 +18,19 @@
     "save": "Save",
     "accessLevel": { "VIEW": "View", "EDIT": "Edit", "OWNER": "Owner" }
   },
+  "apiErrors": {
+    "network": "Unable to connect. Check your connection and try again.",
+    "timeout": "The request timed out. Wait a moment and try again.",
+    "unauthorized": "Check your authentication and try again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "notFound": "The requested data could not be found.",
+    "conflict": "Your change conflicted with another update. Refresh and try again.",
+    "validation": "Check your input and try again.",
+    "rateLimited": "Too many requests were made. Wait a moment and try again.",
+    "server": "The server encountered a problem. Wait a moment and try again.",
+    "invalidResponse": "The received data could not be read. Try again.",
+    "unknown": "The operation could not be completed. Try again."
+  },
   "welcomPage": {
     "pageTitle": "Table Game Scoreboard",
     "CreateGroup": "Create new group",
@@ -78,6 +91,7 @@
   },
   "groupPage": {
     "groupKeyNotFound": "Group key is missing",
+    "groupNotFound": "Group not found. It may have been deleted, or the URL may be incorrect.",
     "loading": "Loading...",
 
     "buttonAddPlayer": "Add Member",

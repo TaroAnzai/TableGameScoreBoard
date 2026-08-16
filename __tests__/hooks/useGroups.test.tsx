@@ -2,17 +2,21 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
-import { useCreateGroup, useGroupQueries } from '@/src/hooks/useGroups';
+import { ApiError } from '@/src/api/apiError';
+import { useCreateGroup, useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
 
 const mockPostApiGroups = jest.fn();
+const mockPostGroupRequest = jest.fn();
 const mockAddGroupKey = jest.fn();
 const mockRemoveGroupKey = jest.fn();
 const mockAlertDialog = jest.fn();
 const mockShowSuccess = jest.fn();
+const mockShowError = jest.fn();
 let mockStoredGroupKeys: string[] = [];
 
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   postApiGroups: (...args: unknown[]) => mockPostApiGroups(...args),
+  postApiGroupsRequestLink: (...args: unknown[]) => mockPostGroupRequest(...args),
   getGetApiGroupsGroupKeyQueryKey: (key: string) => [`/api/groups/${key}`],
   getGetApiGroupsGroupKeyQueryOptions: (key: string) => ({
     queryKey: [`/api/groups/${key}`],
@@ -25,7 +29,7 @@ jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
-  useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: mockShowSuccess }),
+  useMutationFeedback: () => ({ showError: mockShowError, showSuccess: mockShowSuccess }),
 }));
 jest.mock('@/src/storage/appStorage', () => ({
   appStorage: {
@@ -83,6 +87,55 @@ describe('useCreateGroup', () => {
 
     expect(mutationCompleted).toBe(true);
     expect(onAfterCreate).toHaveBeenCalledTimes(1);
+    queryClient.clear();
+  });
+});
+
+describe('useCreateGroupRequest', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('422ではAPI本文を表示せずメールアドレス用の案内を表示する', async () => {
+    mockPostGroupRequest.mockRejectedValue(
+      new ApiError({
+        kind: 'http',
+        message: 'HTTP 422 Unprocessable Entity',
+        url: 'https://example.com/api/groups/request-link',
+        method: 'POST',
+        status: 422,
+        retryable: false,
+        body: { message: 'internal validation detail' },
+      }),
+    );
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { gcTime: Infinity, retry: false },
+        queries: { gcTime: Infinity, retry: false },
+      },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result, unmount } = await renderHook(() => useCreateGroupRequest(), { wrapper });
+
+    await expect(
+      result.current.mutateAsync({
+        name: 'テストグループ',
+        email: 'invalid@example.com',
+        timezone: 'Asia/Tokyo',
+        recaptcha_token: '',
+      }),
+    ).rejects.toBeInstanceOf(ApiError);
+
+    expect(mockShowError).toHaveBeenCalledWith({
+      title: 'グループ作成時にエラーが発生しました',
+      fallback: '不明なエラー',
+      message: '不正なメールアドレスです。',
+    });
+    expect(JSON.stringify(mockShowError.mock.calls)).not.toContain('internal validation detail');
+
+    unmount();
     queryClient.clear();
   });
 });

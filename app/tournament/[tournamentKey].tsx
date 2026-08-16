@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
-import { useGetTournamentScoreMap } from '@/src//hooks/useScore';
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import {
   type Player,
   type TablePlayerItem,
@@ -30,6 +30,7 @@ import {
   type TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useGetPlayer } from '@/src/hooks/usePlayers';
+import { useGetTournamentScoreMap } from '@/src/hooks/useScore';
 import { useAddTablePlayer, useCreateTable, useGetTables } from '@/src/hooks/useTables';
 import {
   useAddTournamentPlayer,
@@ -72,17 +73,25 @@ const TournamentPage = () => {
     isLoadingPlayers,
     isErrorPlayers,
     isFetchingPlayers,
+    playersError,
     loadPlayers: loadTournamentPlayers,
   } = useGetTournamentPlayers(tournamentKey);
-  const { tables, isLoadingTables, isErrorTables, isFetchingTables, loadTables } =
+  const { tables, isLoadingTables, isErrorTables, isFetchingTables, tablesError, loadTables } =
     useGetTables(tournamentKey);
-  const { scoreMap, isLoadingScoreMap, isErrorScoreMap, isFetchingScoreMap, loadScoreMap } =
-    useGetTournamentScoreMap(tournamentKey);
+  const {
+    scoreMap,
+    isLoadingScoreMap,
+    isErrorScoreMap,
+    isFetchingScoreMap,
+    scoreMapError,
+    loadScoreMap,
+  } = useGetTournamentScoreMap(tournamentKey);
   const {
     players: groupPlayers,
     isLoadingPlayers: isLoadingGroupPlayers,
     isErrorPlayers: isErrorGroupPlayers,
     isFetchingPlayers: isFetchingGroupPlayers,
+    playersError: groupPlayersError,
     loadPlayers: loadGroupPlayers,
   } = useGetPlayer(groupKey);
   //Mutation系フック
@@ -130,6 +139,25 @@ const TournamentPage = () => {
       isFetchingTables ||
       isFetchingScoreMap ||
       (!!groupKey && isFetchingGroupPlayers));
+
+  const tournamentErrorPresentation = getUserFacingApiError(tournamentError, {
+    messageOverrides: {
+      notFound: t('tournamentPage.tournamentNotFound'),
+    },
+    unknownMessage: t('tournamentPage.tournamentLoadError'),
+  });
+  const sectionError = isErrorTournament
+    ? tournamentError
+    : isErrorPlayers
+      ? playersError
+      : isErrorTables
+        ? tablesError
+        : isErrorScoreMap
+          ? scoreMapError
+          : isErrorGroupPlayers
+            ? groupPlayersError
+            : undefined;
+  const sectionErrorPresentation = getUserFacingApiError(sectionError);
 
   const retrySection = async () => {
     const requests: Promise<unknown>[] = [
@@ -269,10 +297,7 @@ const TournamentPage = () => {
   };
   const TitleWithModal = ({ onPress }: { onPress?: () => void }) =>
     onPress ? (
-      <Pressable
-        className="mahjong-editable-title flex-row items-center gap-2"
-        onPress={onPress}
-      >
+      <Pressable className="mahjong-editable-title flex-row items-center gap-2" onPress={onPress}>
         <Text>{tournament?.name}</Text>
         <Icon as={Pencil} className="text-on-surface-variant" size={18} />
       </Pressable>
@@ -298,19 +323,12 @@ const TournamentPage = () => {
   }
 
   if (isErrorTournament || !tournament) {
-    const isNotFound =
-      typeof tournamentError === 'object' &&
-      tournamentError !== null &&
-      'status' in tournamentError &&
-      Number(tournamentError.status) === 404;
     return (
       <MahjongContainer>
         <SectionErrorState
-          message={t(
-            isNotFound ? 'tournamentPage.tournamentNotFound' : 'tournamentPage.tournamentLoadError',
-          )}
+          message={tournamentErrorPresentation.message}
           isRetrying={isFetchingTournament}
-          onRetry={() => void loadTournament()}
+          onRetry={tournamentErrorPresentation.canRetry ? () => void loadTournament() : undefined}
         />
       </MahjongContainer>
     );
@@ -342,7 +360,8 @@ const TournamentPage = () => {
         isLoading={isLoading}
         isError={isError}
         isRetrying={isRetrying}
-        onRetry={() => void retrySection()}
+        errorMessage={sectionErrorPresentation.message}
+        onRetry={sectionErrorPresentation.canRetry ? () => void retrySection() : undefined}
       >
         <MahjongSectionHeader
           title={t('tournamentPage.sectionTournamentScore')}

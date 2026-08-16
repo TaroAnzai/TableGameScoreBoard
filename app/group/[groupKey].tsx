@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { useGetApiGroupsGroupKey } from '@/src/api/generated/mahjongApi';
 import { Player, Tournament } from '@/src/api/generated/mahjongApi.schemas';
 import { useUpdateGroup } from '@/src/hooks/useGroups';
@@ -36,13 +37,20 @@ const GroupPage = () => {
   const navigation = useNavigation();
   const { alertDialog } = useAlertDialog();
 
-  const { players, isLoadingPlayers, isErrorPlayers, isFetchingPlayers, loadPlayers } =
-    useGetPlayer(groupKey);
+  const {
+    players,
+    isLoadingPlayers,
+    isErrorPlayers,
+    isFetchingPlayers,
+    playersError,
+    loadPlayers,
+  } = useGetPlayer(groupKey);
   const {
     tournaments,
     isLoadingTournaments,
     isErrorTournaments,
     isFetchingTournaments,
+    tournamentsError,
     loadTournaments,
   } = useGetTournaments(groupKey);
   const {
@@ -50,6 +58,7 @@ const GroupPage = () => {
     isLoading: isLoadingGroup,
     isError: isErrorGroup,
     isFetching: isFetchingGroup,
+    error: groupError,
     refetch: refetchGroup,
   } = useGetApiGroupsGroupKey(groupKey);
   const { mutateAsync: updateGroup } = useUpdateGroup(refetchGroup);
@@ -70,6 +79,17 @@ const GroupPage = () => {
   const allowNavigation = useRef(false);
   const isLeaveDialogOpen = useRef(false);
   const accessLevel = getAccessLevelstring(group?.group_links);
+  const groupErrorPresentation = getUserFacingApiError(groupError, {
+    messageOverrides: {
+      notFound: t('groupPage.groupNotFound'),
+    },
+  });
+  const tournamentErrorPresentation = isErrorGroup
+    ? groupErrorPresentation
+    : getUserFacingApiError(tournamentsError);
+  const playerErrorPresentation = isErrorGroup
+    ? groupErrorPresentation
+    : getUserFacingApiError(playersError);
 
   useEffect(() => {
     let isMounted = true;
@@ -235,7 +255,12 @@ const GroupPage = () => {
             isRetrying={
               (isErrorGroup || isErrorTournaments) && (isFetchingGroup || isFetchingTournaments)
             }
-            onRetry={() => void Promise.all([refetchGroup(), loadTournaments()])}
+            errorMessage={tournamentErrorPresentation.message}
+            onRetry={
+              tournamentErrorPresentation.canRetry
+                ? () => void Promise.all([refetchGroup(), loadTournaments()])
+                : undefined
+            }
           >
             <MahjongSectionHeader
               title={t('groupPage.buttonSelectTournament')}
@@ -305,7 +330,12 @@ const GroupPage = () => {
             isLoading={isLoadingGroup || isLoadingPlayers}
             isError={isErrorGroup || isErrorPlayers}
             isRetrying={(isErrorGroup || isErrorPlayers) && (isFetchingGroup || isFetchingPlayers)}
-            onRetry={() => void Promise.all([refetchGroup(), loadPlayers()])}
+            errorMessage={playerErrorPresentation.message}
+            onRetry={
+              playerErrorPresentation.canRetry
+                ? () => void Promise.all([refetchGroup(), loadPlayers()])
+                : undefined
+            }
           >
             <MahjongSectionHeader
               title={t('groupPage.sectionMemberList')}

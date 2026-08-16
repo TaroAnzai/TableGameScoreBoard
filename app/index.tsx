@@ -24,6 +24,7 @@ import { TextInputModal } from '@/components/TextInputModal';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { Group } from '@/src/api/generated/mahjongApi.schemas';
 import { useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
 import { appStorage } from '@/src/storage/appStorage';
@@ -33,8 +34,17 @@ type RemovableGroup = Omit<Group, 'id'> & { id: string | number };
 
 export default function Index() {
   const { t } = useTranslation();
-  const { groups, pendingGroups, isLoading, isFetching, isError, isRefreshing, refetch, refresh } =
-    useGroupQueries();
+  const {
+    groups,
+    pendingGroups,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    isRefreshing,
+    refetch,
+    refresh,
+  } = useGroupQueries();
   const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroupRequest();
   const { alertDialog } = useAlertDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +53,7 @@ export default function Index() {
     ...group,
     id: group.id ?? getResourceKey(group) ?? group.name,
   }));
+  const groupErrorPresentation = getUserFacingApiError(error);
 
   const appState = useRef<AppStateStatus>(AppState.currentState);
   const refetchingRef = useRef(false);
@@ -164,7 +175,8 @@ export default function Index() {
             isLoading={isLoading}
             isError={isError}
             isRetrying={isError && (isFetching || isRefreshing)}
-            onRetry={() => void safeRefetch()}
+            errorMessage={groupErrorPresentation.message}
+            onRetry={groupErrorPresentation.canRetry ? () => void safeRefetch() : undefined}
           >
             <MahjongSectionHeader
               title={t('welcomPage.RegisteredGroups')}

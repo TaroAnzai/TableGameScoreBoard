@@ -2,6 +2,7 @@ import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/
 import React from 'react';
 
 import Index from '@/app/index';
+import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockRefetch = jest.fn(() => Promise.resolve());
@@ -9,6 +10,16 @@ const mockRefresh = jest.fn(() => Promise.resolve());
 const mockCreateGroup = jest.fn();
 const mockUseCreateGroupRequest = jest.fn();
 const mockUseGroupQueries = jest.fn();
+
+const createApiError = (kind: 'network' | 'http', status?: number) =>
+  new ApiError({
+    kind,
+    message: 'technical error',
+    url: 'https://example.com/api/groups/key',
+    method: 'GET',
+    status,
+    retryable: kind === 'network' || status === 500,
+  });
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -77,6 +88,7 @@ const defaultState = {
   isLoading: false,
   isFetching: false,
   isError: false,
+  error: undefined,
   isRefreshing: false,
   refetch: mockRefetch,
   refresh: mockRefresh,
@@ -115,24 +127,29 @@ describe('ホームページ', () => {
     expect(screen.getByText(/新しいグループを作成.*ボタン/)).toBeTruthy();
   });
 
-  it.each(['HTTPエラーレスポンス', '通信エラー'])(
-    '%sでは登録グループ欄だけをエラー表示にする',
-    async () => {
-      mockUseGroupQueries.mockReturnValue({ ...defaultState, groups: [], isError: true });
-      await render(<Index />);
+  it.each([
+    ['HTTPエラーレスポンス', createApiError('http', 500), /サーバーで問題が発生しました/],
+    ['通信エラー', createApiError('network'), /通信できませんでした/],
+  ])('%sでは登録グループ欄だけをエラー表示にする', async (_, error, message) => {
+    mockUseGroupQueries.mockReturnValue({ ...defaultState, groups: [], isError: true, error });
+    await render(<Index />);
 
-      expect(screen.getByText(/データを取得できませんでした/)).toBeTruthy();
-      expect(screen.getByText('麻雀大会 集計')).toBeTruthy();
-      expect(screen.getByText('新しいグループを作成')).toBeTruthy();
-    },
-  );
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(screen.getByText('麻雀大会 集計')).toBeTruthy();
+    expect(screen.getByText('新しいグループを作成')).toBeTruthy();
+  });
 
   it('再取得ボタンを連打しても再取得を1回だけ開始する', async () => {
     let resolveRefetch: (() => void) | undefined;
     mockRefetch.mockImplementationOnce(
       () => new Promise<void>((resolve) => (resolveRefetch = resolve)),
     );
-    mockUseGroupQueries.mockReturnValue({ ...defaultState, groups: [], isError: true });
+    mockUseGroupQueries.mockReturnValue({
+      ...defaultState,
+      groups: [],
+      isError: true,
+      error: createApiError('network'),
+    });
     await render(<Index />);
 
     const user = userEvent.setup();
@@ -149,6 +166,7 @@ describe('ホームページ', () => {
       ...defaultState,
       groups: [],
       isError: true,
+      error: createApiError('network'),
       isFetching: true,
     });
     await render(<Index />);
@@ -171,9 +189,7 @@ describe('ホームページ', () => {
 
     expect(screen.getByLabelText('グループ作成を決定')).toBeTruthy();
     resolveCreate?.();
-    await waitFor(() =>
-      expect(screen.queryByLabelText('グループ作成を決定')).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByLabelText('グループ作成を決定')).toBeNull());
   });
 
   it('グループ作成中は決定ボタンを無効化してスピナーを表示する', async () => {

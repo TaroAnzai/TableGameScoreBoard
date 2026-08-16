@@ -8,31 +8,10 @@ import MahjongContainer from '@/components/MahjongContainer';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
+import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { useCreateGroup } from '@/src/hooks/useGroups';
 
 type PageState = 'creating' | 'error';
-
-type ApiError = {
-  body?: {
-    errors?: { json?: { message?: string[] } };
-    message?: string;
-  };
-  message?: string;
-  statusText?: string;
-};
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  if (!error || typeof error !== 'object') return fallback;
-
-  const apiError = error as ApiError;
-  return (
-    apiError.body?.errors?.json?.message?.[0] ??
-    apiError.body?.message ??
-    apiError.statusText ??
-    apiError.message ??
-    fallback
-  );
-};
 
 const GroupCreatePage = () => {
   const { t } = useTranslation();
@@ -42,6 +21,7 @@ const GroupCreatePage = () => {
   const invitationToken = Array.isArray(token) ? token[0] : token;
   const [pageState, setPageState] = useState<PageState>('creating');
   const [errorMessage, setErrorMessage] = useState('');
+  const [canRetry, setCanRetry] = useState(false);
   const isSubmitting = useRef(false);
   const isMounted = useRef(true);
   const allowNavigation = useRef(false);
@@ -51,12 +31,14 @@ const GroupCreatePage = () => {
 
     if (!invitationToken) {
       setErrorMessage(t('groupCreatePage.invalidTokenDescription'));
+      setCanRetry(false);
       setPageState('error');
       return;
     }
 
     isSubmitting.current = true;
     setErrorMessage('');
+    setCanRetry(false);
     setPageState('creating');
 
     try {
@@ -67,7 +49,15 @@ const GroupCreatePage = () => {
       }
     } catch (error) {
       if (isMounted.current) {
-        setErrorMessage(getErrorMessage(error, t('groupCreatePage.unknownError')));
+        const presentation = getUserFacingApiError(error, {
+          messageOverrides: {
+            notFound: t('groupCreatePage.invalidTokenDescription'),
+            validation: t('groupCreatePage.invalidTokenDescription'),
+          },
+          unknownMessage: t('groupCreatePage.unknownError'),
+        });
+        setErrorMessage(presentation.message);
+        setCanRetry(presentation.canRetry);
         setPageState('error');
       }
     } finally {
@@ -100,10 +90,7 @@ const GroupCreatePage = () => {
     return (
       <MahjongContainer>
         <View className="flex-1 items-center justify-center gap-4 p-8">
-          <ActivityIndicator
-            accessibilityLabel={t('groupCreatePage.creating')}
-            size="large"
-          />
+          <ActivityIndicator accessibilityLabel={t('groupCreatePage.creating')} size="large" />
           <Text className="text-center text-lg font-semibold text-on-surface">
             {t('groupCreatePage.creating')}
           </Text>
@@ -126,7 +113,7 @@ const GroupCreatePage = () => {
           <Text className="text-center text-on-surface-variant">{errorMessage}</Text>
         </View>
         <View className="w-full max-w-sm gap-3">
-          <Button disabled={!invitationToken} onPress={() => void createGroup()}>
+          <Button disabled={!invitationToken || !canRetry} onPress={() => void createGroup()}>
             <Text>{t('groupCreatePage.retry')}</Text>
           </Button>
           <Button variant="outline" onPress={() => router.replace('/')}>
