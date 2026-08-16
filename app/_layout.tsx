@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { AlertDialogProvider } from '@/components/common/AlertDialogProvider';
+import { shouldRetryApiRequest } from '@/src/api/apiError';
 import { LanguageProvider } from '@/src/providers/LanguageProvider';
 import { ThemeProvider, useTheme } from '@/src/providers/ThemeProvider';
 
@@ -17,7 +18,13 @@ export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: shouldRetryApiRequest,
+    },
+  },
+});
 
 const RootContent = () => {
   const { resolvedTheme } = useTheme();
