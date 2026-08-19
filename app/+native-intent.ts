@@ -1,8 +1,8 @@
 export const redirectSystemPath = ({ path }: { path: string; initial: boolean }) => {
   try {
     const url = new URL(path, 'https://anzai-home.com');
-    const isDevelopmentScheme = url.protocol === 'mahjongapp:';
-    const pathParts = isDevelopmentScheme ? [url.hostname, url.pathname] : [url.pathname];
+    const isAppScheme = url.protocol === 'mahjongapp:' || url.protocol === 'mahjongapp-dev:';
+    const pathParts = isAppScheme ? [url.hostname, url.pathname] : [url.pathname];
     const incomingPath = `/${pathParts
       .filter(Boolean)
       .map((part) => part.replace(/^\/+|\/+$/g, ''))

@@ -48,6 +48,8 @@
     "refreshPendingGroups": "申請状況を更新",
     "refreshingPendingGroups": "更新中...",
     "creatingGroup": "作成中...",
+    "duplicatePendingEmailTitle": "同じメールアドレスで申請中です",
+    "duplicatePendingEmailDescription": "{{email}} には申請中のグループがあります。続行すると、現在の申請はキャンセルされ、新しい申請に置き換わります。新しく申請しますか？",
     "expiresAt": "有効期限: {{date}}"
   },
   "settings": {

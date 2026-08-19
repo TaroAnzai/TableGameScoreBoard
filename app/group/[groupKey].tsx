@@ -85,6 +85,7 @@ const GroupPage = () => {
   const playerErrorPresentation = isErrorGroup
     ? groupErrorPresentation
     : getUserFacingApiError(playersError);
+  const isGroupNotFound = isErrorGroup && groupErrorPresentation.category === 'notFound';
 
   useEffect(() => {
     let isMounted = true;
@@ -226,11 +227,24 @@ const GroupPage = () => {
   return (
     <MahjongContainer>
       <PageTitleBar
-        title={group ? group.name : t('Common.loading')}
+        title={
+          isGroupNotFound
+            ? t('hooks.group.fetchNotFoundTitle')
+            : group
+              ? group.name
+              : t('Common.loading')
+        }
         shareLinks={group ? group.group_links : []}
-        onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
+        onTitleChange={accessLevel === 'VIEW' || isGroupNotFound ? undefined : handleTitleChange}
         parentUrl="/"
-        onParentPress={() => void navigateAway(() => router.back())}
+        onParentPress={() => {
+          if (isGroupNotFound) {
+            allowNavigation.current = true;
+            router.replace('/');
+            return;
+          }
+          void navigateAway(() => router.replace('/'));
+        }}
       />
 
       <Tabs value={value} onValueChange={setValue} className="min-h-0 w-full flex-1">
@@ -266,7 +280,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
                       className="h-10 w-10 rounded-full p-0"
-                      disabled={isCreatingTournament}
+                      disabled={isGroupNotFound || isCreatingTournament}
                       size="icon"
                       variant="ghost"
                       onPress={() => setIsCreateTournamentModalOpen(true)}
@@ -276,7 +290,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
                       className="h-10 w-10 rounded-full p-0"
-                      disabled={isDeletingTournament}
+                      disabled={isGroupNotFound || isDeletingTournament}
                       size="icon"
                       variant="ghost"
                       onPress={() => setShowDeleteTournamentModal(true)}
@@ -341,7 +355,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalCreatePlayerTitle')}
                       className="h-10 w-10 rounded-full p-0"
-                      disabled={isCreatingPlayer}
+                      disabled={isGroupNotFound || isCreatingPlayer}
                       size="icon"
                       variant="ghost"
                       onPress={() => setIsCreatePlayerModalOpen(true)}
@@ -352,7 +366,7 @@ const GroupPage = () => {
                     <Button
                       accessibilityLabel={t('groupPage.modalDeletePlayerTitle')}
                       className="h-10 w-10 rounded-full p-0"
-                      disabled={isDeletingPlayer}
+                      disabled={isGroupNotFound || isDeletingPlayer}
                       size="icon"
                       variant="ghost"
                       onPress={() => setShowDeleteModal(true)}
@@ -379,11 +393,12 @@ const GroupPage = () => {
 
       <ButtonGridSection>
         {isGroupRegistered === false && (
-          <Button onPress={handleAddGroup} className="w-full">
+          <Button disabled={isGroupNotFound} onPress={handleAddGroup} className="w-full">
             <Text>{t('groupPage.buttonSaveToBrowser')}</Text>
           </Button>
         )}
         <Button
+          disabled={isGroupNotFound}
           onPress={() => void navigateAway(() => router.push(`/group/stats/${groupKey}`))}
           className="w-full"
         >

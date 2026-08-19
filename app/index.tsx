@@ -96,6 +96,19 @@ export default function Index() {
   const handleCreateGroup = async (groupName: string, email: string) => {
     if (!groupName || !email) return;
     Keyboard.dismiss();
+
+    const hasPendingRequestWithSameEmail = pendingGroups.some(
+      (group) => group.email.trim().toLowerCase() === email.trim().toLowerCase(),
+    );
+    if (hasPendingRequestWithSameEmail) {
+      const confirmed = await alertDialog({
+        title: t('welcomPage.duplicatePendingEmailTitle'),
+        description: t('welcomPage.duplicatePendingEmailDescription', { email }),
+        showCancelButton: true,
+      });
+      if (!confirmed) return;
+    }
+
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const recaptchaToken = ''; // TODO: Implement reCAPTCHA and get the token
     try {
@@ -265,6 +278,7 @@ export default function Index() {
                           t('welcomPage.expiresAt', {
                             date: format(group.expiresAt, 'yyyy-MM-dd HH:mm'),
                           }),
+                        group.email,
                       ]}
                     />
                   ))}

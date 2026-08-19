@@ -10,6 +10,7 @@ const mockRefresh = jest.fn(() => Promise.resolve());
 const mockCreateGroup = jest.fn();
 const mockUseCreateGroupRequest = jest.fn();
 const mockUseGroupQueries = jest.fn();
+const mockAlertDialog = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -30,7 +31,7 @@ jest.mock('@/src/hooks/useGroups', () => ({
   useCreateGroupRequest: () => mockUseCreateGroupRequest(),
 }));
 jest.mock('@/components/common/AlertDialogProvider', () => ({
-  useAlertDialog: () => ({ alertDialog: jest.fn() }),
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
 jest.mock('@/components/SelectorModal', () => () => null);
 jest.mock('@/components/TextInputModal', () => {
@@ -123,6 +124,7 @@ describe('ホームページ', () => {
       isPending: false,
     });
     mockCreateGroup.mockResolvedValue(undefined);
+    mockAlertDialog.mockResolvedValue(true);
   });
 
   it('正常取得したグループを表示して詳細へ遷移する', async () => {
@@ -228,6 +230,57 @@ describe('ホームページ', () => {
     expect(screen.getByLabelText('グループ作成を決定')).toBeDisabled();
   });
 
+  it('同じメールアドレスの申請がある場合、確認後に新しく申請する', async () => {
+    mockUseGroupQueries.mockReturnValue({
+      ...defaultState,
+      pendingGroups: [
+        {
+          token: 'pending-token',
+          groupName: '申請中グループ',
+          email: 'TEST@example.com',
+          expiresAt: new Date('2030-01-01T00:00:00Z'),
+        },
+      ],
+    });
+    await render(<Index />);
+
+    const user = userEvent.setup();
+    await user.press(screen.getByText('新しいグループを作成'));
+    await user.press(screen.getByLabelText('グループ作成を決定'));
+
+    expect(mockAlertDialog).toHaveBeenCalledWith({
+      title: '同じメールアドレスで申請中です',
+      description:
+        'test@example.com には申請中のグループがあります。続行すると、現在の申請はキャンセルされ、新しい申請に置き換わります。新しく申請しますか？',
+      showCancelButton: true,
+    });
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+  });
+
+  it('同じメールアドレスの申請確認をキャンセルすると申請しない', async () => {
+    mockAlertDialog.mockResolvedValueOnce(false);
+    mockUseGroupQueries.mockReturnValue({
+      ...defaultState,
+      pendingGroups: [
+        {
+          token: 'pending-token',
+          groupName: '申請中グループ',
+          email: 'test@example.com',
+          expiresAt: new Date('2030-01-01T00:00:00Z'),
+        },
+      ],
+    });
+    await render(<Index />);
+
+    const user = userEvent.setup();
+    await user.press(screen.getByText('新しいグループを作成'));
+    await user.press(screen.getByLabelText('グループ作成を決定'));
+
+    expect(mockAlertDialog).toHaveBeenCalledTimes(1);
+    expect(mockCreateGroup).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('グループ作成を決定')).toBeTruthy();
+  });
+
   it('保留中グループに説明と更新ボタンを表示する', async () => {
     mockUseGroupQueries.mockReturnValue({
       ...defaultState,
@@ -235,6 +288,7 @@ describe('ホームページ', () => {
         {
           token: 'pending-token',
           groupName: '申請中グループ',
+          email: 'pending@example.com',
           expiresAt: new Date('2030-01-01T00:00:00Z'),
         },
       ],
@@ -244,6 +298,7 @@ describe('ホームページ', () => {
     expect(
       screen.getByText(/グループ作成用メール内のリンクが開かれるのを待っています/),
     ).toBeTruthy();
+    expect(screen.getByText('pending@example.com')).toBeTruthy();
     fireEvent.press(screen.getByText('申請状況を更新'));
     expect(mockRefresh).toHaveBeenCalledTimes(1);
   });

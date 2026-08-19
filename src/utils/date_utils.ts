@@ -19,20 +19,12 @@ export const parseUtcString = (utcString: string | null | undefined): Date | nul
 };
 
 /**
- * UTC文字列をローカル時刻に変換して返す
+ * ISO 8601形式の日時文字列をDate型に変換する
  * @param utcString ISO 8601形式のUTC文字列
- * @returns Dateオブジェクト（UTCの時刻をローカルとして解釈したもの）
+ * @returns Dateオブジェクト
  */
 export const toLocalDate = (utcString: string | null | undefined): Date | null => {
-  if (!utcString) return null;
-
-  const date = new Date(utcString);
-  if (isNaN(date.getTime())) return null;
-
-  // UTCの時刻値をローカル時刻として扱う場合
-  // タイムゾーンオフセットを考慮して調整
-  const offset = date.getTimezoneOffset(); // 分単位
-  return new Date(date.getTime() - offset * 60 * 1000);
+  return parseUtcString(utcString);
 };
 
 /**

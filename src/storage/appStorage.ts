@@ -19,6 +19,7 @@ const isPendingGroup = (value: any): boolean => {
 export type PendingGroup = {
   token: string;
   groupName: string;
+  email: string;
   expiresAt: Date; // 追加: 有効期限を管理するためのフィールド
 };
 export const appStorage = {
@@ -63,7 +64,11 @@ export const appStorage = {
 
       const validGroups = parsed
         .filter(isPendingGroup)
-        .map((group) => ({ ...group, expiresAt: new Date(group.expiresAt) }));
+        .map((group) => ({
+          ...group,
+          email: typeof group.email === 'string' ? group.email : '',
+          expiresAt: new Date(group.expiresAt),
+        }));
 
       if (validGroups.length !== parsed.length) {
         await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify(validGroups));
@@ -84,6 +89,7 @@ export const appStorage = {
     const groups = groupTokens.map((token) => ({
       token,
       groupName: '',
+      email: '',
       expiresAt: new Date(),
     }));
 

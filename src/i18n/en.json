@@ -48,6 +48,8 @@
     "refreshPendingGroups": "Refresh status",
     "refreshingPendingGroups": "Refreshing...",
     "creatingGroup": "Creating...",
+    "duplicatePendingEmailTitle": "A request is already pending for this email",
+    "duplicatePendingEmailDescription": "A group request is pending for {{email}}. Continuing will cancel the current request and replace it with a new one. Submit a new request?",
     "expiresAt": "Expires: {{date}}"
   },
   "settings": {

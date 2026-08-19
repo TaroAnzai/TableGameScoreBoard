@@ -66,6 +66,7 @@ export const useCreateGroupRequest = () => {
       await appStorage.addPendingGroupKey({
         token: data.token,
         groupName: variables.name,
+        email: variables.email,
         expiresAt: toLocalDate(data.expires_at) ?? new Date(),
       });
       // AsyncStorageからpendingGroupsを再取得させる

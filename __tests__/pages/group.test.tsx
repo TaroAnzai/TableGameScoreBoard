@@ -6,6 +6,7 @@ import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockReplace = jest.fn();
 const mockDispatch = jest.fn();
 const mockAddListener = jest.fn((_event: string, _listener: (event: NavigationEvent) => void) =>
   jest.fn(),
@@ -46,6 +47,7 @@ jest.mock('expo-router', () => ({
   router: {
     back: () => mockBack(),
     push: (...args: unknown[]) => mockPush(...args),
+    replace: (...args: unknown[]) => mockReplace(...args),
   },
   useLocalSearchParams: () => ({ groupKey: 'group-key' }),
   useNavigation: () => ({ addListener: mockAddListener, dispatch: mockDispatch }),
@@ -282,6 +284,37 @@ describe('グループ詳細ページ', () => {
     expect(screen.queryByText('再取得')).toBeNull();
   });
 
+  it('グループが存在しない場合は取得エラーをタイトルに表示して操作を無効化する', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    mockUseGroup.mockReturnValue({
+      ...groupState,
+      data: undefined,
+      isError: true,
+      error: createApiError('http', 404),
+    });
+    await render(<GroupPage />);
+
+    expect(screen.getByText('グループ取得エラー')).toBeTruthy();
+    expect(await screen.findByText('アプリに登録')).toBeDisabled();
+    expect(screen.getByText('成績')).toBeDisabled();
+  });
+
+  it('グループが存在しない場合は離脱警告なしでホームへ戻れる', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    mockUseGroup.mockReturnValue({
+      ...groupState,
+      data: undefined,
+      isError: true,
+      error: createApiError('http', 404),
+    });
+    await render(<GroupPage />);
+
+    fireEvent.press(screen.getByLabelText('親ページに戻る'));
+
+    expect(mockAlertDialog).not.toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith('/');
+  });
+
   it('大会セクションの再取得でグループと大会を取得する', async () => {
     mockUseTournaments.mockReturnValue({
       ...tournamentsState,
@@ -396,7 +429,7 @@ describe('グループ詳細ページ', () => {
     fireEvent.press(screen.getByLabelText('親ページに戻る'));
 
     await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
-    expect(mockPush).not.toHaveBeenCalledWith('/');
+    expect(mockReplace).not.toHaveBeenCalledWith('/');
     expect(mockBack).not.toHaveBeenCalled();
   });
 

@@ -9,6 +9,7 @@ const mockPostApiGroups = jest.fn();
 const mockPostGroupRequest = jest.fn();
 const mockBatchGetGroups = jest.fn();
 const mockAddGroupKey = jest.fn();
+const mockAddPendingGroupKey = jest.fn();
 const mockRemoveGroupKey = jest.fn();
 const mockAlertDialog = jest.fn();
 const mockShowSuccess = jest.fn();
@@ -36,6 +37,7 @@ jest.mock('@/src/hooks/useMutationFeedback', () => ({
 jest.mock('@/src/storage/appStorage', () => ({
   appStorage: {
     addGroupKey: (...args: unknown[]) => mockAddGroupKey(...args),
+    addPendingGroupKey: (...args: unknown[]) => mockAddPendingGroupKey(...args),
     getGroupKeys: () => Promise.resolve(mockStoredGroupKeys),
     getPendingGroups: () => Promise.resolve([]),
     removeGroupKey: (key: string) => {
@@ -96,6 +98,38 @@ describe('useCreateGroup', () => {
 describe('useCreateGroupRequest', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('申請情報としてメールアドレスをストレージへ保存する', async () => {
+    mockPostGroupRequest.mockResolvedValue({
+      token: 'pending-token',
+      expires_at: '2030-01-01T00:00:00Z',
+    });
+    mockAddPendingGroupKey.mockResolvedValue(undefined);
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result, unmount } = await renderHook(() => useCreateGroupRequest(), { wrapper });
+
+    await result.current.mutateAsync({
+      name: '申請中グループ',
+      email: 'pending@example.com',
+      timezone: 'Asia/Tokyo',
+      recaptcha_token: '',
+    });
+
+    expect(mockAddPendingGroupKey).toHaveBeenCalledWith({
+      token: 'pending-token',
+      groupName: '申請中グループ',
+      email: 'pending@example.com',
+      expiresAt: new Date('2030-01-01T00:00:00Z'),
+    });
+
+    unmount();
+    queryClient.clear();
   });
 
   it('422ではAPI本文を表示せずメールアドレス用の案内を表示する', async () => {
