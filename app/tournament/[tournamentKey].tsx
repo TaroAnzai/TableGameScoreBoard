@@ -14,6 +14,7 @@ import MahjongSection from '@/components/MahjongSection';
 import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import MultiSelectorModal from '@/components/MultiSelectorModal';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
+import { SavePagePromptModal } from '@/components/SavePagePromptModal';
 import { ScoreTable } from '@/components/ScoreTable';
 import { SectionErrorState } from '@/components/SectionErrorState';
 import SelectorModal from '@/components/SelectorModal';
@@ -28,6 +29,8 @@ import {
   type TournamentScoreMap,
   type TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
+import { useSavedPage } from '@/src/hooks/useSavedPage';
 import { useGetTournamentScoreMap } from '@/src/hooks/useScore';
 import { useCreateTable, useGetTables } from '@/src/hooks/useTables';
 import {
@@ -53,6 +56,7 @@ const isChipTableNonZero = (scoreMap: TournamentScoreMap | undefined) => {
 const TournamentPage = () => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
+  const { showError, showSuccess } = useMutationFeedback();
   const { tournamentKey, parentGroupKey } = useLocalSearchParams<{
     tournamentKey: string;
     parentGroupKey?: string;
@@ -110,6 +114,17 @@ const TournamentPage = () => {
 
   const accessLevel = getAccessLevelstring(tournament?.tournament_links);
   const parentPageUrl = parentGroupKey ? `/group/${parentGroupKey}` : null;
+  const {
+    save: savePage,
+    isSaving: isSavingPage,
+    shouldPromptSave,
+    dismissSavePrompt,
+  } = useSavedPage({
+    type: 'tournament',
+    key: tournamentKey,
+    name: tournament?.name,
+    isDirectView: !parentGroupKey,
+  });
 
   const candidatePlayers = groupPlayers;
 
@@ -121,11 +136,7 @@ const TournamentPage = () => {
     isLoadingGroupPlayers;
 
   const isError =
-    isErrorTournament ||
-    isErrorPlayers ||
-    isErrorTables ||
-    isErrorScoreMap ||
-    isErrorGroupPlayers;
+    isErrorTournament || isErrorPlayers || isErrorTables || isErrorScoreMap || isErrorGroupPlayers;
 
   const isRetrying =
     isError &&
@@ -278,11 +289,38 @@ const TournamentPage = () => {
       },
     });
   };
-  const TitleWithModal = ({ onPress }: { onPress?: () => void }) =>
-    onPress ? (
-      <Pressable className="mahjong-editable-title flex-row items-center gap-2" onPress={onPress}>
+  const saveTournamentPage = async () => {
+    try {
+      await savePage();
+      showSuccess(t('savedLinks.saveSuccess', { pageType: t('titleBar.tournament') }));
+    } catch (error) {
+      showError({
+        title: t('savedLinks.saveErrorTitle'),
+        error,
+        fallback: t('savedLinks.saveError'),
+      });
+      throw error;
+    }
+  };
+
+  const TitleWithModal = ({
+    onPress,
+    onLongPress,
+  }: {
+    onPress?: () => void;
+    onLongPress?: () => void;
+  }) =>
+    onPress || onLongPress ? (
+      <Pressable
+        accessibilityLabel={
+          onPress ? t('Common.editTitle', { title: tournament?.name }) : tournament?.name
+        }
+        className="mahjong-editable-title flex-row items-center gap-2"
+        onLongPress={onLongPress}
+        onPress={onPress}
+      >
         <Text>{tournament?.name}</Text>
-        <Icon as={Pencil} className="text-on-surface-variant" size={18} />
+        {onPress && <Icon as={Pencil} className="text-on-surface-variant" size={18} />}
       </Pressable>
     ) : (
       <Text>{tournament?.name}</Text>
@@ -324,8 +362,15 @@ const TournamentPage = () => {
         shareLinks={tournament?.tournament_links}
         onTitleClick={accessLevel === 'VIEW' ? undefined : () => setShowEditModal(true)}
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
+        onTitleLongPress={() => void saveTournamentPage().catch(() => undefined)}
         TitleComponent={TitleWithModal}
         parentUrl={parentPageUrl}
+      />
+      <SavePagePromptModal
+        open={shouldPromptSave}
+        isSaving={isSavingPage}
+        onSave={saveTournamentPage}
+        onClose={dismissSavePrompt}
       />
       <View className="mb-2 flex-row items-center justify-center">
         {tournament && (

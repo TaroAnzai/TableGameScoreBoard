@@ -229,6 +229,18 @@
     "shareViewLink": "閲覧リンクを共有",
     "shareEditLink": "編集リンクを共有"
   },
+  "savePagePrompt": {
+    "title": "このページを保存しますか？",
+    "description": "保存すると、下部ナビゲーションの保存済みページ一覧からいつでも開けます。ページタイトルを長押しして保存することもできます。保存せずに続行することもできます。",
+    "save": "保存する",
+    "saving": "保存中...",
+    "continue": "保存せず続行"
+  },
+  "savedLinks": {
+    "saveSuccess": "{{pageType}}を保存しました",
+    "saveErrorTitle": "ページを保存できませんでした",
+    "saveError": "ページの保存に失敗しました。もう一度お試しください。"
+  },
   "statsPage": {
     "errorInvalidGroupKey": "不正なアクセスです（グループキーが指定されていません）",
     "pageTitle": "グループメンバー成績",

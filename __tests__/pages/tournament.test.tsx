@@ -99,6 +99,20 @@ jest.mock('@/components/ScoreTable', () => {
 jest.mock('@/components/EditTournamentModal', () => () => null);
 jest.mock('@/components/MultiSelectorModal', () => () => null);
 jest.mock('@/components/SelectorModal', () => () => null);
+jest.mock('@/components/SavePagePromptModal', () => ({
+  SavePagePromptModal: () => null,
+}));
+jest.mock('@/src/hooks/useMutationFeedback', () => ({
+  useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
+}));
+jest.mock('@/src/hooks/useSavedPage', () => ({
+  useSavedPage: () => ({
+    save: jest.fn(),
+    isSaving: false,
+    shouldPromptSave: false,
+    dismissSavePrompt: jest.fn(),
+  }),
+}));
 
 const tournamentState = {
   tournament: {

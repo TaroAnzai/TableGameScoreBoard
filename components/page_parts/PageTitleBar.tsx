@@ -24,8 +24,9 @@ import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 interface PageTitleBarProps {
   title: string;
   shareLinks?: readonly ShareLink[];
-  TitleComponent?: React.ComponentType<{ onPress?: () => void }> | null;
+  TitleComponent?: React.ComponentType<{ onPress?: () => void; onLongPress?: () => void }> | null;
   onTitleClick?: () => void;
+  onTitleLongPress?: () => void;
   onTitleChange?: (newTitle: string) => void;
   parentUrl?: string | null;
   onParentPress?: () => void;
@@ -42,6 +43,7 @@ export default function PageTitleBar({
   shareLinks = [],
   TitleComponent = null,
   onTitleClick,
+  onTitleLongPress,
   onTitleChange,
   parentUrl,
   onParentPress,
@@ -139,9 +141,13 @@ export default function PageTitleBar({
       >
         <TextClassContext.Provider value="text-center text-2xl font-bold leading-8 text-on-surface">
           {TitleComponent ? (
-            <TitleComponent onPress={onTitleClick} />
+            <TitleComponent onPress={onTitleClick} onLongPress={onTitleLongPress} />
           ) : (
-            <EditableTitle value={title} onChange={onTitleChange} />
+            <EditableTitle
+              value={title}
+              onChange={onTitleChange}
+              onLongPress={onTitleLongPress}
+            />
           )}
         </TextClassContext.Provider>
       </View>

@@ -230,6 +230,18 @@
     "shareViewLink": "Share View Link",
     "shareEditLink": "Share Edit Link"
   },
+  "savePagePrompt": {
+    "title": "Save this page?",
+    "description": "After saving, you can open it anytime from the saved pages list in the bottom navigation. You can also save it by long-pressing the page title. You can continue without saving.",
+    "save": "Save page",
+    "saving": "Saving...",
+    "continue": "Continue without saving"
+  },
+  "savedLinks": {
+    "saveSuccess": "Saved {{pageType}}",
+    "saveErrorTitle": "Unable to save page",
+    "saveError": "The page could not be saved. Please try again."
+  },
   "statsPage": {
     "errorInvalidGroupKey": "Invalid access (group key is missing).",
     "pageTitle": "Group Member Statistics",

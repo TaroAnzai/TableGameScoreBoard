@@ -12,9 +12,10 @@ import { cn } from '@/lib/utils';
 interface EditableTitleProps {
   value: string;
   onChange?: (newValue: string) => void | Promise<void>;
+  onLongPress?: () => void;
   className?: string;
 }
-const EditableTitle = ({ value, onChange, className = '' }: EditableTitleProps) => {
+const EditableTitle = ({ value, onChange, onLongPress, className = '' }: EditableTitleProps) => {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
@@ -47,7 +48,7 @@ const EditableTitle = ({ value, onChange, className = '' }: EditableTitleProps) 
     }
   };
 
-  if (!onChange) {
+  if (!onChange && !onLongPress) {
     return <Text className={className}>{value}</Text>;
   }
 
@@ -69,16 +70,17 @@ const EditableTitle = ({ value, onChange, className = '' }: EditableTitleProps) 
 
   return (
     <Pressable
-      accessibilityLabel={t('Common.editTitle', { title: value })}
+      accessibilityLabel={onChange ? t('Common.editTitle', { title: value }) : value}
       className={cn(
         'flex-row items-center gap-2 rounded-md px-2 py-1 active:bg-surface-variant',
         className,
       )}
-      role="button"
-      onPress={handleStartEdit}
+      accessibilityRole="button"
+      onLongPress={onLongPress}
+      onPress={onChange ? handleStartEdit : undefined}
     >
       <Text>{value}</Text>
-      <Icon as={Pencil} className="text-on-surface-variant" size={18} />
+      {onChange && <Icon as={Pencil} className="text-on-surface-variant" size={18} />}
     </Pressable>
   );
 };

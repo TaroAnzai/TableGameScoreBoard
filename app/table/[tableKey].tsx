@@ -12,6 +12,7 @@ import MahjongSection from '@/components/MahjongSection';
 import MahjongSectionHeader from '@/components/MahjongSectionHeader';
 import MultiSelectorModal from '@/components/MultiSelectorModal';
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
+import { SavePagePromptModal } from '@/components/SavePagePromptModal';
 import { SectionErrorState } from '@/components/SectionErrorState';
 import SelectorModal from '@/components/SelectorModal';
 import TableScoreBoard from '@/components/TableScoreBoard';
@@ -26,6 +27,8 @@ import {
   useGetTableGames,
   useUpdateGame,
 } from '@/src/hooks/useGames';
+import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
+import { useSavedPage } from '@/src/hooks/useSavedPage';
 import {
   useAddTablePlayer,
   useDeleteTable,
@@ -40,6 +43,7 @@ import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
 export default function TablePage() {
   const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
+  const { showError, showSuccess } = useMutationFeedback();
   //State系フック設定
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
   const [showDeletePlayerModal, setShowDeletePlayerModal] = useState(false);
@@ -95,6 +99,18 @@ export default function TablePage() {
     },
   });
   const parentUrl = parentTournamentKey ? `/tournament/${parentTournamentKey}` : null;
+  const {
+    save: savePage,
+    isSaving: isSavingPage,
+    shouldPromptSave,
+    dismissSavePrompt,
+  } = useSavedPage({
+    type: 'table',
+    key: tableKey,
+    name: table?.name,
+    tournamentKey: parentTournamentKey,
+    isDirectView: !parentTournamentKey,
+  });
   const navigateToTournament = useCallback(() => {
     if (!tournamentKey) return;
     router.push({
@@ -122,6 +138,19 @@ export default function TablePage() {
   }
   const handleTableNameChange = async (newTitle: string) => {
     await updateTable({ tableKey: tableKey!, tournamentKey, tableUpdate: { name: newTitle } });
+  };
+  const saveTablePage = async () => {
+    try {
+      await savePage();
+      showSuccess(t('savedLinks.saveSuccess', { pageType: t('titleBar.table') }));
+    } catch (error) {
+      showError({
+        title: t('savedLinks.saveErrorTitle'),
+        error,
+        fallback: t('savedLinks.saveError'),
+      });
+      throw error;
+    }
   };
   if (isErrorTable) {
     return (
@@ -232,8 +261,15 @@ export default function TablePage() {
       <PageTitleBar
         title={table ? table.name : t('Common.loading')}
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTableNameChange}
+        onTitleLongPress={() => void saveTablePage().catch(() => undefined)}
         shareLinks={table ? table.table_links : []}
         parentUrl={parentUrl}
+      />
+      <SavePagePromptModal
+        open={shouldPromptSave}
+        isSaving={isSavingPage}
+        onSave={saveTablePage}
+        onClose={dismissSavePrompt}
       />
 
       <MahjongSection
