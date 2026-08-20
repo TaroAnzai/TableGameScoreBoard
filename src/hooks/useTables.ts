@@ -6,7 +6,6 @@ import {
   deleteApiTablesTableKeyPlayersPlayerId,
   deleteApiV2TablesTableKey,
   getApiV2TablesTableKeyDashboard,
-  getApiV2TournamentsTournamentKeyDashboard,
   getGetApiTablesTableKeyPlayersQueryKey,
   getGetApiTablesTableKeyQueryOptions,
   getGetApiTournamentsTournamentKeyScoreMapQueryKey,
@@ -27,33 +26,32 @@ import type {
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { getResourceKey } from '@/src/utils/accessLevel_utils';
 
-export const useGetTables = (tournamentKey: string) => {
-  const {
-    data: tables,
-    isLoading: isLoadingTables,
-    isError: isErrorTables,
-    isFetching: isFetchingTables,
-    error: tablesError,
-    refetch: loadTables,
-  } = useQuery({
-    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
-    queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
-    enabled: !!tournamentKey,
-    select: (dashboard) => dashboard.tables,
-  });
-  return {
-    tables,
-    isLoadingTables,
-    isErrorTables,
-    isFetchingTables,
-    tablesError,
-    loadTables,
-  };
-};
-
 type UseCreateTableOptions = {
   navigateOnSuccess?: boolean;
+};
+
+export const useGetTableDashboard = (tableKey: string, options?: object) => {
+  const {
+    data: dashboard,
+    isLoading: isLoadingDashboard,
+    isError: isErrorDashboard,
+    isFetching: isFetchingDashboard,
+    error: dashboardError,
+    refetch: loadDashboard,
+  } = useQuery({
+    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
+    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
+    enabled: !!tableKey,
+    ...(options ?? {}),
+  });
+  return {
+    dashboard,
+    isLoadingDashboard,
+    isErrorDashboard,
+    isFetchingDashboard,
+    dashboardError,
+    loadDashboard,
+  };
 };
 
 export const useCreateTable = ({ navigateOnSuccess = true }: UseCreateTableOptions = {}) => {
@@ -105,11 +103,7 @@ export const useUpdateTable = () => {
   const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      tableKey: string;
-      tournamentKey?: string;
-      tableUpdate: TableUpdate;
-    }) => {
+    mutationFn: (data: { tableKey: string; tournamentKey?: string; tableUpdate: TableUpdate }) => {
       return putApiTablesTableKey(data.tableKey, data.tableUpdate);
     },
     onSuccess: async (data, variables) => {
@@ -158,9 +152,7 @@ export const useUpdateTable = () => {
             queryKey: scoreMapQueryKey,
           }),
           queryClient.invalidateQueries({
-            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
           }),
         );
       }
@@ -175,31 +167,6 @@ export const useUpdateTable = () => {
       });
     },
   });
-};
-
-export const useGetTable = (tableKey: string, optins?: object) => {
-  const {
-    data: table,
-    isLoading: isLoadingTable,
-    isError: isErrorTable,
-    isFetching: isFetchingTable,
-    error: tableError,
-    refetch: loadTable,
-  } = useQuery({
-    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
-    enabled: !!tableKey,
-    select: (dashboard) => dashboard.table,
-    ...(optins ?? {}),
-  });
-  return {
-    table,
-    isLoadingTable,
-    isErrorTable,
-    isFetchingTable,
-    tableError,
-    loadTable,
-  };
 };
 
 export const useDeleteTable = () => {
@@ -221,50 +188,6 @@ export const useDeleteTable = () => {
       });
     },
   });
-};
-
-export const useGetTablePlayer = (tableKey: string, optins?: object) => {
-  const {
-    data,
-    isLoading: isLoadingPlayers,
-    isError: isErrorPlayers,
-    isFetching: isFetchingPlayers,
-    error: playersError,
-    refetch: loadPlayers,
-  } = useQuery({
-    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
-    enabled: !!tableKey,
-    select: (dashboard) => dashboard.table_players,
-    ...(optins ?? {}),
-  });
-  const players = data;
-  return {
-    players,
-    isLoadingPlayers,
-    isErrorPlayers,
-    isFetchingPlayers,
-    playersError,
-    loadPlayers,
-  };
-};
-
-export const useGetAvailableTablePlayers = (tableKey: string, optins?: object) => {
-  const query = useQuery({
-    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
-    enabled: !!tableKey,
-    select: (dashboard) => dashboard.available_tournament_players,
-    ...(optins ?? {}),
-  });
-  return {
-    players: query.data,
-    isLoadingPlayers: query.isLoading,
-    isErrorPlayers: query.isError,
-    isFetchingPlayers: query.isFetching,
-    playersError: query.error,
-    loadPlayers: query.refetch,
-  };
 };
 
 export const useAddTablePlayer = () => {

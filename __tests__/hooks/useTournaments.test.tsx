@@ -1,11 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
-import { useCreateTournament, useUpdateTournament } from '@/src/hooks/useTournaments';
+import {
+  useCreateTournament,
+  useGetTournamentDashboard,
+  useUpdateTournament,
+} from '@/src/hooks/useTournaments';
 
 const mockPostTournament = jest.fn();
 const mockPutTournament = jest.fn();
+const mockGetTournamentDashboard = jest.fn();
 
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   getGetApiGroupsGroupKeyTournamentsQueryKey: (groupKey: string) => [
@@ -25,6 +30,8 @@ jest.mock('@/src/api/generated/mahjongApi', () => ({
   getGetApiV2TournamentsTournamentKeyDashboardQueryKey: (tournamentKey: string) => [
     `/api/v2/tournaments/${tournamentKey}/dashboard`,
   ],
+  getApiV2TournamentsTournamentKeyDashboard: (...args: unknown[]) =>
+    mockGetTournamentDashboard(...args),
   putApiTournamentsTournamentKey: (...args: unknown[]) => mockPutTournament(...args),
 }));
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
@@ -68,6 +75,47 @@ describe('useCreateTournament', () => {
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: ['/api/v2/groups/group-owner-key/dashboard'],
     });
+    unmount();
+  });
+});
+
+describe('useGetTournamentDashboard', () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+  });
+  const wrapper = ({ children }: PropsWithChildren) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    queryClient.clear();
+  });
+
+  afterAll(() => {
+    queryClient.clear();
+  });
+
+  it('V2 dashboard 全体を取得して返す', async () => {
+    const dashboard = {
+      tournament: { id: 1, name: '大会1' },
+      participants: [{ id: 10, name: '参加者1' }],
+      tables: [{ id: 100, name: '卓1' }],
+      score_map: { players: [], tables: [] },
+      available_group_players: [{ id: 20, name: '候補者1' }],
+    };
+    mockGetTournamentDashboard.mockResolvedValue(dashboard);
+
+    const { result, unmount } = await renderHook(
+      () => useGetTournamentDashboard('tournament-key'),
+      {
+        wrapper,
+      },
+    );
+
+    await waitFor(() => expect(result.current.dashboard).toEqual(dashboard));
+
+    expect(mockGetTournamentDashboard).toHaveBeenCalledWith('tournament-key');
     unmount();
   });
 });

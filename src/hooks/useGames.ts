@@ -1,9 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import {
   deleteApiTablesTableKeyGamesGameId,
-  getApiV2TablesTableKeyDashboard,
   getGetApiTablesTableKeyGamesQueryKey,
   getGetApiTournamentsTournamentKeyScoreMapQueryKey,
   getGetApiV2TablesTableKeyDashboardQueryKey,
@@ -19,11 +18,7 @@ export const useCreateGame = () => {
   const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      tableKey: string;
-      tournamentKey?: string;
-      gameCreate: GameCreate;
-    }) => {
+    mutationFn: (data: { tableKey: string; tournamentKey?: string; gameCreate: GameCreate }) => {
       return postApiTablesTableKeyGames(data.tableKey, data.gameCreate);
     },
     onSuccess: async (data, variables) => {
@@ -39,14 +34,10 @@ export const useCreateGame = () => {
       if (variables.tournamentKey) {
         invalidations.push(
           queryClient.invalidateQueries({
-            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
           }),
           queryClient.invalidateQueries({
-            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
           }),
         );
       }
@@ -61,23 +52,6 @@ export const useCreateGame = () => {
       });
     },
   });
-};
-export const useGetTableGames = (tableKey: string, optins?: object) => {
-  const {
-    data: games,
-    isLoading: isLoadingGames,
-    isError: isErrorGames,
-    isFetching: isFetchingGames,
-    error: gamesError,
-    refetch: loadGames,
-  } = useQuery({
-    queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(tableKey),
-    queryFn: () => getApiV2TablesTableKeyDashboard(tableKey),
-    enabled: !!tableKey,
-    select: (dashboard) => dashboard.games,
-    ...(optins ?? {}),
-  });
-  return { games, isLoadingGames, isErrorGames, isFetchingGames, gamesError, loadGames };
 };
 export const useUpdateGame = () => {
   const { t } = useTranslation();
@@ -105,14 +79,10 @@ export const useUpdateGame = () => {
       if (variables.tournamentKey) {
         invalidations.push(
           queryClient.invalidateQueries({
-            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
           }),
           queryClient.invalidateQueries({
-            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
           }),
         );
       }
@@ -150,14 +120,10 @@ export const useDeleteGame = () => {
       if (variables.tournamentKey) {
         invalidations.push(
           queryClient.invalidateQueries({
-            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
           }),
           queryClient.invalidateQueries({
-            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
-              variables.tournamentKey,
-            ),
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
           }),
         );
       }

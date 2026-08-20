@@ -22,21 +22,14 @@ import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import type { Player, ScoreInput, TablePlayerItem } from '@/src/api/generated/mahjongApi.schemas';
 import { useBackFallback } from '@/src/hooks/useBackFallback';
-import {
-  useCreateGame,
-  useDeleteGame,
-  useGetTableGames,
-  useUpdateGame,
-} from '@/src/hooks/useGames';
+import { useCreateGame, useDeleteGame, useUpdateGame } from '@/src/hooks/useGames';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { useSavedPage } from '@/src/hooks/useSavedPage';
 import {
   useAddTablePlayer,
   useDeleteTable,
   useDeleteTablePlayer,
-  useGetAvailableTablePlayers,
-  useGetTable,
-  useGetTablePlayer,
+  useGetTableDashboard,
   useUpdateTable,
 } from '@/src/hooks/useTables';
 import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
@@ -69,33 +62,24 @@ export default function TablePage() {
     parentTournamentKey?: string;
     parentGroupKey?: string;
   }>();
-  const { table, isLoadingTable, isErrorTable, isFetchingTable, tableError, loadTable } =
-    useGetTable(tableKey ?? '', { enabled: !!tableKey });
   const {
-    players: tablePlayers,
-    isLoadingPlayers: isLoadingTablePlayers,
-    isErrorPlayers: isErrorTablePlayers,
-    isFetchingPlayers: isFetchingTablePlayers,
-    playersError: tablePlayersError,
-    loadPlayers: loadTablePlayers,
-  } = useGetTablePlayer(tableKey ?? '', { enabled: !!tableKey });
-  const { games, isLoadingGames, isErrorGames, isFetchingGames, gamesError, loadGames } =
-    useGetTableGames(tableKey ?? '', { enabled: !!tableKey });
+    dashboard,
+    isLoadingDashboard,
+    isErrorDashboard,
+    isFetchingDashboard,
+    dashboardError,
+    loadDashboard,
+  } = useGetTableDashboard(tableKey ?? '');
+  const table = dashboard?.table;
+  const tablePlayers = dashboard?.table_players;
+  const games = dashboard?.games;
+  const remainingPlayers = dashboard?.available_tournament_players;
 
   const isChipTable = table?.type === 'CHIP';
   const tournamentKey = parentTournamentKey;
-  const {
-    players: tournamentPlayers,
-    isLoadingPlayers,
-    isErrorPlayers,
-    isFetchingPlayers,
-    playersError: tournamentPlayersError,
-    loadPlayers: loadTournamentPlayers,
-  } = useGetAvailableTablePlayers(tableKey ?? '', { enabled: !!tableKey });
-  const remainingPlayers = tournamentPlayers;
 
   const accessLevel = getAccessLevelstring(table?.table_links);
-  const tableErrorPresentation = getUserFacingApiError(tableError, {
+  const tableErrorPresentation = getUserFacingApiError(dashboardError, {
     messageOverrides: {
       notFound: t('tablePage.errorTableNotFound'),
     },
@@ -154,20 +138,20 @@ export default function TablePage() {
       throw error;
     }
   };
-  if (isErrorTable) {
+  if (isErrorDashboard) {
     return (
       <MahjongContainer>
         <SectionErrorState
           message={tableErrorPresentation.message}
-          isRetrying={isFetchingTable}
-          onRetry={tableErrorPresentation.canRetry ? () => void loadTable() : undefined}
+          isRetrying={isFetchingDashboard}
+          onRetry={tableErrorPresentation.canRetry ? () => void loadDashboard() : undefined}
         />
       </MahjongContainer>
     );
   }
 
   // --- ④ データが存在しない ---
-  if (!table && !isLoadingTable) {
+  if (!table && !isLoadingDashboard) {
     return (
       <MahjongContainer>
         <Text>{t('tablePage.errorTableNotFound')}</Text>
@@ -175,30 +159,7 @@ export default function TablePage() {
     );
   }
 
-  const isSectionError =
-    isErrorTable || isErrorTablePlayers || isErrorGames || (!!tournamentKey && isErrorPlayers);
-
-  const isSectionRetrying =
-    isSectionError &&
-    (isFetchingTable ||
-      isFetchingTablePlayers ||
-      isFetchingGames ||
-      (!!tournamentKey && isFetchingPlayers));
-
-  const sectionError = isErrorTablePlayers
-    ? tablePlayersError
-    : isErrorGames
-      ? gamesError
-      : isErrorPlayers
-        ? tournamentPlayersError
-        : undefined;
-  const sectionErrorPresentation = getUserFacingApiError(sectionError);
-
-  const retrySection = async () => {
-    const requests: Promise<unknown>[] = [loadTable(), loadTablePlayers(), loadGames()];
-    if (tournamentKey) requests.push(loadTournamentPlayers());
-    await Promise.all(requests);
-  };
+  const sectionErrorPresentation = getUserFacingApiError(dashboardError);
   const handleAddPlayer = async (selectedPlayers: Player[]) => {
     const plyerIds: TablePlayerItem[] = selectedPlayers.map((p) => ({ player_id: p.id }));
     try {
@@ -276,16 +237,11 @@ export default function TablePage() {
       />
 
       <MahjongSection
-        isLoading={
-          isLoadingTable ||
-          isLoadingGames ||
-          isLoadingTablePlayers ||
-          (!!tournamentKey && isLoadingPlayers)
-        }
-        isError={isSectionError}
-        isRetrying={isSectionRetrying}
+        isLoading={isLoadingDashboard}
+        isError={isErrorDashboard}
+        isRetrying={isErrorDashboard && isFetchingDashboard}
         errorMessage={sectionErrorPresentation.message}
-        onRetry={sectionErrorPresentation.canRetry ? () => void retrySection() : undefined}
+        onRetry={sectionErrorPresentation.canRetry ? () => void loadDashboard() : undefined}
       >
         <MahjongSectionHeader
           title={

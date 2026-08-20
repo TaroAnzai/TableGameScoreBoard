@@ -11,14 +11,8 @@ const mockParams = jest.fn(
     parentTournamentKey: 'tournament-key',
   }),
 );
-const loadTable = jest.fn(() => Promise.resolve());
-const loadTablePlayers = jest.fn(() => Promise.resolve());
-const loadGames = jest.fn(() => Promise.resolve());
-const loadTournamentPlayers = jest.fn(() => Promise.resolve());
-const mockUseTable = jest.fn();
-const mockUseTablePlayers = jest.fn();
-const mockUseGames = jest.fn();
-const mockUseTournamentPlayers = jest.fn();
+const loadDashboard = jest.fn(() => Promise.resolve());
+const mockUseDashboard = jest.fn();
 const mockUseDeleteTable = jest.fn();
 const mockUpdateTable = jest.fn();
 
@@ -37,22 +31,16 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams(),
 }));
 jest.mock('@/src/hooks/useTables', () => ({
-  useGetAvailableTablePlayers: () => mockUseTournamentPlayers(),
-  useGetTable: () => mockUseTable(),
-  useGetTablePlayer: () => mockUseTablePlayers(),
+  useGetTableDashboard: () => mockUseDashboard(),
   useUpdateTable: () => ({ mutateAsync: mockUpdateTable }),
   useDeleteTable: () => mockUseDeleteTable(),
   useAddTablePlayer: () => ({ mutate: jest.fn() }),
   useDeleteTablePlayer: () => ({ mutate: jest.fn() }),
 }));
 jest.mock('@/src/hooks/useGames', () => ({
-  useGetTableGames: () => mockUseGames(),
   useCreateGame: () => ({ mutate: jest.fn() }),
   useUpdateGame: () => ({ mutate: jest.fn() }),
   useDeleteGame: () => ({ mutate: jest.fn() }),
-}));
-jest.mock('@/src/hooks/useTournaments', () => ({
-  useGetTournamentPlayers: () => mockUseTournamentPlayers(),
 }));
 jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: jest.fn() }),
@@ -106,46 +94,27 @@ jest.mock('@/src/hooks/useSavedPage', () => ({
   }),
 }));
 
-const tableState = {
-  table: {
-    id: 1,
-    tournament_id: 10,
-    name: '卓1',
-    type: 'NORMAL',
-    table_links: [{ access_level: 'EDIT', short_key: 'table-key' }],
+const dashboardState = {
+  dashboard: {
+    table: {
+      id: 1,
+      tournament_id: 10,
+      name: '卓1',
+      type: 'NORMAL',
+      table_links: [{ access_level: 'EDIT', short_key: 'table-key' }],
+    },
+    table_players: [{ id: 1, name: '参加者1' }],
+    games: [{ id: 1, scores: [] }],
+    available_tournament_players: [
+      { id: 1, name: '参加者1' },
+      { id: 2, name: '候補者2' },
+    ],
   },
-  isLoadingTable: false,
-  isErrorTable: false,
-  isFetchingTable: false,
-  tableError: undefined,
-  loadTable,
-};
-const tablePlayersState = {
-  players: [{ id: 1, name: '参加者1' }],
-  isLoadingPlayers: false,
-  isErrorPlayers: false,
-  isFetchingPlayers: false,
-  playersError: undefined,
-  loadPlayers: loadTablePlayers,
-};
-const gamesState = {
-  games: [{ id: 1, scores: [] }],
-  isLoadingGames: false,
-  isErrorGames: false,
-  isFetchingGames: false,
-  gamesError: undefined,
-  loadGames,
-};
-const tournamentPlayersState = {
-  players: [
-    { id: 1, name: '参加者1' },
-    { id: 2, name: '候補者2' },
-  ],
-  isLoadingPlayers: false,
-  isErrorPlayers: false,
-  isFetchingPlayers: false,
-  playersError: undefined,
-  loadPlayers: loadTournamentPlayers,
+  isLoadingDashboard: false,
+  isErrorDashboard: false,
+  isFetchingDashboard: false,
+  dashboardError: undefined,
+  loadDashboard,
 };
 
 describe('卓詳細ページ', () => {
@@ -155,10 +124,7 @@ describe('卓詳細ページ', () => {
       tableKey: 'table-key',
       parentTournamentKey: 'tournament-key',
     });
-    mockUseTable.mockReturnValue(tableState);
-    mockUseTablePlayers.mockReturnValue(tablePlayersState);
-    mockUseGames.mockReturnValue(gamesState);
-    mockUseTournamentPlayers.mockReturnValue(tournamentPlayersState);
+    mockUseDashboard.mockReturnValue(dashboardState);
     mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: false });
     mockUpdateTable.mockResolvedValue(undefined);
   });
@@ -181,9 +147,12 @@ describe('卓詳細ページ', () => {
   });
 
   it('更新されたテーブル名をページタイトルと記録表セクションタイトルへ反映する', async () => {
-    mockUseTable.mockReturnValue({
-      ...tableState,
-      table: { ...tableState.table, name: '変更後の卓名' },
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: {
+        ...dashboardState.dashboard,
+        table: { ...dashboardState.dashboard.table, name: '変更後の卓名' },
+      },
     });
     await render(<TablePage />);
 
@@ -192,62 +161,64 @@ describe('卓詳細ページ', () => {
   });
 
   it('いずれかがローディング中ならローディングを表示する', async () => {
-    mockUseGames.mockReturnValue({ ...gamesState, games: undefined, isLoadingGames: true });
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: undefined,
+      isLoadingDashboard: true,
+    });
     await render(<TablePage />);
-    expect(screen.getByText('読み込み中...')).toBeTruthy();
+    expect(screen.getAllByText('読み込み中...')).not.toHaveLength(0);
   });
 
   it.each([
     ['HTTPエラー', createApiError('http', 500), /サーバーで問題が発生しました/],
     ['通信エラー', createApiError('network'), /通信できませんでした/],
-  ])('%sでは記録表セクションだけをエラー表示する', async (_, error, message) => {
-    mockUseGames.mockReturnValue({
-      ...gamesState,
-      games: undefined,
-      isErrorGames: true,
-      gamesError: error,
+  ])('%sではダッシュボードのエラーを表示する', async (_, error, message) => {
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: undefined,
+      isErrorDashboard: true,
+      dashboardError: error,
     });
     await render(<TablePage />);
 
     expect(screen.getByText(message)).toBeTruthy();
-    expect(screen.getByText('卓1')).toBeTruthy();
   });
 
-  it('再取得で関連するすべてのQueryを呼ぶ', async () => {
-    mockUseTablePlayers.mockReturnValue({
-      ...tablePlayersState,
-      isErrorPlayers: true,
-      playersError: createApiError('network'),
+  it('再取得でダッシュボードを再取得する', async () => {
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: undefined,
+      isErrorDashboard: true,
+      dashboardError: createApiError('network'),
     });
     await render(<TablePage />);
 
     fireEvent.press(screen.getByText('再取得'));
-    expect(loadTable).toHaveBeenCalledTimes(1);
-    expect(loadTablePlayers).toHaveBeenCalledTimes(1);
-    expect(loadGames).toHaveBeenCalledTimes(1);
-    expect(loadTournamentPlayers).toHaveBeenCalledTimes(1);
+    expect(loadDashboard).toHaveBeenCalledTimes(1);
   });
 
   it('再取得中はボタンを無効化する', async () => {
-    mockUseGames.mockReturnValue({
-      ...gamesState,
-      isErrorGames: true,
-      isFetchingGames: true,
-      gamesError: createApiError('network'),
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: undefined,
+      isErrorDashboard: true,
+      isFetchingDashboard: true,
+      dashboardError: createApiError('network'),
     });
     await render(<TablePage />);
 
     expect(screen.getByText('再取得中...')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: /再取得中/ }));
-    expect(loadGames).not.toHaveBeenCalled();
+    expect(loadDashboard).not.toHaveBeenCalled();
   });
 
   it('卓が存在しない場合は専用メッセージを表示して再取得を案内しない', async () => {
-    mockUseTable.mockReturnValue({
-      ...tableState,
-      table: undefined,
-      isErrorTable: true,
-      tableError: createApiError('http', 404),
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: undefined,
+      isErrorDashboard: true,
+      dashboardError: createApiError('http', 404),
     });
     await render(<TablePage />);
 
@@ -256,11 +227,14 @@ describe('卓詳細ページ', () => {
   });
 
   it('VIEW権限では編集操作を無効化する', async () => {
-    mockUseTable.mockReturnValue({
-      ...tableState,
-      table: {
-        ...tableState.table,
-        table_links: [{ access_level: 'VIEW', short_key: 'table-key' }],
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: {
+        ...dashboardState.dashboard,
+        table: {
+          ...dashboardState.dashboard.table,
+          table_links: [{ access_level: 'VIEW', short_key: 'table-key' }],
+        },
       },
     });
     await render(<TablePage />);
@@ -272,7 +246,13 @@ describe('卓詳細ページ', () => {
   });
 
   it('チップ卓ではゲーム・卓削除ボタンを表示しない', async () => {
-    mockUseTable.mockReturnValue({ ...tableState, table: { ...tableState.table, type: 'CHIP' } });
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: {
+        ...dashboardState.dashboard,
+        table: { ...dashboardState.dashboard.table, type: 'CHIP' },
+      },
+    });
     await render(<TablePage />);
 
     expect(screen.queryByText('対局を削除')).toBeNull();
@@ -309,10 +289,7 @@ describe('卓詳細ページ', () => {
       parentTournamentKey: 'tournament-owner-key',
       parentGroupKey: 'group-owner-key',
     });
-    mockUseTable.mockReturnValue({
-      ...tableState,
-      table: { ...tableState.table },
-    });
+    mockUseDashboard.mockReturnValue(dashboardState);
     await render(<TablePage />);
 
     expect(screen.getByLabelText('親大会に戻る')).toBeTruthy();

@@ -32,14 +32,11 @@ import {
 import { useBackFallback } from '@/src/hooks/useBackFallback';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { useSavedPage } from '@/src/hooks/useSavedPage';
-import { useGetTournamentScoreMap } from '@/src/hooks/useScore';
-import { useCreateTable, useGetTables } from '@/src/hooks/useTables';
+import { useCreateTable } from '@/src/hooks/useTables';
 import {
   useAddTournamentPlayer,
   useDeleteTounamentsPlayer,
-  useGetAvailableTournamentPlayers,
-  useGetTournament,
-  useGetTournamentPlayers,
+  useGetTournamentDashboard,
   useUpdateTournament,
 } from '@/src/hooks/useTournaments';
 import { getAccessLevelstring, getResourceKey } from '@/src/utils/accessLevel_utils';
@@ -65,39 +62,19 @@ const TournamentPage = () => {
   }>();
   //Query系フック設定
   const {
-    tournament,
-    isLoadingTournament,
-    isErrorTournament,
-    isFetchingTournament,
-    tournamentError,
-    loadTournament,
-  } = useGetTournament(tournamentKey);
-  const {
-    players,
-    isLoadingPlayers,
-    isErrorPlayers,
-    isFetchingPlayers,
-    playersError,
-    loadPlayers: loadTournamentPlayers,
-  } = useGetTournamentPlayers(tournamentKey);
-  const { tables, isLoadingTables, isErrorTables, isFetchingTables, tablesError, loadTables } =
-    useGetTables(tournamentKey);
-  const {
-    scoreMap,
-    isLoadingScoreMap,
-    isErrorScoreMap,
-    isFetchingScoreMap,
-    scoreMapError,
-    loadScoreMap,
-  } = useGetTournamentScoreMap(tournamentKey);
-  const {
-    players: groupPlayers,
-    isLoadingPlayers: isLoadingGroupPlayers,
-    isErrorPlayers: isErrorGroupPlayers,
-    isFetchingPlayers: isFetchingGroupPlayers,
-    playersError: groupPlayersError,
-    loadPlayers: loadGroupPlayers,
-  } = useGetAvailableTournamentPlayers(tournamentKey);
+    dashboard,
+    isLoadingDashboard,
+    isErrorDashboard,
+    isFetchingDashboard,
+    dashboardError,
+    loadDashboard,
+  } = useGetTournamentDashboard(tournamentKey);
+  const tournament = dashboard?.tournament;
+  const players = dashboard?.participants;
+  const tables = dashboard?.tables;
+  const scoreMap = dashboard?.score_map;
+  const candidatePlayers = dashboard?.available_group_players;
+
   //Mutation系フック
   const { mutateAsync: addTournamentPlayer, isPending: isAddingTournamentPlayer } =
     useAddTournamentPlayer();
@@ -128,54 +105,16 @@ const TournamentPage = () => {
     isDirectView: !parentGroupKey,
   });
 
-  const candidatePlayers = groupPlayers;
-
-  const isLoading =
-    isLoadingTournament ||
-    isLoadingPlayers ||
-    isLoadingTables ||
-    isLoadingScoreMap ||
-    isLoadingGroupPlayers;
-
-  const isError =
-    isErrorTournament || isErrorPlayers || isErrorTables || isErrorScoreMap || isErrorGroupPlayers;
-
-  const isRetrying =
-    isError &&
-    (isFetchingTournament ||
-      isFetchingPlayers ||
-      isFetchingTables ||
-      isFetchingScoreMap ||
-      isFetchingGroupPlayers);
-
-  const tournamentErrorPresentation = getUserFacingApiError(tournamentError, {
+  const tournamentErrorPresentation = getUserFacingApiError(dashboardError, {
     messageOverrides: {
       notFound: t('tournamentPage.tournamentNotFound'),
     },
     unknownMessage: t('tournamentPage.tournamentLoadError'),
   });
-  const sectionError = isErrorTournament
-    ? tournamentError
-    : isErrorPlayers
-      ? playersError
-      : isErrorTables
-        ? tablesError
-        : isErrorScoreMap
-          ? scoreMapError
-          : isErrorGroupPlayers
-            ? groupPlayersError
-            : undefined;
-  const sectionErrorPresentation = getUserFacingApiError(sectionError);
+  const sectionErrorPresentation = getUserFacingApiError(dashboardError);
 
   const retrySection = async () => {
-    const requests: Promise<unknown>[] = [
-      loadTournament(),
-      loadTournamentPlayers(),
-      loadTables(),
-      loadScoreMap(),
-    ];
-    requests.push(loadGroupPlayers());
-    await Promise.all(requests);
+    await loadDashboard();
   };
 
   const handleOpenAddPlayerModal = async () => {
@@ -337,7 +276,7 @@ const TournamentPage = () => {
     );
   }
 
-  if (isLoadingTournament) {
+  if (isLoadingDashboard) {
     return (
       <MahjongContainer>
         <LoadingIndicator text={t('tournamentPage.loading')} />
@@ -345,13 +284,13 @@ const TournamentPage = () => {
     );
   }
 
-  if (isErrorTournament || !tournament) {
+  if (isErrorDashboard || !tournament) {
     return (
       <MahjongContainer>
         <SectionErrorState
           message={tournamentErrorPresentation.message}
-          isRetrying={isFetchingTournament}
-          onRetry={tournamentErrorPresentation.canRetry ? () => void loadTournament() : undefined}
+          isRetrying={isFetchingDashboard}
+          onRetry={tournamentErrorPresentation.canRetry ? () => void loadDashboard() : undefined}
         />
       </MahjongContainer>
     );
@@ -388,9 +327,9 @@ const TournamentPage = () => {
 
       <MahjongSection
         className="justify-start"
-        isLoading={isLoading}
-        isError={isError}
-        isRetrying={isRetrying}
+        isLoading={isLoadingDashboard}
+        isError={isErrorDashboard}
+        isRetrying={isErrorDashboard && isFetchingDashboard}
         errorMessage={sectionErrorPresentation.message}
         onRetry={sectionErrorPresentation.canRetry ? () => void retrySection() : undefined}
       >

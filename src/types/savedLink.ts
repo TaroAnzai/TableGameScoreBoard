@@ -5,4 +5,6 @@ export type SavedLink = {
   tournamentKey?: string;
   savedAt: string;
   lastOpenedAt: string;
+  parentGroupName?: string;
+  parentTournamentName?: string;
 };

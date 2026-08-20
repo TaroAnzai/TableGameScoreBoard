@@ -1,10 +1,11 @@
 import type { TriggerRef } from '@rn-primitives/popover';
 import { router } from 'expo-router';
 import { Bookmark, Trash2 } from 'lucide-react-native';
-import { type ReactElement,useRef } from 'react';
+import { type ReactElement, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
+import { MahjongListItem } from '@/components/MahjongListItem';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,9 +20,7 @@ type SavedLinksPopoverProps = {
 const compareByLastOpenedAt = (first: SavedLink, second: SavedLink) =>
   second.lastOpenedAt.localeCompare(first.lastOpenedAt);
 
-export const SavedLinksPopover = ({
-  trigger,
-}: SavedLinksPopoverProps) => {
+export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
   const triggerRef = useRef<TriggerRef>(null);
   const { t } = useTranslation();
   const { savedLinks, isLoading, isError, touch, remove, isRemoving } = useSavedLinks();
@@ -66,6 +65,14 @@ export const SavedLinksPopover = ({
           <ScrollView className="max-h-80" contentContainerClassName="gap-1">
             {sortedLinks.map((link) => (
               <View key={`${link.type}:${link.key}`} className="flex-row items-center gap-1">
+                <MahjongListItem
+                  key={`${link.type}:${link.key}`}
+                  title={link.name}
+                  badge={t(`savedLinks.type.${link.type}`)}
+                  accessories={[link.lastOpenedAt]}
+                  onPress={() => handleOpenLink(link)}
+                />
+
                 <Button
                   accessibilityLabel={t('savedLinks.open', { name: link.name })}
                   className="h-auto min-h-12 flex-1 justify-start rounded-lg px-3 py-2"

@@ -58,8 +58,7 @@ export const useGetTournaments = (groupKey: string) => {
     refetch: loadTournaments,
   } = useQuery({
     queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
-    queryFn: () =>
-      getApiV2GroupsGroupKeyDashboard(groupKey),
+    queryFn: () => getApiV2GroupsGroupKeyDashboard(groupKey),
     enabled: !!groupKey,
     select: (dashboard) => dashboard.tournaments,
   });
@@ -96,9 +95,7 @@ export const useUpdateTournament = () => {
         queryClient.invalidateQueries({ queryKey: queryKeytournament }),
         queryClient.invalidateQueries({ queryKey: queryKeyScore }),
         queryClient.invalidateQueries({
-          queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(
-            variables.tournamentKey,
-          ),
+          queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
         }),
       ]);
       if (variables.groupKey) {
@@ -138,73 +135,26 @@ export const useDeleteTournament = () => {
     },
   });
 };
-export const useGetTournament = (tournamentKey: string) => {
+export const useGetTournamentDashboard = (tournamentKey: string) => {
   const {
-    data: tournament,
-    isLoading: isLoadingTournament,
-    isError: isErrorTournament,
-    isFetching: isFetchingTournament,
-    error: tournamentError,
-    refetch: loadTournament,
+    data: dashboard,
+    isLoading: isLoadingDashboard,
+    isError: isErrorDashboard,
+    isFetching: isFetchingDashboard,
+    error: dashboardError,
+    refetch: loadDashboard,
   } = useQuery({
     queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
-    queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
+    queryFn: () => getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
     enabled: !!tournamentKey,
-    select: (dashboard) => dashboard.tournament,
   });
   return {
-    tournament,
-    isLoadingTournament,
-    isErrorTournament,
-    isFetchingTournament,
-    tournamentError,
-    loadTournament,
-  };
-};
-
-export const useGetTournamentPlayers = (tournamentKey: string, options?: object) => {
-  const {
-    data,
-    isLoading: isLoadingPlayers,
-    isError: isErrorPlayers,
-    isFetching: isFetchingPlayers,
-    error: playersError,
-    refetch: loadPlayers,
-  } = useQuery({
-    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
-    queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
-    enabled: !!tournamentKey,
-    select: (dashboard) => dashboard.participants,
-    ...(options ?? {}),
-  });
-  const players = data;
-  return {
-    players,
-    isLoadingPlayers,
-    isErrorPlayers,
-    isFetchingPlayers,
-    playersError,
-    loadPlayers,
-  };
-};
-
-export const useGetAvailableTournamentPlayers = (tournamentKey: string) => {
-  const query = useQuery({
-    queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(tournamentKey),
-    queryFn: () =>
-      getApiV2TournamentsTournamentKeyDashboard(tournamentKey),
-    enabled: !!tournamentKey,
-    select: (dashboard) => dashboard.available_group_players,
-  });
-  return {
-    players: query.data,
-    isLoadingPlayers: query.isLoading,
-    isErrorPlayers: query.isError,
-    isFetchingPlayers: query.isFetching,
-    playersError: query.error,
-    loadPlayers: query.refetch,
+    dashboard,
+    isLoadingDashboard,
+    isErrorDashboard,
+    isFetchingDashboard,
+    dashboardError,
+    loadDashboard,
   };
 };
 

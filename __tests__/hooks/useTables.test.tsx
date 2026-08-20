@@ -1,13 +1,19 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
-import { useCreateTable, useDeleteTable, useUpdateTable } from '@/src/hooks/useTables';
+import {
+  useCreateTable,
+  useDeleteTable,
+  useGetTableDashboard,
+  useUpdateTable,
+} from '@/src/hooks/useTables';
 
 const mockPush = jest.fn();
 const mockPostTable = jest.fn();
 const mockPutTable = jest.fn();
 const mockDeleteTableV2 = jest.fn();
+const mockGetTableDashboard = jest.fn();
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
@@ -28,6 +34,7 @@ jest.mock('@/src/api/generated/mahjongApi', () => ({
   getGetApiV2TablesTableKeyDashboardQueryKey: (tableKey: string) => [
     `/api/v2/tables/${tableKey}/dashboard`,
   ],
+  getApiV2TablesTableKeyDashboard: (...args: unknown[]) => mockGetTableDashboard(...args),
   getGetApiV2TournamentsTournamentKeyDashboardQueryKey: (tournamentKey: string) => [
     `/api/v2/tournaments/${tournamentKey}/dashboard`,
   ],
@@ -114,6 +121,43 @@ describe('useCreateTable', () => {
   });
 });
 
+describe('useGetTableDashboard', () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+  });
+  const wrapper = ({ children }: PropsWithChildren) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    queryClient.clear();
+  });
+
+  afterAll(() => {
+    queryClient.clear();
+  });
+
+  it('V2 dashboard 全体を取得して返す', async () => {
+    const dashboard = {
+      table: { id: 1, name: '卓1', type: 'NORMAL' },
+      table_players: [{ id: 10, name: '参加者1' }],
+      games: [{ id: 100, scores: [] }],
+      available_tournament_players: [{ id: 20, name: '候補者1' }],
+    };
+    mockGetTableDashboard.mockResolvedValue(dashboard);
+
+    const { result, unmount } = await renderHook(() => useGetTableDashboard('table-key'), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(result.current.dashboard).toEqual(dashboard));
+
+    expect(mockGetTableDashboard).toHaveBeenCalledWith('table-key');
+    unmount();
+  });
+});
+
 describe('useUpdateTable', () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -146,10 +190,13 @@ describe('useUpdateTable', () => {
       ...updatedTable,
       name: '変更前の卓名',
     });
-    queryClient.setQueryData(['/api/tournaments/tournament-owner-key/tables'], [
-      { ...updatedTable, name: '変更前の卓名' },
-      { ...updatedTable, id: 2, name: '別の卓名' },
-    ]);
+    queryClient.setQueryData(
+      ['/api/tournaments/tournament-owner-key/tables'],
+      [
+        { ...updatedTable, name: '変更前の卓名' },
+        { ...updatedTable, id: 2, name: '別の卓名' },
+      ],
+    );
     queryClient.setQueryData(['/api/tournaments/tournament-owner-key/score_map'], {
       tournament_id: 10,
       tables: [
