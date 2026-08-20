@@ -1019,6 +1019,21 @@ export interface ParticipantDeleteResponse {
   deleted: ParticipantDeletedResource;
 }
 
+export interface ParentResourceV2 {
+  /**
+   * 親リソースのIDです。
+   * @minimum 1
+   */
+  id: number;
+  /** 親リソースの表示名です。 */
+  name: string;
+}
+
+export interface TournamentDashboardParent {
+  /** 大会が所属するグループです。 */
+  group: ParentResourceV2;
+}
+
 /**
  * 卓IDごとの合計スコアです。
  */
@@ -1055,6 +1070,8 @@ export interface TournamentScoreMapV2 {
 }
 
 export interface TournamentDashboardResponse {
+  /** 大会の親リソースです。 */
+  parent: TournamentDashboardParent;
   /** 画面表示対象の大会です。 */
   tournament: TournamentV2;
   /** 大会参加者一覧です。 */
@@ -1084,6 +1101,13 @@ export interface TableDeletedResource {
 export interface TableDeleteResponse {
   /** カスケード削除された卓と配下データの件数です。 */
   deleted: TableDeletedResource;
+}
+
+export interface TableDashboardParent {
+  /** 卓が所属する大会です。 */
+  tournament: ParentResourceV2;
+  /** 大会が所属するグループです。 */
+  group: ParentResourceV2;
 }
 
 export interface GameScoreV2 {
@@ -1124,6 +1148,8 @@ export interface GameV2 {
 }
 
 export interface TableDashboardResponse {
+  /** 卓の親リソースです。 */
+  parent: TableDashboardParent;
   /** 画面表示対象の卓です。 */
   table: TableV2;
   /** 現在卓へ登録されているプレイヤーです。 */

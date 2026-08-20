@@ -6,6 +6,19 @@ const SAVED_LINKS_KEY = 'savedLinks';
 
 export type SavedLinkInput = Pick<SavedLink, 'type' | 'key' | 'name' | 'tournamentKey'>;
 
+let mutationQueue: Promise<void> = Promise.resolve();
+
+const runSerialized = <T>(operation: () => Promise<T>): Promise<T> => {
+  const result = mutationQueue.then(operation, operation);
+
+  mutationQueue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+
+  return result;
+};
+
 const isSavedLink = (value: unknown): value is SavedLink => {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -29,33 +42,38 @@ const matchesSavedLink = (link: SavedLink, type: SavedLink['type'], key: string)
 const writeSavedLinks = (links: SavedLink[]) =>
   AsyncStorage.setItem(SAVED_LINKS_KEY, JSON.stringify(links));
 
-export const savedLinkStorage = {
-  async getSavedLinks(): Promise<SavedLink[]> {
-    const value = await AsyncStorage.getItem(SAVED_LINKS_KEY);
+const readSavedLinks = async (): Promise<{ links: SavedLink[]; needsRepair: boolean }> => {
+  const value = await AsyncStorage.getItem(SAVED_LINKS_KEY);
 
-    if (!value) {
-      return [];
+  if (!value) {
+    return { links: [], needsRepair: false };
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      return { links: [], needsRepair: true };
     }
 
-    try {
-      const parsed: unknown = JSON.parse(value);
+    const links = parsed.filter(isSavedLink);
+    return { links, needsRepair: links.length !== parsed.length };
+  } catch {
+    return { links: [], needsRepair: true };
+  }
+};
 
-      if (!Array.isArray(parsed)) {
-        await writeSavedLinks([]);
-        return [];
-      }
+export const savedLinkStorage = {
+  async getSavedLinks(): Promise<SavedLink[]> {
+    return runSerialized(async () => {
+      const { links, needsRepair } = await readSavedLinks();
 
-      const links = parsed.filter(isSavedLink);
-
-      if (links.length !== parsed.length) {
+      if (needsRepair) {
         await writeSavedLinks(links);
       }
 
       return links;
-    } catch {
-      await writeSavedLinks([]);
-      return [];
-    }
+    });
   },
 
   async getSavedLink(type: SavedLink['type'], key: string): Promise<SavedLink | undefined> {
@@ -64,50 +82,56 @@ export const savedLinkStorage = {
   },
 
   async upsertSavedLink(input: SavedLinkInput): Promise<SavedLink> {
-    const links = await this.getSavedLinks();
-    const existing = links.find((link) => matchesSavedLink(link, input.type, input.key));
-    const now = new Date().toISOString();
-    const link: SavedLink = {
-      ...input,
-      ...(input.tournamentKey === undefined && existing?.tournamentKey !== undefined
-        ? { tournamentKey: existing.tournamentKey }
-        : {}),
-      savedAt: existing?.savedAt ?? now,
-      lastOpenedAt: now,
-    };
+    return runSerialized(async () => {
+      const { links } = await readSavedLinks();
+      const existing = links.find((link) => matchesSavedLink(link, input.type, input.key));
+      const now = new Date().toISOString();
+      const link: SavedLink = {
+        ...input,
+        ...(input.tournamentKey === undefined && existing?.tournamentKey !== undefined
+          ? { tournamentKey: existing.tournamentKey }
+          : {}),
+        savedAt: existing?.savedAt ?? now,
+        lastOpenedAt: now,
+      };
 
-    await writeSavedLinks([
-      ...links.filter((item) => !matchesSavedLink(item, input.type, input.key)),
-      link,
-    ]);
+      await writeSavedLinks([
+        ...links.filter((item) => !matchesSavedLink(item, input.type, input.key)),
+        link,
+      ]);
 
-    return link;
+      return link;
+    });
   },
 
   async removeSavedLink(type: SavedLink['type'], key: string): Promise<void> {
-    const links = await this.getSavedLinks();
-    await writeSavedLinks(links.filter((link) => !matchesSavedLink(link, type, key)));
+    await runSerialized(async () => {
+      const { links } = await readSavedLinks();
+      await writeSavedLinks(links.filter((link) => !matchesSavedLink(link, type, key)));
+    });
   },
 
   async touchSavedLink(type: SavedLink['type'], key: string): Promise<SavedLink | undefined> {
-    const links = await this.getSavedLinks();
-    const existing = links.find((link) => matchesSavedLink(link, type, key));
+    return runSerialized(async () => {
+      const { links } = await readSavedLinks();
+      const existing = links.find((link) => matchesSavedLink(link, type, key));
 
-    if (!existing) {
-      return undefined;
-    }
+      if (!existing) {
+        return undefined;
+      }
 
-    const updatedLink: SavedLink = {
-      ...existing,
-      lastOpenedAt: new Date().toISOString(),
-    };
+      const updatedLink: SavedLink = {
+        ...existing,
+        lastOpenedAt: new Date().toISOString(),
+      };
 
-    await writeSavedLinks([
-      ...links.filter((link) => !matchesSavedLink(link, type, key)),
-      updatedLink,
-    ]);
+      await writeSavedLinks([
+        ...links.filter((link) => !matchesSavedLink(link, type, key)),
+        updatedLink,
+      ]);
 
-    return updatedLink;
+      return updatedLink;
+    });
   },
 
   async updateSavedLinkName(
@@ -115,20 +139,22 @@ export const savedLinkStorage = {
     key: string,
     name: string,
   ): Promise<SavedLink | undefined> {
-    const links = await this.getSavedLinks();
-    const existing = links.find((link) => matchesSavedLink(link, type, key));
+    return runSerialized(async () => {
+      const { links } = await readSavedLinks();
+      const existing = links.find((link) => matchesSavedLink(link, type, key));
 
-    if (!existing) {
-      return undefined;
-    }
+      if (!existing) {
+        return undefined;
+      }
 
-    const updatedLink: SavedLink = { ...existing, name };
+      const updatedLink: SavedLink = { ...existing, name };
 
-    await writeSavedLinks([
-      ...links.filter((link) => !matchesSavedLink(link, type, key)),
-      updatedLink,
-    ]);
+      await writeSavedLinks([
+        ...links.filter((link) => !matchesSavedLink(link, type, key)),
+        updatedLink,
+      ]);
 
-    return updatedLink;
+      return updatedLink;
+    });
   },
 };
