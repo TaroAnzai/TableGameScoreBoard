@@ -5,11 +5,17 @@ import PageTitleBar from '@/components/page_parts/PageTitleBar';
 
 const mockBack = jest.fn();
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 const mockCanGoBack = jest.fn(() => false);
 
 jest.mock('expo-router', () => ({
   usePathname: () => '/tournament/tournament-key',
-  useRouter: () => ({ back: mockBack, canGoBack: mockCanGoBack, push: mockPush }),
+  useRouter: () => ({
+    back: mockBack,
+    canGoBack: mockCanGoBack,
+    push: mockPush,
+    replace: mockReplace,
+  }),
 }));
 
 jest.mock('@/components/common/AlertDialogProvider', () => ({
@@ -64,9 +70,11 @@ describe('PageTitleBar', () => {
     expect(mockBack).toHaveBeenCalledTimes(1);
   });
 
-  it('親ページ指定も履歴もない場合は戻る操作を表示しない', async () => {
+  it('親ページ指定も履歴もない場合はトップページへ戻る操作を表示する', async () => {
     await render(<PageTitleBar title="大会1" parentUrl={null} />);
 
-    expect(screen.queryByLabelText('戻る')).toBeNull();
+    fireEvent.press(screen.getByLabelText('戻る'));
+
+    expect(mockReplace).toHaveBeenCalledWith('/');
   });
 });

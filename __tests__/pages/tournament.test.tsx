@@ -105,6 +105,9 @@ jest.mock('@/components/SavePagePromptModal', () => ({
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
   useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
 }));
+jest.mock('@/src/hooks/useBackFallback', () => ({
+  useBackFallback: () => jest.fn(),
+}));
 jest.mock('@/src/hooks/useSavedPage', () => ({
   useSavedPage: () => ({
     save: jest.fn(),

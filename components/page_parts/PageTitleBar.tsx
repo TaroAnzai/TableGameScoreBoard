@@ -20,6 +20,7 @@ import { Text, TextClassContext } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
 import type { ShareLink } from '@/src/api/generated/mahjongApi.schemas';
 import { getAccessLevelstring } from '@/src/utils/accessLevel_utils';
+import { goBackOrFallback } from '@/src/utils/navigation';
 
 interface PageTitleBarProps {
   title: string;
@@ -30,6 +31,7 @@ interface PageTitleBarProps {
   onTitleChange?: (newTitle: string) => void;
   parentUrl?: string | null;
   onParentPress?: () => void;
+  onBackPress?: () => void;
   showBackButton?: boolean;
 }
 interface shareDataType {
@@ -47,6 +49,7 @@ export default function PageTitleBar({
   onTitleChange,
   parentUrl,
   onParentPress,
+  onBackPress,
   showBackButton = false,
 }: PageTitleBarProps) {
   const router = useRouter();
@@ -56,8 +59,8 @@ export default function PageTitleBar({
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
   const [shareData, setShareData] = React.useState<shareDataType>();
   const hasParentPage = parentUrl !== null && parentUrl !== undefined;
-  const canGoBack = router.canGoBack();
-  const shouldShowBackButton = showBackButton || (!hasParentPage && canGoBack);
+  const shouldShowBackButton = showBackButton || !hasParentPage;
+  const handleBack = onBackPress ?? (() => goBackOrFallback(router));
 
   const pathSegments = pathname.split('/').filter(Boolean);
 
@@ -124,7 +127,7 @@ export default function PageTitleBar({
             className="h-12 w-12 rounded-full p-0"
             size="icon"
             variant="ghost"
-            onPress={() => router.back()}
+            onPress={handleBack}
           >
             <Icon as={ChevronLeft} className="text-on-surface" size={24} />
           </Button>

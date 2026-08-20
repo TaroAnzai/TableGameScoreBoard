@@ -237,9 +237,22 @@
     "continue": "保存せず続行"
   },
   "savedLinks": {
+    "title": "保存済みページ",
+    "empty": "保存済みの大会・卓はありません",
+    "open": "{{name}}を開く",
+    "remove": "{{name}}を削除",
+    "type": {
+      "tournament": "大会",
+      "table": "卓"
+    },
     "saveSuccess": "{{pageType}}を保存しました",
     "saveErrorTitle": "ページを保存できませんでした",
     "saveError": "ページの保存に失敗しました。もう一度お試しください。"
+  },
+  "bottomNavigation": {
+    "home": "ホーム",
+    "savedLinks": "保存済み",
+    "settings": "設定"
   },
   "statsPage": {
     "errorInvalidGroupKey": "不正なアクセスです（グループキーが指定されていません）",

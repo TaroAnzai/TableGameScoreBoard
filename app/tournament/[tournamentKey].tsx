@@ -29,6 +29,7 @@ import {
   type TournamentScoreMap,
   type TournamentUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { useBackFallback } from '@/src/hooks/useBackFallback';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import { useSavedPage } from '@/src/hooks/useSavedPage';
 import { useGetTournamentScoreMap } from '@/src/hooks/useScore';
@@ -57,6 +58,7 @@ const TournamentPage = () => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const { showError, showSuccess } = useMutationFeedback();
+  const handleBack = useBackFallback(router);
   const { tournamentKey, parentGroupKey } = useLocalSearchParams<{
     tournamentKey: string;
     parentGroupKey?: string;
@@ -364,6 +366,7 @@ const TournamentPage = () => {
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTitleChange}
         onTitleLongPress={() => void saveTournamentPage().catch(() => undefined)}
         TitleComponent={TitleWithModal}
+        onBackPress={handleBack}
         parentUrl={parentPageUrl}
       />
       <SavePagePromptModal

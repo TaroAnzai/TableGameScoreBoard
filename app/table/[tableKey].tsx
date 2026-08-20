@@ -21,6 +21,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import type { Player, ScoreInput, TablePlayerItem } from '@/src/api/generated/mahjongApi.schemas';
+import { useBackFallback } from '@/src/hooks/useBackFallback';
 import {
   useCreateGame,
   useDeleteGame,
@@ -44,6 +45,7 @@ export default function TablePage() {
   const { alertDialog } = useAlertDialog();
   const { t } = useTranslation();
   const { showError, showSuccess } = useMutationFeedback();
+  const handleBack = useBackFallback(router);
   //State系フック設定
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
   const [showDeletePlayerModal, setShowDeletePlayerModal] = useState(false);
@@ -262,6 +264,7 @@ export default function TablePage() {
         title={table ? table.name : t('Common.loading')}
         onTitleChange={accessLevel === 'VIEW' ? undefined : handleTableNameChange}
         onTitleLongPress={() => void saveTablePage().catch(() => undefined)}
+        onBackPress={handleBack}
         shareLinks={table ? table.table_links : []}
         parentUrl={parentUrl}
       />

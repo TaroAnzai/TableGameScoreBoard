@@ -238,9 +238,22 @@
     "continue": "Continue without saving"
   },
   "savedLinks": {
+    "title": "Saved pages",
+    "empty": "No saved tournaments or tables.",
+    "open": "Open {{name}}",
+    "remove": "Remove {{name}}",
+    "type": {
+      "tournament": "Tournament",
+      "table": "Table"
+    },
     "saveSuccess": "Saved {{pageType}}",
     "saveErrorTitle": "Unable to save page",
     "saveError": "The page could not be saved. Please try again."
+  },
+  "bottomNavigation": {
+    "home": "Home",
+    "savedLinks": "Saved",
+    "settings": "Settings"
   },
   "statsPage": {
     "errorInvalidGroupKey": "Invalid access (group key is missing).",
