@@ -94,7 +94,10 @@ export default function TablePage() {
     type: 'table',
     key: tableKey,
     name: table?.name,
+    accessLevel,
     tournamentKey: parentTournamentKey,
+    parentGroupName: dashboard?.parent?.group?.name,
+    parentTournamentName: dashboard?.parent?.tournament?.name,
     isDirectView: !parentTournamentKey,
   });
   const navigateToTournament = useCallback(() => {

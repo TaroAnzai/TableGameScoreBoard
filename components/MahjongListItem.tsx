@@ -13,6 +13,7 @@ interface MahjongListItemProps {
   trailing?: ReactNode;
   onPress?: () => void;
   disabled?: boolean;
+  selected?: boolean;
   className?: string;
 }
 
@@ -24,16 +25,17 @@ export const MahjongListItem = ({
   trailing,
   onPress,
   disabled = false,
+  selected = false,
   className,
 }: MahjongListItemProps) => {
-  const content = (
-    <View
-      className={cn(
-        'flex-row items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3',
-        disabled && 'opacity-50',
-        className,
-      )}
-    >
+  const contentClassName = cn(
+    'flex-row items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 active:opacity-70',
+    disabled && 'opacity-50',
+    className,
+  );
+
+  const children = (
+    <>
       {leading && <View className="shrink-0">{leading}</View>}
 
       <View className="w-full">
@@ -65,21 +67,22 @@ export const MahjongListItem = ({
       </View>
 
       {trailing && <View className="shrink-0">{trailing}</View>}
-    </View>
+    </>
   );
 
   if (!onPress) {
-    return content;
+    return <View className={contentClassName}>{children}</View>;
   }
 
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      className="active:opacity-70"
+      className={contentClassName}
       accessibilityRole="button"
+      accessibilityState={{ disabled, selected }}
     >
-      {content}
+      {children}
     </Pressable>
   );
 };

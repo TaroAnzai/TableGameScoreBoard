@@ -13,12 +13,17 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 const mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
 const storedValues = new Map<string, string>();
 
-const createLink = (overrides: Partial<{
-  type: 'tournament' | 'table';
-  key: string;
-  name: string;
-  tournamentKey: string;
-}> = {}) => ({
+const createLink = (
+  overrides: Partial<{
+    type: 'tournament' | 'table';
+    key: string;
+    name: string;
+    accessLevel: 'VIEW' | 'EDIT' | 'OWNER';
+    tournamentKey: string;
+    parentGroupName: string;
+    parentTournamentName: string;
+  }> = {},
+) => ({
   type: 'tournament' as const,
   key: 'tournament-key',
   name: '大会名',
@@ -72,6 +77,62 @@ describe('savedLinkStorage', () => {
       savedAt: first.savedAt,
       lastOpenedAt: '2026-08-20T01:00:00.000Z',
     });
+  });
+
+  it('親リソース名を保存し、再保存時にも未指定の親リソース名を保持する', async () => {
+    await savedLinkStorage.upsertSavedLink(
+      createLink({
+        parentGroupName: 'グループ1',
+        parentTournamentName: '大会1',
+      }),
+    );
+
+    const saved = await savedLinkStorage.upsertSavedLink(createLink({ name: '大会名を更新' }));
+
+    expect(saved).toMatchObject({
+      parentGroupName: 'グループ1',
+      parentTournamentName: '大会1',
+    });
+  });
+
+  it('アクセスレベルを保存し、再保存時にも未指定なら保持する', async () => {
+    await savedLinkStorage.upsertSavedLink(createLink({ accessLevel: 'OWNER' }));
+
+    const saved = await savedLinkStorage.upsertSavedLink(createLink({ name: '大会名を更新' }));
+
+    expect(saved.accessLevel).toBe('OWNER');
+  });
+
+  it('不正なアクセスレベルを持つ保存データを除外する', async () => {
+    storedValues.set(
+      'savedLinks',
+      JSON.stringify([
+        {
+          ...createLink(),
+          accessLevel: 'ADMIN',
+          savedAt: '2026-08-20T00:00:00.000Z',
+          lastOpenedAt: '2026-08-20T00:00:00.000Z',
+        },
+      ]),
+    );
+
+    await expect(savedLinkStorage.getSavedLinks()).resolves.toEqual([]);
+  });
+
+  it('親リソース名の形式が不正な保存データを除外する', async () => {
+    storedValues.set(
+      'savedLinks',
+      JSON.stringify([
+        {
+          ...createLink(),
+          savedAt: '2026-08-20T00:00:00.000Z',
+          lastOpenedAt: '2026-08-20T00:00:00.000Z',
+          parentGroupName: 123,
+        },
+      ]),
+    );
+
+    await expect(savedLinkStorage.getSavedLinks()).resolves.toEqual([]);
   });
 
   it('大会と卓で同じキーでも別の項目として保存する', async () => {
@@ -143,7 +204,9 @@ describe('savedLinkStorage', () => {
   it('操作が失敗しても後続の操作を実行できる', async () => {
     mockAsyncStorage.setItem.mockRejectedValueOnce(new Error('storage unavailable'));
 
-    await expect(savedLinkStorage.upsertSavedLink(createLink())).rejects.toThrow('storage unavailable');
+    await expect(savedLinkStorage.upsertSavedLink(createLink())).rejects.toThrow(
+      'storage unavailable',
+    );
     await expect(
       savedLinkStorage.upsertSavedLink(createLink({ key: 'second-key' })),
     ).resolves.toMatchObject({ key: 'second-key' });

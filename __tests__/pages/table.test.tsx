@@ -15,6 +15,7 @@ const loadDashboard = jest.fn(() => Promise.resolve());
 const mockUseDashboard = jest.fn();
 const mockUseDeleteTable = jest.fn();
 const mockUpdateTable = jest.fn();
+const mockUseSavedPage = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -86,12 +87,15 @@ jest.mock('@/src/hooks/useBackFallback', () => ({
   useBackFallback: () => jest.fn(),
 }));
 jest.mock('@/src/hooks/useSavedPage', () => ({
-  useSavedPage: () => ({
-    save: jest.fn(),
-    isSaving: false,
-    shouldPromptSave: false,
-    dismissSavePrompt: jest.fn(),
-  }),
+  useSavedPage: (...args: unknown[]) => {
+    mockUseSavedPage(...args);
+    return {
+      save: jest.fn(),
+      isSaving: false,
+      shouldPromptSave: false,
+      dismissSavePrompt: jest.fn(),
+    };
+  },
 }));
 
 const dashboardState = {
@@ -132,6 +136,12 @@ describe('卓詳細ページ', () => {
   it('全Query成功時に記録表を表示する', async () => {
     await render(<TablePage />);
     expect(screen.getByText('記録表本体')).toBeTruthy();
+  });
+
+  it('保存時のアクセスレベルを保存フックへ渡す', async () => {
+    await render(<TablePage />);
+
+    expect(mockUseSavedPage).toHaveBeenCalledWith(expect.objectContaining({ accessLevel: 'EDIT' }));
   });
 
   it('テーブル名変更時に親大会キーを更新処理へ渡す', async () => {

@@ -13,6 +13,7 @@ const loadDashboard = jest.fn(() => Promise.resolve());
 const mockUseDashboard = jest.fn();
 const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 const mockCreateTable = jest.fn();
+const mockUseSavedPage = jest.fn();
 let mockIsCreatingTable = false;
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
@@ -92,12 +93,15 @@ jest.mock('@/src/hooks/useBackFallback', () => ({
   useBackFallback: () => jest.fn(),
 }));
 jest.mock('@/src/hooks/useSavedPage', () => ({
-  useSavedPage: () => ({
-    save: jest.fn(),
-    isSaving: false,
-    shouldPromptSave: false,
-    dismissSavePrompt: jest.fn(),
-  }),
+  useSavedPage: (...args: unknown[]) => {
+    mockUseSavedPage(...args);
+    return {
+      save: jest.fn(),
+      isSaving: false,
+      shouldPromptSave: false,
+      dismissSavePrompt: jest.fn(),
+    };
+  },
 }));
 
 const dashboardState = {
@@ -147,6 +151,12 @@ describe('大会詳細ページ', () => {
         parentGroupKey: 'group-key',
       },
     });
+  });
+
+  it('保存時のアクセスレベルを保存フックへ渡す', async () => {
+    await render(<TournamentPage />);
+
+    expect(mockUseSavedPage).toHaveBeenCalledWith(expect.objectContaining({ accessLevel: 'EDIT' }));
   });
 
   it('グループから開いた場合は親グループへの戻る操作を表示する', async () => {

@@ -113,7 +113,10 @@ describe('useSavedPage', () => {
         type: 'table',
         key: 'table-key',
         name: '卓名',
+        accessLevel: 'OWNER',
         tournamentKey: 'tournament-key',
+        parentGroupName: 'グループ名',
+        parentTournamentName: '大会名',
         isDirectView: true,
       }),
     );
@@ -127,7 +130,10 @@ describe('useSavedPage', () => {
       type: 'table',
       key: 'table-key',
       name: '卓名',
+      accessLevel: 'OWNER',
       tournamentKey: 'tournament-key',
+      parentGroupName: 'グループ名',
+      parentTournamentName: '大会名',
     });
     expect(mockRemove).toHaveBeenCalledWith({ type: 'table', key: 'table-key' });
   });

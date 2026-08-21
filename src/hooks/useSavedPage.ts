@@ -7,7 +7,10 @@ type UseSavedPageParams = {
   type: SavedLink['type'];
   key?: string;
   name?: string;
+  accessLevel?: SavedLink['accessLevel'];
   tournamentKey?: string;
+  parentGroupName?: string;
+  parentTournamentName?: string;
   isDirectView: boolean;
 };
 
@@ -15,21 +18,15 @@ export const useSavedPage = ({
   type,
   key,
   name,
+  accessLevel,
   tournamentKey,
+  parentGroupName,
+  parentTournamentName,
   isDirectView,
 }: UseSavedPageParams) => {
   const [dismissedPage, setDismissedPage] = useState<string>();
-  const {
-    savedLinks,
-    isLoading,
-    isError,
-    error,
-    save,
-    remove,
-    touch,
-    isSaving,
-    isRemoving,
-  } = useSavedLinks();
+  const { savedLinks, isLoading, isError, error, save, remove, touch, isSaving, isRemoving } =
+    useSavedLinks();
   const isSaved = useMemo(
     () => Boolean(key && savedLinks.some((link) => link.type === type && link.key === key)),
     [key, savedLinks, type],
@@ -43,8 +40,16 @@ export const useSavedPage = ({
       throw new Error('A saved page requires a key and name.');
     }
 
-    return save({ type, key, name, tournamentKey });
-  }, [key, name, save, tournamentKey, type]);
+    return save({
+      type,
+      key,
+      name,
+      tournamentKey,
+      parentGroupName,
+      parentTournamentName,
+      accessLevel,
+    });
+  }, [key, name, parentGroupName, parentTournamentName, save, tournamentKey, type, accessLevel]);
 
   const removeCurrentPage = useCallback(async () => {
     if (!key) {

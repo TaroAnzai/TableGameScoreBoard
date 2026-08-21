@@ -1,10 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { ShareLinkV2AccessLevel } from '@/src/api/generated/mahjongApi.schemas';
 import type { SavedLink } from '@/src/types/savedLink';
 
 const SAVED_LINKS_KEY = 'savedLinks';
 
-export type SavedLinkInput = Pick<SavedLink, 'type' | 'key' | 'name' | 'tournamentKey'>;
+export type SavedLinkInput = Pick<
+  SavedLink,
+  | 'type'
+  | 'key'
+  | 'name'
+  | 'tournamentKey'
+  | 'parentGroupName'
+  | 'parentTournamentName'
+  | 'accessLevel'
+>;
 
 let mutationQueue: Promise<void> = Promise.resolve();
 
@@ -30,7 +40,11 @@ const isSavedLink = (value: unknown): value is SavedLink => {
     (link.type === 'tournament' || link.type === 'table') &&
     typeof link.key === 'string' &&
     typeof link.name === 'string' &&
+    (link.accessLevel === undefined ||
+      Object.values(ShareLinkV2AccessLevel).includes(link.accessLevel as ShareLinkV2AccessLevel)) &&
     (link.tournamentKey === undefined || typeof link.tournamentKey === 'string') &&
+    (link.parentGroupName === undefined || typeof link.parentGroupName === 'string') &&
+    (link.parentTournamentName === undefined || typeof link.parentTournamentName === 'string') &&
     typeof link.savedAt === 'string' &&
     typeof link.lastOpenedAt === 'string'
   );
@@ -90,6 +104,15 @@ export const savedLinkStorage = {
         ...input,
         ...(input.tournamentKey === undefined && existing?.tournamentKey !== undefined
           ? { tournamentKey: existing.tournamentKey }
+          : {}),
+        ...(input.accessLevel === undefined && existing?.accessLevel !== undefined
+          ? { accessLevel: existing.accessLevel }
+          : {}),
+        ...(input.parentGroupName === undefined && existing?.parentGroupName !== undefined
+          ? { parentGroupName: existing.parentGroupName }
+          : {}),
+        ...(input.parentTournamentName === undefined && existing?.parentTournamentName !== undefined
+          ? { parentTournamentName: existing.parentTournamentName }
           : {}),
         savedAt: existing?.savedAt ?? now,
         lastOpenedAt: now,

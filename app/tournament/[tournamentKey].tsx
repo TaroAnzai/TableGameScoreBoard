@@ -102,6 +102,8 @@ const TournamentPage = () => {
     type: 'tournament',
     key: tournamentKey,
     name: tournament?.name,
+    accessLevel,
+    parentGroupName: dashboard?.parent?.group?.name,
     isDirectView: !parentGroupKey,
   });
 

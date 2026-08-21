@@ -1,4 +1,8 @@
-import type { ShareLink, ShareLinkV2 } from '@/src/api/generated/mahjongApi.schemas';
+import type {
+  ShareLink,
+  ShareLinkV2,
+  ShareLinkV2AccessLevel,
+} from '@/src/api/generated/mahjongApi.schemas';
 
 const levelPriority: Record<string, number> = {
   VIEW: 1,
@@ -8,14 +12,16 @@ const levelPriority: Record<string, number> = {
 
 export const getAccessLevelstring = (
   shereLinks: readonly (ShareLink | ShareLinkV2)[] | undefined,
-) => {
+): ShareLinkV2AccessLevel => {
   if (!shereLinks || !shereLinks.length) return 'VIEW';
   const accessLevel = shereLinks.reduce((highest, current) => {
-    return levelPriority[current.access_level] > levelPriority[highest.access_level]
+    return (levelPriority[current.access_level] ?? 0) > (levelPriority[highest.access_level] ?? 0)
       ? current
       : highest;
   }).access_level;
-  return accessLevel ?? 'VIEW';
+  return Object.hasOwn(levelPriority, accessLevel)
+    ? (accessLevel as ShareLinkV2AccessLevel)
+    : 'VIEW';
 };
 
 type ResourceLinks = {

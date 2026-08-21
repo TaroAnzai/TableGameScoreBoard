@@ -14,6 +14,8 @@ let mockSavedLinksState: {
     name: string;
     savedAt: string;
     lastOpenedAt: string;
+    parentGroupName?: string;
+    parentTournamentName?: string;
   }>;
   isLoading: boolean;
   isError: boolean;
@@ -56,6 +58,7 @@ describe('SavedLinksPopover', () => {
           type: 'tournament',
           key: 'older-tournament',
           name: '古い大会',
+          parentGroupName: 'グループ1',
           savedAt: '2026-08-20T00:00:00.000Z',
           lastOpenedAt: '2026-08-20T00:00:00.000Z',
         },
@@ -63,6 +66,8 @@ describe('SavedLinksPopover', () => {
           type: 'table',
           key: 'newer-table',
           name: '新しい卓',
+          parentGroupName: 'グループ1',
+          parentTournamentName: '大会1',
           savedAt: '2026-08-20T00:00:00.000Z',
           lastOpenedAt: '2026-08-21T00:00:00.000Z',
         },
@@ -85,6 +90,7 @@ describe('SavedLinksPopover', () => {
     ]);
     expect(screen.getByText('大会')).toBeTruthy();
     expect(screen.getByText('卓')).toBeTruthy();
+    expect(screen.getByText('グループ1 / 大会1')).toBeTruthy();
   });
 
   it('項目を開くと対象ページへ遷移し、最終表示日時を更新する', async () => {
@@ -96,7 +102,9 @@ describe('SavedLinksPopover', () => {
       pathname: '/table/[tableKey]',
       params: { tableKey: 'newer-table' },
     });
-    await waitFor(() => expect(mockTouch).toHaveBeenCalledWith({ type: 'table', key: 'newer-table' }));
+    await waitFor(() =>
+      expect(mockTouch).toHaveBeenCalledWith({ type: 'table', key: 'newer-table' }),
+    );
   });
 
   it('保存項目を削除できる', async () => {
