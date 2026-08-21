@@ -1,13 +1,12 @@
 import type { TriggerRef } from '@rn-primitives/popover';
 import { router, usePathname } from 'expo-router';
-import { Bookmark, Trash2 } from 'lucide-react-native';
+import { Bookmark } from 'lucide-react-native';
 import { type ReactElement, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 import { MahjongList } from '@/components/common/TextStyles';
 import { MahjongListItem } from '@/components/MahjongListItem';
-import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Text } from '@/components/ui/text';
@@ -31,7 +30,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
   const triggerRef = useRef<TriggerRef>(null);
   const { t } = useTranslation();
   const pathname = usePathname();
-  const { savedLinks, isLoading, isError, touch, remove, isRemoving } = useSavedLinks();
+  const { savedLinks, isLoading, isError, touch, remove } = useSavedLinks();
   const sortedLinks = [...savedLinks].sort(compareByLastOpenedAt);
   const isCurrentLink = (link: SavedLink) => pathname === getLinkPathname(link);
 
