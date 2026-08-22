@@ -7,8 +7,9 @@ import { SavedLinksPopover } from '@/components/SavedLinksPopover';
 const mockPush = jest.fn();
 const mockTouch = jest.fn();
 const mockRemove = jest.fn();
+const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 let mockSavedLinksState: {
-  savedLinks: Array<{
+  savedLinks: {
     type: 'tournament' | 'table';
     key: string;
     name: string;
@@ -16,7 +17,8 @@ let mockSavedLinksState: {
     lastOpenedAt: string;
     parentGroupName?: string;
     parentTournamentName?: string;
-  }>;
+    accessLevel?: 'VIEW' | 'EDIT' | 'OWNER';
+  }[];
   isLoading: boolean;
   isError: boolean;
   isRemoving: boolean;
@@ -24,6 +26,7 @@ let mockSavedLinksState: {
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
+  usePathname: () => '/',
 }));
 jest.mock('@/src/hooks/useSavedLinks', () => ({
   useSavedLinks: () => ({
@@ -32,18 +35,23 @@ jest.mock('@/src/hooks/useSavedLinks', () => ({
     remove: mockRemove,
   }),
 }));
+jest.mock('@/components/common/AlertDialogProvider', () => ({
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
+}));
 jest.mock('@/components/ui/popover', () => {
   const React = jest.requireActual('react');
   const { View } = jest.requireActual('react-native');
+  const MockPopoverTrigger = React.forwardRef(
+    ({ children }: { children?: React.ReactNode }, ref: React.ForwardedRef<unknown>) => (
+      <View ref={ref}>{children}</View>
+    ),
+  );
+  MockPopoverTrigger.displayName = 'MockPopoverTrigger';
 
   return {
     Popover: View,
     PopoverContent: View,
-    PopoverTrigger: React.forwardRef(
-      ({ children }: { children?: React.ReactNode }, ref: React.ForwardedRef<unknown>) => (
-        <View ref={ref}>{children}</View>
-      ),
-    ),
+    PopoverTrigger: MockPopoverTrigger,
   };
 });
 
@@ -68,6 +76,7 @@ describe('SavedLinksPopover', () => {
           name: '新しい卓',
           parentGroupName: 'グループ1',
           parentTournamentName: '大会1',
+          accessLevel: 'EDIT',
           savedAt: '2026-08-20T00:00:00.000Z',
           lastOpenedAt: '2026-08-21T00:00:00.000Z',
         },
@@ -81,22 +90,19 @@ describe('SavedLinksPopover', () => {
   it('最終表示日時の降順で大会・卓を表示する', async () => {
     await render(<SavedLinksPopover trigger={<View />} />);
 
-    const openButtons = screen
-      .getAllByRole('button')
-      .filter((button) => String(button.props.accessibilityLabel).endsWith('を開く'));
-    expect(openButtons.map((button) => button.props.accessibilityLabel)).toEqual([
-      '新しい卓を開く',
-      '古い大会を開く',
-    ]);
+    expect(screen.getAllByRole('button')).toHaveLength(2);
+    expect(screen.getByText('新しい卓')).toBeTruthy();
+    expect(screen.getByText('古い大会')).toBeTruthy();
     expect(screen.getByText('大会')).toBeTruthy();
     expect(screen.getByText('卓')).toBeTruthy();
     expect(screen.getByText('グループ1 / 大会1')).toBeTruthy();
+    expect(screen.getByText('編集')).toBeTruthy();
   });
 
   it('項目を開くと対象ページへ遷移し、最終表示日時を更新する', async () => {
     await render(<SavedLinksPopover trigger={<View />} />);
 
-    fireEvent.press(screen.getByRole('button', { name: '新しい卓を開く' }));
+    fireEvent.press(screen.getByText('新しい卓'));
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/table/[tableKey]',
@@ -110,11 +116,49 @@ describe('SavedLinksPopover', () => {
   it('保存項目を削除できる', async () => {
     await render(<SavedLinksPopover trigger={<View />} />);
 
-    fireEvent.press(screen.getByRole('button', { name: '古い大会を削除' }));
+    fireEvent(screen.getByText('古い大会'), 'longPress');
 
     await waitFor(() =>
       expect(mockRemove).toHaveBeenCalledWith({ type: 'tournament', key: 'older-tournament' }),
     );
+  });
+
+  it('最終表示日時の更新に失敗した場合はエラーを表示する', async () => {
+    const error = new Error('storage unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockTouch.mockRejectedValueOnce(error);
+    await render(<SavedLinksPopover trigger={<View />} />);
+
+    fireEvent.press(screen.getByText('新しい卓'));
+
+    await waitFor(() =>
+      expect(mockAlertDialog).toHaveBeenCalledWith({
+        title: '保存済みページを更新できませんでした',
+        description: '保存済みページの更新に失敗しました。もう一度お試しください。',
+        showCancelButton: false,
+      }),
+    );
+    expect(consoleError).toHaveBeenCalledWith('Error updating saved link:', error);
+    consoleError.mockRestore();
+  });
+
+  it('保存項目の削除に失敗した場合はエラーを表示する', async () => {
+    const error = new Error('storage unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockRemove.mockRejectedValueOnce(error);
+    await render(<SavedLinksPopover trigger={<View />} />);
+
+    fireEvent(screen.getByText('古い大会'), 'longPress');
+
+    await waitFor(() =>
+      expect(mockAlertDialog).toHaveBeenLastCalledWith({
+        title: '保存済みページを更新できませんでした',
+        description: '保存済みページの更新に失敗しました。もう一度お試しください。',
+        showCancelButton: false,
+      }),
+    );
+    expect(consoleError).toHaveBeenCalledWith('Error updating saved link:', error);
+    consoleError.mockRestore();
   });
 
   it('空状態を表示する', async () => {

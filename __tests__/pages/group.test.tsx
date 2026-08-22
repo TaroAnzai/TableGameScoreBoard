@@ -27,6 +27,7 @@ const mockDeleteTournament = jest.fn();
 const mockCreateChipTable = jest.fn();
 const mockPlayerMutations = jest.fn();
 const mockTournamentMutations = jest.fn();
+const mockRemoveSavedLink = jest.fn(() => Promise.resolve());
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -71,6 +72,9 @@ jest.mock('@/src/hooks/useGroups', () => ({
 }));
 jest.mock('@/src/hooks/useTables', () => ({
   useCreateTable: () => ({ mutateAsync: mockCreateChipTable, isPending: false }),
+}));
+jest.mock('@/src/hooks/useSavedLinks', () => ({
+  useSavedLinks: () => ({ remove: mockRemoveSavedLink }),
 }));
 jest.mock('@/src/storage/appStorage', () => ({
   appStorage: {
@@ -367,6 +371,24 @@ describe('グループ詳細ページ', () => {
     expect(screen.getByLabelText('削除する大会を選択')).toBeDisabled();
     expect(screen.getByLabelText('グループメンバー追加')).toBeDisabled();
     expect(screen.getByLabelText('削除するメンバーを選択')).toBeDisabled();
+  });
+
+  it('大会削除成功時に対応するSaved Linkを削除する', async () => {
+    mockAlertDialog.mockResolvedValue(true);
+    await render(<GroupPage />);
+
+    const user = userEvent.setup();
+    await user.press(screen.getByLabelText('削除する大会を選択'));
+    await user.press(screen.getByLabelText('大会1を選択'));
+
+    await waitFor(() => {
+      expect(mockDeleteTournament).toHaveBeenCalledWith({ tournamentKey: 'tournament-key' });
+      expect(mockRemoveSavedLink).toHaveBeenCalledWith({
+        type: 'tournament',
+        key: 'tournament-key',
+      });
+      expect(mockLoadTournaments).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('メンバー削除APIが成功するまで選択モーダルを閉じない', async () => {

@@ -47,7 +47,7 @@ const StatsPage = () => {
           <Pressable
             accessibilityLabel={t('statsPage.selectGroup')}
             accessibilityRole="button"
-            className="ml-4 flex-row items-centergap-2"
+            className="ml-4 flex-row items-center gap-2"
             onPress={() => setIsGroupSelectorOpen(true)}
           >
             <Text className="" numberOfLines={1}>

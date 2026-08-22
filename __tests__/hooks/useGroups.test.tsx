@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
 import { ApiError } from '@/src/api/apiError';
@@ -132,6 +132,60 @@ describe('useCreateGroupRequest', () => {
     queryClient.clear();
   });
 
+  it('端末保存に失敗してもAPI成功として完了し、保存だけを再試行できる', async () => {
+    const response = {
+      token: 'pending-token',
+      expires_at: '2030-01-01T00:00:00Z',
+    };
+    mockPostGroupRequest.mockResolvedValue(response);
+    mockAddPendingGroupKey.mockRejectedValueOnce(new Error('storage unavailable'));
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result, unmount } = await renderHook(() => useCreateGroupRequest(), { wrapper });
+    const request = {
+      name: '申請中グループ',
+      email: 'pending@example.com',
+      timezone: 'Asia/Tokyo',
+      recaptcha_token: '',
+    };
+
+    let mutationResult: typeof response | undefined;
+    await act(async () => {
+      mutationResult = await result.current.mutateAsync(request);
+    });
+
+    expect(mutationResult).toEqual(response);
+    expect(mockShowError).not.toHaveBeenCalled();
+    expect(mockAlertDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: '申請情報を端末に保存できませんでした',
+        showCancelButton: false,
+      }),
+    );
+    expect(result.current.pendingGroupStorageRetry).toEqual({
+      token: 'pending-token',
+      groupName: '申請中グループ',
+      email: 'pending@example.com',
+      expiresAt: new Date('2030-01-01T00:00:00Z'),
+    });
+
+    mockAddPendingGroupKey.mockResolvedValueOnce(undefined);
+    await act(async () => {
+      await result.current.retryPendingGroupStorage();
+    });
+
+    expect(mockPostGroupRequest).toHaveBeenCalledTimes(1);
+    expect(mockAddPendingGroupKey).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(result.current.pendingGroupStorageRetry).toBeNull());
+
+    unmount();
+    queryClient.clear();
+  });
+
   it('422ではAPI本文を表示せずメールアドレス用の案内を表示する', async () => {
     mockPostGroupRequest.mockRejectedValue(
       new ApiError({
@@ -214,5 +268,59 @@ describe('useGroupQueries', () => {
 
     unmount();
     queryClient.clear();
+  });
+
+  it('Group Keyの削除に失敗してもエラーを処理する', async () => {
+    const error = new Error('secure storage unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockRemoveGroupKey.mockRejectedValueOnce(error);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { unmount } = await renderHook(() => useGroupQueries(), { wrapper });
+
+    await waitFor(() =>
+      expect(mockShowError).toHaveBeenCalledWith({
+        title: 'グループ取得エラー',
+        error,
+        fallback: '不明なエラー',
+      }),
+    );
+    expect(consoleError).toHaveBeenCalledWith('Error removing invalid group keys:', error);
+
+    unmount();
+    queryClient.clear();
+    consoleError.mockRestore();
+  });
+
+  it('ダイアログ表示に失敗してもエラーを処理する', async () => {
+    const error = new Error('dialog unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockAlertDialog.mockRejectedValueOnce(error);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { unmount } = await renderHook(() => useGroupQueries(), { wrapper });
+
+    await waitFor(() =>
+      expect(mockShowError).toHaveBeenCalledWith({
+        title: 'グループ取得エラー',
+        error,
+        fallback: '不明なエラー',
+      }),
+    );
+    expect(consoleError).toHaveBeenCalledWith('Error showing invalid group keys dialog:', error);
+
+    unmount();
+    queryClient.clear();
+    consoleError.mockRestore();
   });
 });

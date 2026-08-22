@@ -4,6 +4,77 @@ import * as SecureStore from 'expo-secure-store';
 
 const GROUP_KEYS_KEY = 'groupKeys';
 const PENDING_GROUP_KEYS_KEY = 'pendingGroupKeys';
+let mutationQueue: Promise<void> = Promise.resolve();
+
+const runSerialized = <T>(operation: () => Promise<T>): Promise<T> => {
+  const result = mutationQueue.then(operation, operation);
+
+  // Keep the queue usable after a storage failure while returning the original
+  // result to the caller.
+  mutationQueue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+
+  return result;
+};
+
+const writeGroupKeys = (groupKeys: string[]) =>
+  SecureStore.setItemAsync(GROUP_KEYS_KEY, JSON.stringify(groupKeys));
+
+const readGroupKeys = async (): Promise<{ groupKeys: string[]; needsRepair: boolean }> => {
+  const value = await SecureStore.getItemAsync(GROUP_KEYS_KEY);
+
+  if (!value) {
+    return { groupKeys: [], needsRepair: false };
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      return { groupKeys: [], needsRepair: true };
+    }
+
+    const groupKeys = parsed.filter((key): key is string => typeof key === 'string');
+    return { groupKeys, needsRepair: groupKeys.length !== parsed.length };
+  } catch {
+    return { groupKeys: [], needsRepair: true };
+  }
+};
+
+const writePendingGroups = (groups: PendingGroup[]) =>
+  AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify(groups));
+
+const readPendingGroups = async (): Promise<{
+  groups: PendingGroup[];
+  needsRepair: boolean;
+}> => {
+  const value = await AsyncStorage.getItem(PENDING_GROUP_KEYS_KEY);
+
+  if (!value) {
+    return { groups: [], needsRepair: false };
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      return { groups: [], needsRepair: true };
+    }
+
+    const groups = parsed.filter(isPendingGroup).map((group) => ({
+      ...group,
+      email: typeof group.email === 'string' ? group.email : '',
+      expiresAt: new Date(group.expiresAt),
+    }));
+
+    return { groups, needsRepair: groups.length !== parsed.length };
+  } catch {
+    return { groups: [], needsRepair: true };
+  }
+};
+
 const isPendingGroup = (value: any): boolean => {
   return (
     typeof value === 'object' &&
@@ -24,65 +95,56 @@ export type PendingGroup = {
 };
 export const appStorage = {
   async getGroupKeys(): Promise<string[]> {
-    const value = await SecureStore.getItemAsync(GROUP_KEYS_KEY);
-    return value ? JSON.parse(value) : [];
+    return runSerialized(async () => {
+      const { groupKeys, needsRepair } = await readGroupKeys();
+
+      if (needsRepair) {
+        await writeGroupKeys(groupKeys);
+      }
+
+      return groupKeys;
+    });
   },
 
   async setGroupKeys(groupKeys: string[]) {
-    await SecureStore.setItemAsync(GROUP_KEYS_KEY, JSON.stringify(groupKeys));
+    await runSerialized(() => writeGroupKeys(groupKeys));
   },
   async addGroupKey(groupKey: string) {
-    const groupKeys = await this.getGroupKeys();
+    await runSerialized(async () => {
+      const { groupKeys, needsRepair } = await readGroupKeys();
 
-    if (!groupKeys.includes(groupKey)) {
-      groupKeys.push(groupKey);
-      await this.setGroupKeys(groupKeys);
-    }
+      if (!groupKeys.includes(groupKey)) {
+        groupKeys.push(groupKey);
+        await writeGroupKeys(groupKeys);
+      } else if (needsRepair) {
+        await writeGroupKeys(groupKeys);
+      }
+    });
   },
   async removeGroupKey(groupKey: string) {
-    const groupKeys = await this.getGroupKeys();
-    await this.setGroupKeys(groupKeys.filter((key) => key !== groupKey));
+    await runSerialized(async () => {
+      const { groupKeys } = await readGroupKeys();
+      await writeGroupKeys(groupKeys.filter((key) => key !== groupKey));
+    });
   },
   //*****************************
   // Pending Group Keysの管理
   //*****************************
 
   async getPendingGroups(): Promise<PendingGroup[]> {
-    const value = await AsyncStorage.getItem(PENDING_GROUP_KEYS_KEY);
+    return runSerialized(async () => {
+      const { groups, needsRepair } = await readPendingGroups();
 
-    if (!value) {
-      return [];
-    }
-
-    try {
-      const parsed: unknown = JSON.parse(value);
-
-      if (!Array.isArray(parsed)) {
-        await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify([]));
-        return [];
+      if (needsRepair) {
+        await writePendingGroups(groups);
       }
 
-      const validGroups = parsed
-        .filter(isPendingGroup)
-        .map((group) => ({
-          ...group,
-          email: typeof group.email === 'string' ? group.email : '',
-          expiresAt: new Date(group.expiresAt),
-        }));
-
-      if (validGroups.length !== parsed.length) {
-        await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify(validGroups));
-      }
-
-      return validGroups;
-    } catch {
-      await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify([]));
-      return [];
-    }
+      return groups;
+    });
   },
 
   async setPendingGroups(groups: PendingGroup[]) {
-    await AsyncStorage.setItem(PENDING_GROUP_KEYS_KEY, JSON.stringify(groups));
+    await runSerialized(() => writePendingGroups(groups));
   },
 
   async setPendingGroupTokens(groupTokens: string[]) {
@@ -93,20 +155,26 @@ export const appStorage = {
       expiresAt: new Date(),
     }));
 
-    await this.setPendingGroups(groups);
+    await runSerialized(() => writePendingGroups(groups));
   },
 
   async addPendingGroupKey(data: PendingGroup) {
-    const groups = await this.getPendingGroups();
+    await runSerialized(async () => {
+      const { groups, needsRepair } = await readPendingGroups();
 
-    if (!groups.some((group) => group.token === data.token)) {
-      groups.push(data);
-      await this.setPendingGroups(groups);
-    }
+      if (!groups.some((group) => group.token === data.token)) {
+        groups.push(data);
+        await writePendingGroups(groups);
+      } else if (needsRepair) {
+        await writePendingGroups(groups);
+      }
+    });
   },
 
   async removePendingGroupKey(groupToken: string) {
-    const groups = await this.getPendingGroups();
-    await this.setPendingGroups(groups.filter((group) => group.token !== groupToken));
+    await runSerialized(async () => {
+      const { groups } = await readPendingGroups();
+      await writePendingGroups(groups.filter((group) => group.token !== groupToken));
+    });
   },
 };

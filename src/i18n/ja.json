@@ -48,6 +48,9 @@
     "refreshPendingGroups": "申請状況を更新",
     "refreshingPendingGroups": "更新中...",
     "creatingGroup": "作成中...",
+    "pendingGroupSaveErrorTitle": "申請情報を端末に保存できませんでした",
+    "pendingGroupSaveErrorDescription": "メール送信は完了しています。再送せず、申請情報の保存を再試行してください。",
+    "retryPendingGroupSave": "保存を再試行",
     "duplicatePendingEmailTitle": "同じメールアドレスで申請中です",
     "duplicatePendingEmailDescription": "{{email}} には申請中のグループがあります。続行すると、現在の申請はキャンセルされ、新しい申請に置き換わります。新しく申請しますか？",
     "expiresAt": "有効期限: {{date}}"
@@ -249,7 +252,9 @@
     },
     "saveSuccess": "{{pageType}}を保存しました",
     "saveErrorTitle": "ページを保存できませんでした",
-    "saveError": "ページの保存に失敗しました。もう一度お試しください。"
+    "saveError": "ページの保存に失敗しました。もう一度お試しください。",
+    "updateErrorTitle": "保存済みページを更新できませんでした",
+    "updateError": "保存済みページの更新に失敗しました。もう一度お試しください。"
   },
   "bottomNavigation": {
     "home": "ホーム",
@@ -401,6 +406,8 @@
       "emailSentBodyLink": "メール内のリンクをクリックして、グループの登録を完了してください。",
       "emailSentBodyExpire": "⚠️ このリンクは発行から30分間有効です。（{{expire_at}}まで）",
       "emailSentBodyNote": "期限を過ぎると無効になりますので、お早めに手続きをお願いします。",
+      "pendingGroupSaveErrorTitle": "申請情報を端末に保存できませんでした",
+      "pendingGroupSaveErrorDescription": "メール送信は完了しています。再送せず、申請情報の保存を再試行してください。",
       "createErrorTitle": "グループ作成時にエラーが発生しました",
       "invalidEmail": "不正なメールアドレスです。",
       "unknownError": "不明なエラー"

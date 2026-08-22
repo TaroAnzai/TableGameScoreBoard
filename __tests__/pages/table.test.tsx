@@ -1,10 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import TablePage from '@/app/table/[tableKey]';
 import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockAlertDialog = jest.fn(() => Promise.resolve(true));
+const mockRemoveSavedLink = jest.fn(() => Promise.resolve());
 const mockParams = jest.fn(
   (): { tableKey: string; parentTournamentKey?: string; parentGroupKey?: string } => ({
     tableKey: 'table-key',
@@ -28,7 +31,10 @@ const createApiError = (kind: 'network' | 'http', status?: number) =>
   });
 
 jest.mock('expo-router', () => ({
-  router: { push: (...args: unknown[]) => mockPush(...args) },
+  router: {
+    push: (...args: unknown[]) => mockPush(...args),
+    replace: (...args: unknown[]) => mockReplace(...args),
+  },
   useLocalSearchParams: () => mockParams(),
 }));
 jest.mock('@/src/hooks/useTables', () => ({
@@ -44,7 +50,7 @@ jest.mock('@/src/hooks/useGames', () => ({
   useDeleteGame: () => ({ mutate: jest.fn() }),
 }));
 jest.mock('@/components/common/AlertDialogProvider', () => ({
-  useAlertDialog: () => ({ alertDialog: jest.fn() }),
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
 jest.mock('@/components/page_parts/PageTitleBar', () => {
   const { Pressable, Text, View } = jest.requireActual('react-native');
@@ -97,6 +103,9 @@ jest.mock('@/src/hooks/useSavedPage', () => ({
     };
   },
 }));
+jest.mock('@/src/hooks/useSavedLinks', () => ({
+  useSavedLinks: () => ({ remove: mockRemoveSavedLink }),
+}));
 
 const dashboardState = {
   dashboard: {
@@ -129,7 +138,7 @@ describe('卓詳細ページ', () => {
       parentTournamentKey: 'tournament-key',
     });
     mockUseDashboard.mockReturnValue(dashboardState);
-    mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: false });
+    mockUseDeleteTable.mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
     mockUpdateTable.mockResolvedValue(undefined);
   });
 
@@ -269,28 +278,34 @@ describe('卓詳細ページ', () => {
     expect(screen.queryByText('卓を削除')).toBeNull();
   });
 
-  it('卓削除成功後に大会へ遷移する', async () => {
-    mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: true });
+  it('卓削除成功後にSaved Linkを削除して親大会へ置き換える', async () => {
+    const deleteTable = jest.fn().mockResolvedValue(undefined);
+    mockUseDeleteTable.mockReturnValue({ mutateAsync: deleteTable, isPending: false });
     await render(<TablePage />);
 
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/tournament/[tournamentKey]',
-      params: { tournamentKey: 'tournament-key' },
+    fireEvent.press(screen.getByText('記録表削除'));
+
+    await waitFor(() => {
+      expect(deleteTable).toHaveBeenCalledWith({ tableKey: 'table-key' });
+      expect(mockRemoveSavedLink).toHaveBeenCalledWith({ type: 'table', key: 'table-key' });
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: '/tournament/[tournamentKey]',
+        params: { tournamentKey: 'tournament-key' },
+      });
     });
   });
 
-  it('親大会へ戻るときは親から渡されたキーを使用する', async () => {
-    mockParams.mockReturnValue({
-      tableKey: 'table-key',
-      parentTournamentKey: 'tournament-parent-key',
+  it('親大会キーがない卓を削除した場合はホームへ置き換える', async () => {
+    mockParams.mockReturnValue({ tableKey: 'table-key' });
+    mockUseDeleteTable.mockReturnValue({
+      mutateAsync: jest.fn().mockResolvedValue(undefined),
+      isPending: false,
     });
-    mockUseDeleteTable.mockReturnValue({ mutate: jest.fn(), isSuccess: true });
     await render(<TablePage />);
 
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/tournament/[tournamentKey]',
-      params: { tournamentKey: 'tournament-parent-key' },
-    });
+    fireEvent.press(screen.getByText('記録表削除'));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
   });
 
   it('大会から開いた場合は親大会への戻る操作を表示する', async () => {

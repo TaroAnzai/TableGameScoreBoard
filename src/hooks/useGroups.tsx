@@ -19,7 +19,8 @@ import type {
   GroupUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
-import { appStorage, PendingGroup } from '@/src/storage/appStorage';
+import type { PendingGroup } from '@/src/storage/appStorage';
+import { appStorage } from '@/src/storage/appStorage';
 import { syncPendingGroups } from '@/src/utils/groupSync';
 
 import {
@@ -57,18 +58,63 @@ export const useCreateGroupRequest = () => {
   const { showError } = useMutationFeedback();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  return useMutation({
+  const [pendingGroupStorageRetry, setPendingGroupStorageRetry] = useState<PendingGroup | null>(
+    null,
+  );
+  const [isRetryingPendingGroupStorage, setIsRetryingPendingGroupStorage] = useState(false);
+
+  const showPendingGroupStorageError = useCallback(() => {
+    void alertDialog({
+      title: t('hooks.groupRequest.pendingGroupSaveErrorTitle'),
+      description: t('hooks.groupRequest.pendingGroupSaveErrorDescription'),
+      showCancelButton: false,
+    });
+  }, [alertDialog, t]);
+
+  const retryPendingGroupStorage = useCallback(async () => {
+    if (!pendingGroupStorageRetry || isRetryingPendingGroupStorage) {
+      return;
+    }
+
+    setIsRetryingPendingGroupStorage(true);
+
+    try {
+      await appStorage.addPendingGroupKey(pendingGroupStorageRetry);
+      setPendingGroupStorageRetry(null);
+      await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
+    } catch {
+      showPendingGroupStorageError();
+    } finally {
+      setIsRetryingPendingGroupStorage(false);
+    }
+  }, [
+    isRetryingPendingGroupStorage,
+    pendingGroupStorageRetry,
+    queryClient,
+    showPendingGroupStorageError,
+  ]);
+
+  const mutation = useMutation({
     mutationFn: (data: GroupRequest) => {
       return postApiGroupsRequestLink(data);
     },
     onSuccess: async (data: GroupResponse, variables: GroupRequest) => {
       const expire_at = formatLocalDateTime(toLocalDate(data.expires_at));
-      await appStorage.addPendingGroupKey({
+      const pendingGroup: PendingGroup = {
         token: data.token,
         groupName: variables.name,
         email: variables.email,
         expiresAt: toLocalDate(data.expires_at) ?? new Date(),
-      });
+      };
+
+      try {
+        await appStorage.addPendingGroupKey(pendingGroup);
+      } catch {
+        setPendingGroupStorageRetry(pendingGroup);
+        showPendingGroupStorageError();
+        return;
+      }
+
       // AsyncStorageからpendingGroupsを再取得させる
       await queryClient.invalidateQueries({
         queryKey: GROUP_KEYS_QUERY_KEY,
@@ -99,6 +145,13 @@ export const useCreateGroupRequest = () => {
       });
     },
   });
+
+  return {
+    ...mutation,
+    pendingGroupStorageRetry,
+    retryPendingGroupStorage,
+    isRetryingPendingGroupStorage,
+  };
 };
 
 export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = true) => {
@@ -166,7 +219,24 @@ export const useGroupQueries = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { alertDialog } = useAlertDialog();
+  const { showError } = useMutationFeedback();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const reportInvalidGroupKeysError = useCallback(
+    (message: string, error: unknown) => {
+      console.error(message, error);
+
+      try {
+        showError({
+          title: t('hooks.group.fetchNotFoundTitle'),
+          error,
+          fallback: t('hooks.group.unknownError'),
+        });
+      } catch (notificationError) {
+        console.error('Error showing invalid group keys error notification:', notificationError);
+      }
+    },
+    [showError, t],
+  );
 
   // AsyncStorageからGroup Keyとpending groupsを取得
   // 手動の useState + useEffect ではなく useQuery に寄せることで、
@@ -237,22 +307,28 @@ export const useGroupQueries = () => {
     const removeInvalidGroupKeys = async () => {
       const invalidGroupKeys = notFoundKeysSignal.split(',');
 
-      for (const key of invalidGroupKeys) {
-        await appStorage.removeGroupKey(key);
+      try {
+        for (const key of invalidGroupKeys) {
+          await appStorage.removeGroupKey(key);
+        }
+
+        void alertDialog({
+          title: t('hooks.group.fetchNotFoundTitle'),
+          description: t('hooks.group.fetchNotFoundDescription'),
+          text1: invalidGroupKeys.map((key) => `- ${key}`).join('\n'),
+          showCancelButton: false,
+        }).catch((error) => {
+          reportInvalidGroupKeysError('Error showing invalid group keys dialog:', error);
+        });
+
+        await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
+      } catch (error) {
+        reportInvalidGroupKeysError('Error removing invalid group keys:', error);
       }
-
-      void alertDialog({
-        title: t('hooks.group.fetchNotFoundTitle'),
-        description: t('hooks.group.fetchNotFoundDescription'),
-        text1: invalidGroupKeys.map((key) => `- ${key}`).join('\n'),
-        showCancelButton: false,
-      });
-
-      await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });
     };
 
     void removeInvalidGroupKeys();
-  }, [alertDialog, notFoundKeysSignal, queryClient, t]);
+  }, [alertDialog, notFoundKeysSignal, queryClient, reportInvalidGroupKeysError, t]);
 
   const refetch = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: GROUP_KEYS_QUERY_KEY });

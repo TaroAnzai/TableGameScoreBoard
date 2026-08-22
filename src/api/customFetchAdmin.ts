@@ -11,7 +11,7 @@ interface CustomFetchAdminConfig {
   url: string;
   method: string;
   data?: any;
-  params?: Record<string, string | number | null>;
+  params?: Record<string, string | number | null | undefined>;
   headers?: Record<string, string>;
   signal?: AbortSignal;
 }
@@ -26,9 +26,15 @@ export const customFetchAdmin = async <T>(
   let urlWithParams = fullUrl;
   if (config.params) {
     const query = new URLSearchParams(
-      Object.entries(config.params).map(([k, v]) => [k, String(v)]),
+      Object.entries(config.params)
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => [key, String(value)]),
     );
-    urlWithParams += `?${query}`;
+
+    const queryString = query.toString();
+    if (queryString) {
+      urlWithParams += `?${queryString}`;
+    }
   }
 
   const {

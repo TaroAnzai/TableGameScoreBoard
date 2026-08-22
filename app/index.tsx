@@ -45,7 +45,13 @@ export default function Index() {
     refetch,
     refresh,
   } = useGroupQueries();
-  const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroupRequest();
+  const {
+    mutateAsync: createGroup,
+    isPending: isCreatingGroup,
+    pendingGroupStorageRetry,
+    retryPendingGroupStorage,
+    isRetryingPendingGroupStorage,
+  } = useCreateGroupRequest();
   const { alertDialog } = useAlertDialog();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRemoveGroupModalOpen, setIsRemoveGroupModalOpen] = useState(false);
@@ -250,6 +256,25 @@ export default function Index() {
                   </View>
                 )}
               </View>
+              {pendingGroupStorageRetry && (
+                <View className="mt-4 gap-2 rounded-md border border-warning p-3">
+                  <Text className="font-semibold">
+                    {t('welcomPage.pendingGroupSaveErrorTitle')}
+                  </Text>
+                  <Text className="text-sm text-muted-foreground">
+                    {t('welcomPage.pendingGroupSaveErrorDescription')}
+                  </Text>
+                  <Button
+                    className="self-start"
+                    variant="outline"
+                    disabled={isRetryingPendingGroupStorage}
+                    onPress={() => void retryPendingGroupStorage()}
+                  >
+                    {isRetryingPendingGroupStorage && <ActivityIndicator />}
+                    <Text>{t('welcomPage.retryPendingGroupSave')}</Text>
+                  </Button>
+                </View>
+              )}
               {pendingGroups.length > 0 && (
                 <View className="gap-3 align-center">
                   <Text className="text-lg font-semibold">{t('welcomPage.pendingGroups')}</Text>

@@ -48,6 +48,9 @@
     "refreshPendingGroups": "Refresh status",
     "refreshingPendingGroups": "Refreshing...",
     "creatingGroup": "Creating...",
+    "pendingGroupSaveErrorTitle": "Could not save the request on this device",
+    "pendingGroupSaveErrorDescription": "The email was sent. Do not resend it; retry saving the request instead.",
+    "retryPendingGroupSave": "Retry saving",
     "duplicatePendingEmailTitle": "A request is already pending for this email",
     "duplicatePendingEmailDescription": "A group request is pending for {{email}}. Continuing will cancel the current request and replace it with a new one. Submit a new request?",
     "expiresAt": "Expires: {{date}}"
@@ -250,7 +253,9 @@
     },
     "saveSuccess": "Saved {{pageType}}",
     "saveErrorTitle": "Unable to save page",
-    "saveError": "The page could not be saved. Please try again."
+    "saveError": "The page could not be saved. Please try again.",
+    "updateErrorTitle": "Unable to update saved page",
+    "updateError": "The saved page could not be updated. Please try again."
   },
   "bottomNavigation": {
     "home": "Home",
@@ -400,6 +405,8 @@
       "emailSentBodyLink": "Please click the link in the email to complete the group registration.",
       "emailSentBodyExpire": "⚠️ The link is valid for 30 minutes after issuance. (until {{expire_at}})",
       "emailSentBodyNote": "The link will expire after that time, so please complete the process as soon as possible.",
+      "pendingGroupSaveErrorTitle": "Could not save the request on this device",
+      "pendingGroupSaveErrorDescription": "The email was sent. Do not resend it; retry saving the request instead.",
       "createErrorTitle": "Error creating group",
       "invalidEmail": "Invalid email address.",
       "unknownError": "Unknown error"

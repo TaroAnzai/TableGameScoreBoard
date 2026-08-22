@@ -22,6 +22,7 @@ import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { Player, TournamentV2 } from '@/src/api/generated/mahjongApi.schemas';
 import { useGetGroupDashboard, useUpdateGroup } from '@/src/hooks/useGroups';
 import { useCreatePlayer, useDeletePlayer, useGetPlayer } from '@/src/hooks/usePlayers';
+import { useSavedLinks } from '@/src/hooks/useSavedLinks';
 import {
   useCreateTournament,
   useDeleteTournament,
@@ -64,6 +65,7 @@ const GroupPage = () => {
   const { mutateAsync: deletePlayer, isPending: isDeletingPlayer } = useDeletePlayer(loadPlayers);
   const { mutateAsync: createTournament, isPending: isCreatingTournament } = useCreateTournament();
   const { mutateAsync: deleteTournament, isPending: isDeletingTournament } = useDeleteTournament();
+  const { remove: removeSavedLink } = useSavedLinks();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteTournamentModal, setShowDeleteTournamentModal] = useState(false);
@@ -217,11 +219,19 @@ const GroupPage = () => {
 
     try {
       await deleteTournament({ tournamentKey });
-      await loadTournaments();
-      setShowDeleteTournamentModal(false);
     } catch {
       // The mutation hook displays the API error dialog.
+      return;
     }
+
+    try {
+      await removeSavedLink({ type: 'tournament', key: tournamentKey });
+    } catch {
+      // The tournament has already been deleted on the server.
+    }
+
+    await loadTournaments();
+    setShowDeleteTournamentModal(false);
   };
 
   return (

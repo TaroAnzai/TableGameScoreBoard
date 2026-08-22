@@ -41,6 +41,17 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
     }
   };
 
+  const showSavedLinkOperationError = (error: unknown) => {
+    console.error('Error updating saved link:', error);
+    void alertDialog({
+      title: t('savedLinks.updateErrorTitle'),
+      description: t('savedLinks.updateError'),
+      showCancelButton: false,
+    }).catch((dialogError) => {
+      console.error('Error showing saved link error dialog:', dialogError);
+    });
+  };
+
   const handleOpenLink = (link: SavedLink) => {
     if (isCurrentLink(link)) {
       closePopover();
@@ -53,18 +64,31 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
       router.push({ pathname: '/table/[tableKey]', params: { tableKey: link.key } });
     }
 
-    void touch({ type: link.type, key: link.key }).catch(() => undefined);
+    void touch({ type: link.type, key: link.key }).catch(showSavedLinkOperationError);
     closePopover();
   };
 
   const handleRemoveLink = async (link: SavedLink) => {
-    const confirmed = await alertDialog({
-      title: t('savedLinks.removeConfirmTitle'),
-      description: t('savedLinks.removeConfirmDescription', { name: link.name }),
-      showCancelButton: true,
-    });
+    let confirmed: boolean;
+
+    try {
+      confirmed = await alertDialog({
+        title: t('savedLinks.removeConfirmTitle'),
+        description: t('savedLinks.removeConfirmDescription', { name: link.name }),
+        showCancelButton: true,
+      });
+    } catch (error) {
+      showSavedLinkOperationError(error);
+      return;
+    }
+
     if (!confirmed) return;
-    void remove({ type: link.type, key: link.key }).catch(() => undefined);
+
+    try {
+      await remove({ type: link.type, key: link.key });
+    } catch (error) {
+      showSavedLinkOperationError(error);
+    }
   };
 
   return (
@@ -90,15 +114,22 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
             <View className="flex-1 flex-wrap gap-1">
               {sortedLinks.map((link) => {
                 const current = isCurrentLink(link);
+                const parentNames = getParentNames(link);
+                const accessLevel = link.accessLevel
+                  ? t(`Common.accessLevel.${link.accessLevel}`)
+                  : undefined;
+                const accessories = [parentNames, accessLevel].filter(
+                  (accessory): accessory is string => Boolean(accessory),
+                );
 
                 return (
                   <MahjongListItem
                     key={`${link.type}:${link.key}`}
                     title={link.name}
                     badge={t(`savedLinks.type.${link.type}`)}
-                    accessories={[getParentNames(link), link.accessLevel ?? link.accessLevel]}
+                    accessories={accessories}
                     onPress={() => handleOpenLink(link)}
-                    onLongPress={() => handleRemoveLink(link)}
+                    onLongPress={() => void handleRemoveLink(link)}
                     selected={current}
                     className={
                       current

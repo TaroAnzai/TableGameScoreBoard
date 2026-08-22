@@ -1,7 +1,7 @@
 // React 関連
 import { router, useLocalSearchParams } from 'expo-router';
 import { UserMinus, UserPlus } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator } from 'react-native';
 
@@ -24,6 +24,7 @@ import type { Player, ScoreInput, TablePlayerItem } from '@/src/api/generated/ma
 import { useBackFallback } from '@/src/hooks/useBackFallback';
 import { useCreateGame, useDeleteGame, useUpdateGame } from '@/src/hooks/useGames';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
+import { useSavedLinks } from '@/src/hooks/useSavedLinks';
 import { useSavedPage } from '@/src/hooks/useSavedPage';
 import {
   useAddTablePlayer,
@@ -48,7 +49,6 @@ export default function TablePage() {
   const {
     mutateAsync: deleteTable,
     isPending: isDeletingTable,
-    isSuccess: isTableDeleteSuccess,
   } = useDeleteTable();
   const { mutateAsync: addTablePlayer, isPending: isAddingTablePlayer } = useAddTablePlayer();
   const { mutateAsync: deleteTablePlayer, isPending: isDeletingTablePlayer } =
@@ -56,6 +56,7 @@ export default function TablePage() {
   const { mutateAsync: createGame } = useCreateGame();
   const { mutateAsync: updateGame } = useUpdateGame();
   const { mutateAsync: deleteGame, isPending: isDeletingGame } = useDeleteGame();
+  const { remove: removeSavedLink } = useSavedLinks();
   //Query系フック設定
   const { tableKey, parentTournamentKey, parentGroupKey } = useLocalSearchParams<{
     tableKey: string;
@@ -100,22 +101,6 @@ export default function TablePage() {
     parentTournamentName: dashboard?.parent?.tournament?.name,
     isDirectView: !parentTournamentKey,
   });
-  const navigateToTournament = useCallback(() => {
-    if (!tournamentKey) return;
-    router.push({
-      pathname: '/tournament/[tournamentKey]',
-      params: {
-        tournamentKey,
-        ...(parentGroupKey ? { parentGroupKey } : {}),
-      },
-    });
-  }, [parentGroupKey, tournamentKey]);
-  useEffect(() => {
-    if (isTableDeleteSuccess) {
-      navigateToTournament();
-    }
-  }, [isTableDeleteSuccess, navigateToTournament]);
-
   // Early retrurn
   // --- ① 不正URL対応 ---
   if (!tableKey) {
@@ -202,7 +187,27 @@ export default function TablePage() {
       await deleteTable({ tableKey: tableKey! });
     } catch {
       // The mutation hook shows the error. Keep this page available for retrying.
+      return;
     }
+
+    try {
+      await removeSavedLink({ type: 'table', key: tableKey! });
+    } catch {
+      // The table has already been deleted on the server. Do not leave the user on its page.
+    }
+
+    if (tournamentKey) {
+      router.replace({
+        pathname: '/tournament/[tournamentKey]',
+        params: {
+          tournamentKey,
+          ...(parentGroupKey ? { parentGroupKey } : {}),
+        },
+      });
+      return;
+    }
+
+    router.replace('/');
   };
 
   const handleDeleteGameClick = () => {
