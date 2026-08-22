@@ -301,8 +301,13 @@
       "unselected": "未選択",
       "all": "全期間",
       "selectAll": "全期間を選択",
+      "year": "年選択",
+      "openYearPicker": "年選択を開く",
       "selectYearHeading": "年を一括選択",
       "selectYear": "{{year}}年を選択",
+      "selectStartInstruction": "開始日を選択してください",
+      "selectEndInstruction": "終了日を選択してください",
+      "confirmRange": "期間を決定",
       "rangeError": "開始日は終了日以前の日付を選択してください。"
     }
   },

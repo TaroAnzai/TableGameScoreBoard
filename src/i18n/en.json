@@ -302,8 +302,13 @@
       "unselected": "Not selected",
       "all": "All time",
       "selectAll": "Select all time",
+      "year": "Select year",
+      "openYearPicker": "Open year selection",
       "selectYearHeading": "Select a full year",
       "selectYear": "Select {{year}}",
+      "selectStartInstruction": "Select a start date",
+      "selectEndInstruction": "Select an end date",
+      "confirmRange": "Confirm period",
       "rangeError": "The start date must be on or before the end date."
     }
   },

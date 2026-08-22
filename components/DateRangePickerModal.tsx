@@ -1,8 +1,7 @@
-import { DateTimePicker } from '@expo/ui/community/datetime-picker';
-import { Calendar } from 'lucide-react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { radius } from '@/src/lib/theme';
+import { radius, themes } from '@/src/lib/theme';
+import { useTheme } from '@/src/providers/ThemeProvider';
 import type { DateString, StatsDateRange } from '@/src/types/statsDateRange ';
 
 type DateRangePickerModalProps = {
@@ -27,7 +26,11 @@ type DateRangePickerModalProps = {
   onCancel: () => void;
 };
 
-type ActiveDateField = 'startDate' | 'endDate' | null;
+type SelectionMode = 'start' | 'end';
+type CalendarColors = Pick<
+  (typeof themes)[keyof typeof themes],
+  'primary' | 'onPrimary' | 'primaryContainer' | 'onPrimaryContainer'
+>;
 
 const dateStringPattern = /^(\d{4,})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
@@ -41,12 +44,10 @@ export const toDateString = (date: Date): DateString => {
 export const parseDateString = (value: DateString): Date | null => {
   const match = dateStringPattern.exec(value);
   if (!match) return null;
-
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
   const date = new Date(year, month - 1, day);
-
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
     ? date
     : null;
@@ -57,11 +58,48 @@ const formatJapaneseDate = (value: DateString) => {
   return match ? `${match[1]}年${Number(match[2])}月${Number(match[3])}日` : value;
 };
 
-const isInDateBounds = (value: DateString, minDate?: DateString, maxDate?: DateString) => {
-  return Boolean(parseDateString(value)) && (!minDate || value >= minDate) && (!maxDate || value <= maxDate);
+const isInDateBounds = (value: DateString, minDate?: DateString, maxDate?: DateString) =>
+  Boolean(parseDateString(value)) &&
+  (!minDate || value >= minDate) &&
+  (!maxDate || value <= maxDate);
+
+const getPeriodMarkings = (
+  startDate: DateString | null,
+  endDate: DateString | null,
+  colors: CalendarColors,
+) => {
+  if (!startDate) return {};
+  if (!endDate) {
+    return {
+      [startDate]: {
+        startingDay: true,
+        endingDay: true,
+        color: colors.primary,
+        textColor: colors.onPrimary,
+      },
+    };
+  }
+
+  const markings: Record<string, object> = {};
+  const cursor = parseDateString(startDate);
+  const end = parseDateString(endDate);
+  if (!cursor || !end) return markings;
+  while (cursor <= end) {
+    const date = toDateString(cursor);
+    const isStart = date === startDate;
+    const isEnd = date === endDate;
+    markings[date] = {
+      startingDay: isStart,
+      endingDay: isEnd,
+      color: isStart || isEnd ? colors.primary : colors.primaryContainer,
+      textColor: isStart || isEnd ? colors.onPrimary : colors.onPrimaryContainer,
+    };
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return markings;
 };
 
-export const DateRangePickerModal = ({
+const DateRangePickerModalContent = ({
   open,
   initialValue,
   minDate,
@@ -71,189 +109,254 @@ export const DateRangePickerModal = ({
   onCancel,
 }: DateRangePickerModalProps) => {
   const { t } = useTranslation();
-  const [selectionType, setSelectionType] = useState<StatsDateRange['type']>(initialValue.type);
-  const [startDate, setStartDate] = useState<DateString | null>(
+  const { resolvedTheme } = useTheme();
+  const theme = themes[resolvedTheme];
+  const [draftStartDate, setDraftStartDate] = useState<DateString | null>(
     initialValue.type === 'range' ? initialValue.startDate : null,
   );
-  const [endDate, setEndDate] = useState<DateString | null>(
+  const [draftEndDate, setDraftEndDate] = useState<DateString | null>(
     initialValue.type === 'range' ? initialValue.endDate : null,
   );
-  const [activeDateField, setActiveDateField] = useState<ActiveDateField>(null);
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>('start');
+  const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
 
-  const isRangeValid =
-    startDate !== null &&
-    endDate !== null &&
-    startDate <= endDate &&
-    isInDateBounds(startDate, minDate, maxDate) &&
-    isInDateBounds(endDate, minDate, maxDate);
-  const hasDateOrderError = startDate !== null && endDate !== null && startDate > endDate;
-  const isConfirmDisabled = selectionType === 'range' && !isRangeValid;
-
-  const handleDateSelected = (date: Date) => {
-    const selectedDate = toDateString(date);
-    if (!isInDateBounds(selectedDate, minDate, maxDate)) return;
-
-    if (activeDateField === 'startDate') {
-      setStartDate(selectedDate);
-      if (endDate !== null && selectedDate > endDate) setEndDate(selectedDate);
-    } else if (activeDateField === 'endDate') {
-      setEndDate(selectedDate);
+  const isRangeValid = Boolean(
+    draftStartDate &&
+    draftEndDate &&
+    draftStartDate <= draftEndDate &&
+    isInDateBounds(draftStartDate, minDate, maxDate) &&
+    isInDateBounds(draftEndDate, minDate, maxDate),
+  );
+  const calendarMinDate =
+    selectionMode === 'end' && draftStartDate
+      ? minDate && minDate > draftStartDate
+        ? minDate
+        : draftStartDate
+      : minDate;
+  const calendarCurrent = draftStartDate ?? minDate ?? maxDate ?? toDateString(new Date());
+  const markedDates = useMemo(
+    () => getPeriodMarkings(draftStartDate, draftEndDate, theme),
+    [draftEndDate, draftStartDate, theme],
+  );
+  const availableYears = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    if (selectableYears?.length) {
+      const years = [...new Set(selectableYears)].sort((first, second) => second - first);
+      const currentYearIndex = years.indexOf(currentYear);
+      return currentYearIndex > 0
+        ? [currentYear, ...years.filter((year) => year !== currentYear)]
+        : years;
     }
-    setSelectionType('range');
-    setActiveDateField(null);
-  };
 
-  const handleYearSelected = (year: number) => {
-    setStartDate(`${year}-01-01` as DateString);
-    setEndDate(`${year}-12-31` as DateString);
-    setSelectionType('range');
-  };
+    const firstYear = minDate ? Number(minDate.slice(0, 4)) : currentYear - 100;
+    return Array.from({ length: currentYear - firstYear + 1 }, (_, index) => currentYear - index);
+  }, [minDate, selectableYears]);
 
-  const handleConfirm = () => {
-    if (selectionType === 'all') {
-      onConfirm({ type: 'all', startDate: null, endDate: null });
+  const handleDayPress = ({ dateString }: { dateString: string }) => {
+    const selectedDate = dateString as DateString;
+    if (
+      !isInDateBounds(selectedDate, minDate, maxDate) ||
+      (selectionMode === 'end' && (!draftStartDate || selectedDate < draftStartDate))
+    )
+      return;
+    if (selectionMode === 'start') {
+      setDraftStartDate(selectedDate);
+      setDraftEndDate(null);
+      setSelectionMode('end');
       return;
     }
-    if (!isRangeValid || !startDate || !endDate) return;
-    onConfirm({ type: 'range', startDate, endDate });
+    setDraftEndDate(selectedDate);
   };
 
-  const pickerValue =
-    (activeDateField === 'startDate' ? startDate : endDate) ?? minDate ?? maxDate ?? toDateString(new Date());
-  const hasSelectableYears = Boolean(selectableYears?.length);
+  const handleAllSelected = () => onConfirm({ type: 'all', startDate: null, endDate: null });
+  const handleYearSelected = (year: number) => {
+    const startDate = `${year}-01-01` as DateString;
+    const endDate = `${year}-12-31` as DateString;
+    if (!isInDateBounds(startDate, minDate, maxDate) || !isInDateBounds(endDate, minDate, maxDate))
+      return;
+    setIsYearPickerOpen(false);
+    onConfirm({ type: 'range', startDate, endDate });
+  };
+  const handleConfirm = () => {
+    if (isRangeValid && draftStartDate && draftEndDate)
+      onConfirm({ type: 'range', startDate: draftStartDate, endDate: draftEndDate });
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
-      <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
-        <DialogHeader>
-          <DialogTitle>{t('statsPage.dateRangePicker.title')}</DialogTitle>
-        </DialogHeader>
-
-        <View className="gap-4">
-          <View className="gap-2">
-            <Text className="text-sm font-semibold text-on-surface">
-              {t('statsPage.dateRangePicker.startDate')}
-            </Text>
-            <Button
-              accessibilityLabel={t('statsPage.dateRangePicker.selectStartDate')}
-              className="h-auto min-h-12 justify-start rounded-xl px-3 py-3"
-              testID="date-range-start-date"
-              variant="outline"
-              onPress={() => setActiveDateField('startDate')}
-            >
-              <Icon as={Calendar} className="text-on-surface" size={20} />
-              <Text className={startDate ? 'text-on-surface' : 'text-muted-foreground'}>
-                {startDate ? formatJapaneseDate(startDate) : t('statsPage.dateRangePicker.unselected')}
-              </Text>
-            </Button>
-          </View>
-
-          <View className="gap-2">
-            <Text className="text-sm font-semibold text-on-surface">
-              {t('statsPage.dateRangePicker.endDate')}
-            </Text>
-            <Button
-              accessibilityLabel={t('statsPage.dateRangePicker.selectEndDate')}
-              className="h-auto min-h-12 justify-start rounded-xl px-3 py-3"
-              testID="date-range-end-date"
-              variant="outline"
-              onPress={() => setActiveDateField('endDate')}
-            >
-              <Icon as={Calendar} className="text-on-surface" size={20} />
-              <Text className={endDate ? 'text-on-surface' : 'text-muted-foreground'}>
-                {endDate ? formatJapaneseDate(endDate) : t('statsPage.dateRangePicker.unselected')}
-              </Text>
-            </Button>
-          </View>
-
-          {hasDateOrderError && (
-            <Text accessibilityRole="alert" className="text-sm text-destructive">
-              {t('statsPage.dateRangePicker.rangeError')}
-            </Text>
-          )}
-
-          {hasSelectableYears && (
-            <View className="gap-2">
-              <Text className="text-sm font-semibold text-on-surface">
-                {t('statsPage.dateRangePicker.selectYearHeading')}
-              </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View className="flex-row gap-2 pr-1">
-                  {selectableYears?.map((year) => {
-                    const yearStart = `${year}-01-01` as DateString;
-                    const yearEnd = `${year}-12-31` as DateString;
-                    const isDisabled =
-                      !isInDateBounds(yearStart, minDate, maxDate) ||
-                      !isInDateBounds(yearEnd, minDate, maxDate);
-                    const isSelected =
-                      selectionType === 'range' && startDate === yearStart && endDate === yearEnd;
-                    return (
-                      <Button
-                        key={year}
-                        accessibilityLabel={t('statsPage.dateRangePicker.selectYear', { year })}
-                        accessibilityState={{ disabled: isDisabled, selected: isSelected }}
-                        className="h-auto min-h-12 rounded-xl px-4 py-3"
-                        disabled={isDisabled}
-                        testID={`date-range-year-${year}`}
-                        variant={isSelected ? 'default' : 'outline'}
-                        onPress={() => handleYearSelected(year)}
-                      >
-                        <Text>{year}年</Text>
-                      </Button>
-                    );
-                  })}
-                </View>
-              </ScrollView>
+    <>
+      <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
+        <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
+          <DialogHeader>
+            <DialogTitle>{t('statsPage.dateRangePicker.title')}</DialogTitle>
+          </DialogHeader>
+          <View className="gap-4">
+            <View className="flex-row gap-2">
+              <Button
+                accessibilityLabel={t('statsPage.dateRangePicker.selectAll')}
+                className="min-h-12 flex-1 rounded-xl py-3"
+                testID="date-range-all"
+                variant="outline"
+                onPress={handleAllSelected}
+              >
+                <Text>{t('statsPage.dateRangePicker.all')}</Text>
+              </Button>
+              <Button
+                accessibilityLabel={t('statsPage.dateRangePicker.openYearPicker')}
+                className="min-h-12 flex-1 rounded-xl py-3"
+                testID="date-range-year-picker"
+                variant="outline"
+                onPress={() => setIsYearPickerOpen(true)}
+              >
+                <Text>{t('statsPage.dateRangePicker.year')}</Text>
+              </Button>
             </View>
-          )}
-
-          <Button
-            accessibilityLabel={t('statsPage.dateRangePicker.selectAll')}
-            accessibilityState={{ selected: selectionType === 'all' }}
-            className="h-auto min-h-12 rounded-xl py-3"
-            testID="date-range-all"
-            variant={selectionType === 'all' ? 'default' : 'outline'}
-            onPress={() => setSelectionType('all')}
-          >
-            <Text>{t('statsPage.dateRangePicker.all')}</Text>
-          </Button>
-        </View>
-
-        <DialogFooter>
-          <Button
-            accessibilityLabel={t('Common.Cancel')}
-            className="h-auto min-h-12 rounded-xl py-3"
-            variant="outline"
-            onPress={onCancel}
-          >
-            <Text>{t('Common.Cancel')}</Text>
-          </Button>
-          <Button
-            accessibilityLabel={t('Common.ok')}
-            className="h-auto min-h-12 rounded-xl py-3"
-            disabled={isConfirmDisabled}
-            onPress={handleConfirm}
-          >
-            <Text>{t('Common.ok')}</Text>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-
-      {activeDateField && (
-        <DateTimePicker
-          display="compact"
-          maximumDate={maxDate ? parseDateString(maxDate) ?? undefined : undefined}
-          minimumDate={minDate ? parseDateString(minDate) ?? undefined : undefined}
-          mode="date"
-          presentation="dialog"
-          testID="date-range-native-picker"
-          value={parseDateString(pickerValue) ?? new Date()}
-          onDismiss={() => setActiveDateField(null)}
-          onValueChange={(_, date) => handleDateSelected(date)}
-        />
-      )}
-    </Dialog>
+            <View className="border-border border-t" />
+            <View className="gap-2">
+              <Button
+                accessibilityLabel={t('statsPage.dateRangePicker.selectStartDate')}
+                accessibilityState={{ selected: selectionMode === 'start' }}
+                className="h-auto min-h-12 justify-between rounded-xl px-3 py-3"
+                testID="date-range-start-date"
+                variant={selectionMode === 'start' ? 'default' : 'outline'}
+                onPress={() => setSelectionMode('start')}
+              >
+                <Text>{t('statsPage.dateRangePicker.startDate')}</Text>
+                <Text>
+                  {draftStartDate
+                    ? formatJapaneseDate(draftStartDate)
+                    : t('statsPage.dateRangePicker.unselected')}
+                </Text>
+              </Button>
+              <Button
+                accessibilityLabel={t('statsPage.dateRangePicker.selectEndDate')}
+                accessibilityState={{
+                  disabled: !draftStartDate,
+                  selected: selectionMode === 'end',
+                }}
+                className="h-auto min-h-12 justify-between rounded-xl px-3 py-3"
+                disabled={!draftStartDate}
+                testID="date-range-end-date"
+                variant={selectionMode === 'end' ? 'default' : 'outline'}
+                onPress={() => draftStartDate && setSelectionMode('end')}
+              >
+                <Text>{t('statsPage.dateRangePicker.endDate')}</Text>
+                <Text>
+                  {draftEndDate
+                    ? formatJapaneseDate(draftEndDate)
+                    : t('statsPage.dateRangePicker.unselected')}
+                </Text>
+              </Button>
+              <Text
+                className="text-sm text-muted-foreground"
+                testID="date-range-selection-instruction"
+              >
+                {selectionMode === 'start'
+                  ? t('statsPage.dateRangePicker.selectStartInstruction')
+                  : t('statsPage.dateRangePicker.selectEndInstruction')}
+              </Text>
+            </View>
+            <Calendar
+              current={calendarCurrent}
+              disableAllTouchEventsForDisabledDays={selectionMode === 'end'}
+              enableSwipeMonths
+              firstDay={1}
+              markedDates={markedDates}
+              markingType="period"
+              maxDate={maxDate}
+              minDate={calendarMinDate}
+              monthFormat="yyyy年 M月"
+              testID="date-range-calendar"
+              theme={{
+                arrowColor: theme.primary,
+                calendarBackground: theme.surface,
+                dayTextColor: theme.onSurface,
+                monthTextColor: theme.onSurface,
+                textDayFontSize: 14,
+                textDayHeaderFontSize: 12,
+                textDayHeaderFontWeight: '600',
+                textDayFontWeight: '400',
+                textDisabledColor: theme.disabled,
+                textMonthFontSize: 16,
+                textMonthFontWeight: '600',
+                textSectionTitleColor: theme.onSurfaceVariant,
+                todayTextColor: theme.primary,
+              }}
+              onDayPress={handleDayPress}
+            />
+          </View>
+          <DialogFooter>
+            <Button
+              accessibilityLabel={t('Common.Cancel')}
+              className="min-h-12 rounded-xl py-3"
+              variant="outline"
+              onPress={onCancel}
+            >
+              <Text>{t('Common.Cancel')}</Text>
+            </Button>
+            <Button
+              accessibilityLabel={t('statsPage.dateRangePicker.confirmRange')}
+              className="min-h-12 rounded-xl py-3"
+              disabled={!isRangeValid}
+              onPress={handleConfirm}
+            >
+              <Text>{t('statsPage.dateRangePicker.confirmRange')}</Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isYearPickerOpen} onOpenChange={setIsYearPickerOpen}>
+        <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
+          <DialogHeader>
+            <DialogTitle>{t('statsPage.dateRangePicker.selectYearHeading')}</DialogTitle>
+          </DialogHeader>
+          <ScrollView className="max-h-80" testID="date-range-year-list">
+            <View className="gap-2">
+              {availableYears.map((year) => {
+                const startDate = `${year}-01-01` as DateString;
+                const endDate = `${year}-12-31` as DateString;
+                const isDisabled =
+                  !isInDateBounds(startDate, minDate, maxDate) ||
+                  !isInDateBounds(endDate, minDate, maxDate);
+                return (
+                  <Button
+                    key={year}
+                    accessibilityLabel={t('statsPage.dateRangePicker.selectYear', { year })}
+                    className="min-h-12 rounded-xl px-4 py-3"
+                    disabled={isDisabled}
+                    testID={`date-range-year-${year}`}
+                    variant="outline"
+                    onPress={() => handleYearSelected(year)}
+                  >
+                    <Text>{year}年</Text>
+                  </Button>
+                );
+              })}
+            </View>
+          </ScrollView>
+          <DialogFooter>
+            <Button
+              accessibilityLabel={t('Common.Cancel')}
+              className="min-h-12 rounded-xl py-3"
+              testID="date-range-year-cancel"
+              variant="outline"
+              onPress={() => setIsYearPickerOpen(false)}
+            >
+              <Text>{t('Common.Cancel')}</Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
+};
+
+export const DateRangePickerModal = (props: DateRangePickerModalProps) => {
+  const initialRangeKey =
+    props.initialValue.type === 'range'
+      ? `${props.initialValue.startDate}-${props.initialValue.endDate}`
+      : 'all';
+
+  return <DateRangePickerModalContent key={`${props.open}-${initialRangeKey}`} {...props} />;
 };
 
 export default DateRangePickerModal;
