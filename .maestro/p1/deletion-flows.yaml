@@ -1,0 +1,66 @@
+appId: ${APP_ID}
+name: P1 - 削除確認・集計・遷移・保存リンク整理
+tags:
+  - p1
+  - deletion
+---
+# 前提: DELETE_TABLE_LINK には1局、DELETE_TOURNAMENT_LINK には上記卓がある E2E fixture。
+- launchApp
+- openLink:
+    link: ${DELETE_TABLE_LINK}
+- extendedWaitUntil:
+    visible: ${DELETE_TABLE_NAME}
+    timeout: 30000
+
+# 対局削除ダイアログのキャンセルは状態を変えない。
+- tapOn: '対局データを削除'
+- tapOn: '第1局'
+- assertVisible: 'ゲーム削除'
+- tapOn: 'キャンセル'
+- assertVisible: '100'
+
+# 確定後は卓から消え、親大会の集計も更新される。
+- tapOn: '対局データを削除'
+- tapOn: '第1局'
+- tapOn: 'OK'
+- assertNotVisible: '100'
+- tapOn: '上の階層へ移動'
+- extendedWaitUntil:
+    visible: ${DELETE_TOURNAMENT_NAME}
+    timeout: 30000
+- assertNotVisible: '100'
+
+# 保存した卓を親大会から削除すると大会画面へ遷移する。
+- openLink:
+    link: ${DELETE_TABLE_LINK}
+- tapOn: '記録表削除'
+- assertVisible: '記録表削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${DELETE_TOURNAMENT_NAME}
+    timeout: 30000
+
+# 直接リンクで開いた卓を削除した場合はホームへ戻る。
+- openLink:
+    link: ${DIRECT_DELETE_TABLE_LINK}
+- extendedWaitUntil:
+    visible: ${DIRECT_DELETE_TABLE_NAME}
+    timeout: 30000
+- tapOn: '記録表削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+
+# 大会削除後はグループ一覧から消え、保存済みページにも残らない。
+- openLink:
+    link: ${DELETE_GROUP_LINK}
+- extendedWaitUntil:
+    visible: ${DELETE_GROUP_NAME}
+    timeout: 30000
+- tapOn: '大会削除'
+- tapOn: ${DELETE_TOURNAMENT_NAME}
+- tapOn: 'OK'
+- assertNotVisible: ${DELETE_TOURNAMENT_NAME}
+- tapOn: '保存済み'
+- assertNotVisible: ${DELETE_TOURNAMENT_NAME}

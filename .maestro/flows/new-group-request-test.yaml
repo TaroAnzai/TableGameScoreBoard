@@ -1,6 +1,6 @@
 appId: com.anzaihome.mahjongapp.dev
 ---
-- runScript: scripts/create-group-fixture.js
+- runScript: ../scripts/create-group-fixture.js
 - runFlow: lunch-test.yaml
 
 - tapOn:

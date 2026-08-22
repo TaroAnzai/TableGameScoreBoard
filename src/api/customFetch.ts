@@ -38,7 +38,7 @@ export const customFetch = async <T>(
 
     const queryString = query.toString();
     if (queryString) {
-      urlWithParams += `?${queryString}`;
+      urlWithParams += `${urlWithParams.includes('?') ? '&' : '?'}${queryString}`;
     }
   }
 
@@ -74,6 +74,10 @@ export const customFetch = async <T>(
             url: urlWithParams,
             method: config.method,
           });
+        }
+
+        if (response.status === 204) {
+          return undefined as T;
         }
 
         // JSON以外のレスポンスにも対応

@@ -33,7 +33,7 @@ export const customFetchAdmin = async <T>(
 
     const queryString = query.toString();
     if (queryString) {
-      urlWithParams += `?${queryString}`;
+      urlWithParams += `${urlWithParams.includes('?') ? '&' : '?'}${queryString}`;
     }
   }
 
@@ -72,7 +72,7 @@ export const customFetchAdmin = async <T>(
         }
 
         if (response.status === 204) {
-          return null as T;
+          return undefined as T;
         }
         // JSON以外のレスポンスにも対応
         const contentType = response.headers.get('content-type');

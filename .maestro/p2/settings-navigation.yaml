@@ -1,0 +1,50 @@
+appId: ${APP_ID}
+name: P2 - 設定・戻る操作・不正 Deep Link
+tags:
+  - p2
+  - settings
+  - navigation
+---
+- launchApp
+- tapOn: '設定を開く'
+- tapOn: 'ダーク'
+- stopApp
+- launchApp
+- tapOn: '設定を開く'
+- assertVisible: 'ダーク'
+
+# 英語化が全画面へ反映され、再起動後も保持される。
+- tapOn: 'English'
+- assertVisible: 'Settings'
+- tapOn: 'Home'
+- assertVisible: 'Mahjong Tournament Score'
+- stopApp
+- launchApp
+- assertVisible: 'Mahjong Tournament Score'
+
+# 日本語に戻し、履歴の有無で Android Back の遷移先が変わることを確認する。
+- tapOn: 'Settings'
+- tapOn: '日本語'
+- openLink:
+    link: ${VALID_TABLE_DIRECT_LINK}
+- extendedWaitUntil:
+    visible: ${VALID_TABLE_NAME}
+    timeout: 30000
+- pressKey: back
+- assertVisible: '登録グループ一覧'
+- openLink:
+    link: ${VALID_TOURNAMENT_DIRECT_LINK}
+- extendedWaitUntil:
+    visible: ${VALID_TOURNAMENT_NAME}
+    timeout: 30000
+- tapOn: '上の階層へ移動'
+- pressKey: back
+- assertVisible: ${VALID_TOURNAMENT_NAME}
+
+# 不正・期限切れ・形式不正リンクは、アプリがクラッシュせずエラーを表示する。
+- openLink:
+    link: ${INVALID_FORMAT_LINK}
+- assertVisible: ${INVALID_FORMAT_ERROR}
+- openLink:
+    link: ${EXPIRED_LINK}
+- assertVisible: ${EXPIRED_LINK_ERROR}

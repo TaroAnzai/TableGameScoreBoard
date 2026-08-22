@@ -1,0 +1,65 @@
+appId: ${APP_ID}
+name: P0 - VIEW・EDIT・OWNER の権限制御
+tags:
+  - p0
+  - permissions
+---
+# 前提: すべて同じ E2E 用大会の実キー。各リンクは API 側で発行した実リンクを渡す。
+# VIEW は編集 UI を提供せず、EDIT/OWNER は編集 UI を提供する。
+- launchApp
+- openLink:
+    link: ${TOURNAMENT_VIEW_LINK}
+- extendedWaitUntil:
+    visible: ${TOURNAMENT_NAME}
+    timeout: 30000
+- assertNotVisible: '${TOURNAMENT_NAME}を編集'
+- assertNotVisible: '参加者を追加'
+- assertNotVisible: '大会新規作成'
+- assertNotVisible: '大会を削除'
+
+- openLink:
+    link: ${TOURNAMENT_EDIT_LINK}
+- extendedWaitUntil:
+    visible: ${TOURNAMENT_NAME}
+    timeout: 30000
+- assertVisible: '${TOURNAMENT_NAME}を編集'
+- assertVisible: '参加者を追加'
+- assertVisible: '大会新規作成'
+
+# OWNER 専用の大会削除は、グループ画面で確認する。
+- openLink:
+    link: ${GROUP_EDIT_LINK}
+- extendedWaitUntil:
+    visible: ${GROUP_NAME}
+    timeout: 30000
+- assertNotVisible: '削除する大会を選択'
+
+- openLink:
+    link: ${GROUP_OWNER_LINK}
+- extendedWaitUntil:
+    visible: ${GROUP_NAME}
+    timeout: 30000
+- assertVisible: '削除する大会を選択'
+
+# 親（大会）キーから開いた卓に、親リンクの VIEW 権限が引き継がれる。
+- openLink:
+    link: ${VIEW_CHILD_TABLE_LINK}
+- extendedWaitUntil:
+    visible: ${TABLE_NAME}
+    timeout: 30000
+- assertNotVisible: '${TABLE_NAME}を編集'
+- assertNotVisible: '参加者を追加'
+- assertVisible:
+    text: '対局データを削除'
+    enabled: false
+
+# EDIT 親キーから開いた卓では編集できる。
+- openLink:
+    link: ${EDIT_CHILD_TABLE_LINK}
+- extendedWaitUntil:
+    visible: ${TABLE_NAME}
+    timeout: 30000
+- assertVisible: '${TABLE_NAME}を編集'
+- assertVisible: '参加者を追加'
+
+# この UI 確認に加え、CI は同じ fixture キーでバックエンドの permission contract test を実行する。

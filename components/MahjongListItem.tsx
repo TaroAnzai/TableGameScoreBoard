@@ -16,6 +16,7 @@ interface MahjongListItemProps {
   disabled?: boolean;
   selected?: boolean;
   className?: string;
+  testID?: string;
 }
 
 export const MahjongListItem = ({
@@ -29,6 +30,7 @@ export const MahjongListItem = ({
   disabled = false,
   selected = false,
   className,
+  testID,
 }: MahjongListItemProps) => {
   const contentClassName = cn(
     'flex-row items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 active:opacity-70',
@@ -73,7 +75,11 @@ export const MahjongListItem = ({
   );
 
   if (!onPress) {
-    return <View className={contentClassName}>{children}</View>;
+    return (
+      <View className={contentClassName} testID={testID}>
+        {children}
+      </View>
+    );
   }
 
   return (
@@ -84,6 +90,7 @@ export const MahjongListItem = ({
       className={contentClassName}
       accessibilityRole="button"
       accessibilityState={{ disabled, selected }}
+      testID={testID}
     >
       {children}
     </Pressable>

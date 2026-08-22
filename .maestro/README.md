@@ -1,15 +1,67 @@
 # Maestro E2E
 
-`mahjong-full-journey.yaml` は、最初に `new-group-registration-test.yaml` を実行し、テスト対象のグループを作成してアプリへ登録します。
+## 構成
 
-`cache-invalidation-journey.yaml` は、グループ・大会・記録用紙の作成と名称変更後に、遷移元の一覧へ最新値が反映されることを検証します。作成時と更新時のキャッシュ更新を個別に検出するため、各リソースは作成直後に一度上位画面へ戻って確認してから名称を変更します。
+```text
+.maestro/
+├── flows/     # 既存の開発・回帰フローと共通起動フロー
+├── p0/        # リリースを止める主要導線（保存、権限、点数入力）
+├── p1/        # 削除、統計期間、承認待ち同期
+├── p2/        # 設定、言語、戻る操作、Deep Link エラー
+└── scripts/   # API フィクスチャとテストデータ生成
+```
 
-`edit-link-registration-journey.yaml` は、APIで作成したグループをeditリンクから直接開いてアプリへ登録し、グループ・大会・卓へ同じメンバーを追加した後、親から引き継いだキーでルート画面まで戻れることを検証します。
+`flows/mahjong-full-journey.yaml`、`flows/cache-invalidation-journey.yaml`、
+`flows/edit-link-registration-journey.yaml` は既存回帰テストです。移動後も `runFlow` / `runScript`
+の相対パスを更新済みです。
 
-グループ作成API（`http://localhost:6080`）、Metro（`npm start`）、Android の開発ビルドを起動してから実行します。グループ名、プレイヤー名、大会名などのテストデータは `scripts/create-group-fixture.js` が実行ごとにまとめて設定します。
+## 実行前提
+
+- Android 開発ビルドと Metro が起動していること
+- 対象アプリ ID を `APP_ID` に設定すること（開発ビルドは `com.anzaihome.mahjongapp.dev`）
+- P0/P1/P2 のリンク系フローは、専用の使い捨てバックエンド fixture を作り、必要なリンク・表示名を
+  環境変数で渡すこと
+- 保存済みページ・言語・テーマを検証する前にはアプリデータをクリアすること
+
+リンクは `mahjongapp-dev:///tournament/<key>` のようなアプリスキーム、または App Link を渡せます。
+VIEW / EDIT / OWNER は同一リソースから発行した実キーを使ってください。公開データや日常利用のキーを
+E2E に使わないでください。
 
 ```sh
-maestro test .maestro/mahjong-full-journey.yaml
-maestro test .maestro/cache-invalidation-journey.yaml
-maestro test .maestro/edit-link-registration-journey.yaml
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev \
+  -e TOURNAMENT_DIRECT_LINK='mahjongapp-dev:///tournament/<key>' \
+  -e TOURNAMENT_NAME='E2E 大会' \
+  -e TABLE_DIRECT_LINK='mahjongapp-dev:///table/<key>' \
+  -e TABLE_NAME='E2E 卓' \
+  .maestro/p0/shared-link-saved-pages.yaml
 ```
+
+権限・異常系・承認待ちの各フローが要求する変数は、当該 YAML の先頭コメントに記載しています。
+特に `score-input-validation.yaml` の `SCORE_FAILURE_TABLE_EDIT_LINK` は、最初のゲーム作成だけ 5xx を返す
+fixture である必要があります。これにより「モーダル保持」「再試行」「重複作成なし」を実際の API と
+合わせて検証できます。
+
+## P0 の実行
+
+```sh
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/shared-link-saved-pages.yaml
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/access-control.yaml
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/score-input-validation.yaml
+```
+
+`access-control.yaml` はモバイル UI と親→子リンクの権限を確認します。EDIT で OWNER 専用の大会削除が
+露出しないこと、OWNER で露出することを明示的に検証します。現在の実装との差異があれば、この P0 は
+失敗します。さらに、同じ fixture キーでバックエンドの permission contract test も組にして実行し、
+UI 非表示だけで権限制御を済ませないでください。
+
+## P1/P2 の実行
+
+```sh
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p1/deletion-flows.yaml
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p1/stats-period.yaml
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p1/pending-groups.yaml
+maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p2/settings-navigation.yaml
+```
+
+Maestro の `assertVisible` / `assertNotVisible` は短時間の状態変化を自動的に待機するため、任意の固定 sleep は
+入れていません。長い API 待機だけ `extendedWaitUntil` を使っています。

@@ -1,0 +1,61 @@
+appId: ${APP_ID}
+name: P1 - 成績期間とグループ切替
+tags:
+  - p1
+  - stats
+---
+# 前提: STATS_GROUP_A_LINK/B_LINK は異なる成績を持つ保存済みグループ。
+- launchApp
+- openLink:
+    link: ${STATS_GROUP_A_LINK}
+- extendedWaitUntil:
+    visible: ${STATS_GROUP_A_NAME}
+    timeout: 30000
+- tapOn: '統計'
+- assertVisible: 'グループメンバー成績'
+- assertVisible: '全期間'
+
+# 年選択と任意期間を確認する。
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-year-picker
+- tapOn:
+    id: date-range-year-${STATS_YEAR}
+- assertVisible: '${STATS_YEAR}-01-01 ～ ${STATS_YEAR}-12-31'
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-start-date
+- tapOn: ${STATS_START_DATE}
+- tapOn:
+    id: date-range-end-date
+# 開始日より前はカレンダー上で無効になり、期間決定は有効化されない。
+- tapOn:
+    text: ${STATS_END_BEFORE_START}
+    optional: true
+- assertVisible:
+    text: '期間を決定'
+    enabled: false
+- tapOn: ${STATS_END_DATE}
+- tapOn: '期間を決定'
+- assertVisible: '${STATS_START_DATE} ～ ${STATS_END_DATE}'
+
+# キャンセルは確定済みの期間を保持する。
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-all
+- tapOn: 'キャンセル'
+- assertVisible: '${STATS_START_DATE} ～ ${STATS_END_DATE}'
+
+# 保存済みグループを切り替えると API 結果が切り替わり、空期間は空表示になる。
+- tapOn: 'グループを選択'
+- tapOn: ${STATS_GROUP_B_NAME}
+- assertVisible: ${STATS_GROUP_B_UNIQUE_PLAYER}
+- tapOn:
+    id: stats-date-range-selector
+- tapOn: ${EMPTY_PERIOD_START_DATE}
+- tapOn: ${EMPTY_PERIOD_END_DATE}
+- tapOn: '期間を決定'
+- assertVisible: '統計データがありません。'

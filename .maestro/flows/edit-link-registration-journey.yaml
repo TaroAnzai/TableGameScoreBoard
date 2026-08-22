@@ -5,9 +5,9 @@ appId: com.anzaihome.mahjongapp.dev
 # - グループ作成API（http://localhost:6080）へ接続可能
 # - MetroとAndroid開発ビルドが起動済み
 - stopApp
-- runScript: scripts/create-group-fixture.js
+- runScript: ../scripts/create-group-fixture.js
 - runScript:
-    file: scripts/create-group-via-api.js
+    file: ../scripts/create-group-via-api.js
     env:
       API_BASE_URL: 'http://localhost:6080'
 

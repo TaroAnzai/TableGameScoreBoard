@@ -107,7 +107,10 @@ describe('useCreateGroupRequest', () => {
     });
     mockAddPendingGroupKey.mockResolvedValue(undefined);
     const queryClient = new QueryClient({
-      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+      defaultOptions: {
+        mutations: { gcTime: Infinity, retry: false },
+        queries: { gcTime: Infinity, retry: false },
+      },
     });
     const wrapper = ({ children }: PropsWithChildren) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -140,7 +143,10 @@ describe('useCreateGroupRequest', () => {
     mockPostGroupRequest.mockResolvedValue(response);
     mockAddPendingGroupKey.mockRejectedValueOnce(new Error('storage unavailable'));
     const queryClient = new QueryClient({
-      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+      defaultOptions: {
+        mutations: { gcTime: Infinity, retry: false },
+        queries: { gcTime: Infinity, retry: false },
+      },
     });
     const wrapper = ({ children }: PropsWithChildren) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

@@ -1,0 +1,31 @@
+appId: ${APP_ID}
+name: P1 - 承認待ちグループの同期
+tags:
+  - p1
+  - pending-groups
+---
+# 前提: PENDING_GROUP_A/B は API で発行済み、A のみ登録可能にした状態で開始する。
+# このテストはメール承認を API fixture が制御するため、実行中に手動操作を必要としない。
+- launchApp
+- assertVisible: '申請中のグループ'
+- assertVisible: ${PENDING_GROUP_A_NAME}
+- assertVisible: ${PENDING_GROUP_B_NAME}
+- tapOn: '申請状況を更新'
+- extendedWaitUntil:
+    visible: ${PENDING_GROUP_A_NAME}
+    timeout: 30000
+- assertVisible: '登録グループ一覧'
+- assertVisible: ${PENDING_GROUP_A_NAME}
+- assertVisible: '申請中のグループ'
+- assertVisible: ${PENDING_GROUP_B_NAME}
+
+# バックグラウンド復帰と連打でも未承認キーを失わない。
+- stopApp
+- launchApp
+- tapOn: '申請状況を更新'
+- tapOn: '申請状況を更新'
+- assertVisible: ${PENDING_GROUP_B_NAME}
+
+# fixture が期限切れにしたキーは同期時に消える。
+- tapOn: '申請状況を更新'
+- assertNotVisible: ${EXPIRED_PENDING_GROUP_NAME}

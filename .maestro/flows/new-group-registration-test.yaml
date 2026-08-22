@@ -1,8 +1,8 @@
 appId: com.anzaihome.mahjongapp.dev
 ---
-- runScript: scripts/create-group-fixture.js
+- runScript: ../scripts/create-group-fixture.js
 - runScript:
-    file: scripts/request-group-creation-link.js
+    file: ../scripts/request-group-creation-link.js
     env:
       API_BASE_URL: 'http://localhost:6080'
 

@@ -112,7 +112,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
         ) : (
           <ScrollView className="max-h-80" contentContainerClassName="gap-1">
             <View className="flex-1 flex-wrap gap-1">
-              {sortedLinks.map((link) => {
+              {sortedLinks.map((link, index) => {
                 const current = isCurrentLink(link);
                 const parentNames = getParentNames(link);
                 const accessLevel = link.accessLevel
@@ -131,6 +131,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
                     onPress={() => handleOpenLink(link)}
                     onLongPress={() => void handleRemoveLink(link)}
                     selected={current}
+                    testID={`saved-link-${index}`}
                     className={
                       current
                         ? 'bg-primary-container active:bg-primary-container active:opacity-100'

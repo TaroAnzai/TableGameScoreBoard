@@ -82,4 +82,38 @@ describe('appStorage', () => {
     await expect(appStorage.addGroupKey('second-key')).resolves.toBeUndefined();
     await expect(appStorage.getGroupKeys()).resolves.toEqual(['second-key']);
   });
+
+  it.each([
+    ['壊れたJSON', '{not-json'],
+    ['配列以外', JSON.stringify({ key: 'unexpected' })],
+    ['非文字列キーを含む配列', JSON.stringify(['valid-key', 1, null])],
+  ])('%sのGroup Keyを空または有効なキーへ修復する', async (_label, storedValue) => {
+    secureStoredValues.set('groupKeys', storedValue);
+
+    await expect(appStorage.getGroupKeys()).resolves.toEqual(
+      storedValue.includes('valid-key') ? ['valid-key'] : [],
+    );
+    expect(mockSecureStore.setItemAsync).toHaveBeenCalledWith(
+      'groupKeys',
+      JSON.stringify(storedValue.includes('valid-key') ? ['valid-key'] : []),
+    );
+  });
+
+  it('Pending Groupの追加と削除が競合しても追加した申請を保持する', async () => {
+    asyncStoredValues.set('pendingGroupKeys', JSON.stringify([createPendingGroup('existing')]));
+
+    await Promise.all([
+      appStorage.addPendingGroupKey(createPendingGroup('new')),
+      appStorage.removePendingGroupKey('existing'),
+    ]);
+
+    await expect(appStorage.getPendingGroups()).resolves.toEqual([createPendingGroup('new')]);
+  });
+
+  it('壊れたPending Group JSONを読み取り時に空配列へ修復する', async () => {
+    asyncStoredValues.set('pendingGroupKeys', '{broken');
+
+    await expect(appStorage.getPendingGroups()).resolves.toEqual([]);
+    expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('pendingGroupKeys', '[]');
+  });
 });
