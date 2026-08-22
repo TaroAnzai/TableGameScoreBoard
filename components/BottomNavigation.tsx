@@ -1,5 +1,5 @@
 import { router, usePathname } from 'expo-router';
-import { Bookmark, House, Settings } from 'lucide-react-native';
+import { BarChart3, Bookmark, House, Settings } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ export const BottomNavigation = () => {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const isHome = pathname === '/';
+  const isStats = pathname === '/stats';
   const isSettings = pathname === '/settings';
 
   return (
@@ -43,6 +44,17 @@ export const BottomNavigation = () => {
           </Button>
         }
       />
+
+      <Button
+        accessibilityLabel={t('bottomNavigation.stats')}
+        accessibilityState={{ selected: isStats }}
+        className="h-auto min-h-12 flex-1 flex-col gap-1 rounded-lg py-2"
+        variant={isStats ? 'secondary' : 'ghost'}
+        onPress={() => router.replace('/stats')}
+      >
+        <Icon as={BarChart3} className="text-on-surface" size={20} />
+        <Text className="text-xs">{t('bottomNavigation.stats')}</Text>
+      </Button>
 
       <Button
         accessibilityLabel={t('bottomNavigation.settings')}

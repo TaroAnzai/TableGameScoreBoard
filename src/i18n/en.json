@@ -242,6 +242,8 @@
     "empty": "No saved tournaments or tables.",
     "open": "Open {{name}}",
     "remove": "Remove {{name}}",
+    "removeConfirmTitle": "Remove saved page",
+    "removeConfirmDescription": "Are you sure you want to remove the link to \"{{name}}\" from your saved pages?",
     "type": {
       "tournament": "Tournament",
       "table": "Table"
@@ -253,6 +255,7 @@
   "bottomNavigation": {
     "home": "Home",
     "savedLinks": "Saved",
+    "stats": "Stats",
     "settings": "Settings"
   },
   "statsPage": {

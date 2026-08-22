@@ -12,6 +12,7 @@ interface MahjongListItemProps {
   leading?: ReactNode;
   trailing?: ReactNode;
   onPress?: () => void;
+  onLongPress?: () => void;
   disabled?: boolean;
   selected?: boolean;
   className?: string;
@@ -24,6 +25,7 @@ export const MahjongListItem = ({
   leading,
   trailing,
   onPress,
+  onLongPress,
   disabled = false,
   selected = false,
   className,
@@ -77,6 +79,7 @@ export const MahjongListItem = ({
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       disabled={disabled}
       className={contentClassName}
       accessibilityRole="button"

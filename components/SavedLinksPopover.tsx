@@ -5,7 +5,7 @@ import { type ReactElement, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
-import { MahjongList } from '@/components/common/TextStyles';
+import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import { MahjongListItem } from '@/components/MahjongListItem';
 import { Icon } from '@/components/ui/icon';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -29,6 +29,7 @@ const getLinkPathname = (link: SavedLink) =>
 export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
   const triggerRef = useRef<TriggerRef>(null);
   const { t } = useTranslation();
+  const { alertDialog } = useAlertDialog();
   const pathname = usePathname();
   const { savedLinks, isLoading, isError, touch, remove } = useSavedLinks();
   const sortedLinks = [...savedLinks].sort(compareByLastOpenedAt);
@@ -56,7 +57,13 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
     closePopover();
   };
 
-  const handleRemoveLink = (link: SavedLink) => {
+  const handleRemoveLink = async (link: SavedLink) => {
+    const confirmed = await alertDialog({
+      title: t('savedLinks.removeConfirmTitle'),
+      description: t('savedLinks.removeConfirmDescription', { name: link.name }),
+      showCancelButton: true,
+    });
+    if (!confirmed) return;
     void remove({ type: link.type, key: link.key }).catch(() => undefined);
   };
 
@@ -91,6 +98,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
                     badge={t(`savedLinks.type.${link.type}`)}
                     accessories={[getParentNames(link), link.accessLevel ?? link.accessLevel]}
                     onPress={() => handleOpenLink(link)}
+                    onLongPress={() => handleRemoveLink(link)}
                     selected={current}
                     className={
                       current

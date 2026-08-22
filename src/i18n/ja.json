@@ -241,6 +241,8 @@
     "empty": "保存済みの大会・卓はありません",
     "open": "{{name}}を開く",
     "remove": "{{name}}を削除",
+    "removeConfirmTitle": "保存済みページを削除",
+    "removeConfirmDescription": "保存済みページ「{{name}}」のリンクを削除してもよろしいですか？",
     "type": {
       "tournament": "大会",
       "table": "卓"
@@ -252,6 +254,7 @@
   "bottomNavigation": {
     "home": "ホーム",
     "savedLinks": "保存済み",
+    "stats": "統計",
     "settings": "設定"
   },
   "statsPage": {
