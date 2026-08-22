@@ -1,9 +1,10 @@
 import { useGetApiGroupsGroupKeyPlayerStats } from '@/src/api/generated/mahjongApi';
-import { GetApiGroupsGroupKeyPlayerStatsParams } from '@/src/api/generated/mahjongApi.schemas';
+import type { GetApiGroupsGroupKeyPlayerStatsParams } from '@/src/api/generated/mahjongApi.schemas';
+import type { DateString } from '@/src/types/statsDateRange ';
 
 export type PlayerStatsPeriodOptions = {
-  startDate?: string;
-  endDate?: string;
+  startDate?: DateString;
+  endDate?: DateString;
 };
 
 const toPlayerStatsParams = (

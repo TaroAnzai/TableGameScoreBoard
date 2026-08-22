@@ -286,6 +286,13 @@
     },
     "dialogTitle": "Player Statistics",
     "dialogDescription": "Statistics for {{playerName}}",
+    "group": "Group",
+    "period": "Period",
+    "allPeriods": "All time",
+    "selectGroup": "Select group",
+    "selectPeriod": "Statistics period, currently {{period}}",
+    "selectPeriodHint": "Change statistics period",
+    "selectGroupFirst": "Select a group.",
     "dateRangePicker": {
       "title": "Select statistics period",
       "startDate": "Start date",

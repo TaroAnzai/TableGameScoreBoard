@@ -285,6 +285,13 @@
     },
     "dialogTitle": "プレイヤー成績",
     "dialogDescription": "{{playerName}}さんの成績",
+    "group": "グループ",
+    "period": "期間",
+    "allPeriods": "全期間",
+    "selectGroup": "グループを選択",
+    "selectPeriod": "集計期間、現在の設定は{{period}}",
+    "selectPeriodHint": "集計期間を変更します",
+    "selectGroupFirst": "グループを選択してください。",
     "dateRangePicker": {
       "title": "集計期間を選択",
       "startDate": "開始日",
