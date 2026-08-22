@@ -5,7 +5,7 @@ import DateRangePickerModal, {
   parseDateString,
   toDateString,
 } from '@/components/DateRangePickerModal';
-import type { StatsDateRange } from '@/src/types/statsDateRange ';
+import type { StatsDateRange } from '@/src/types/statsDateRange';
 
 jest.mock('react-native-calendars', () => {
   const { View } = jest.requireActual('react-native');

@@ -14,7 +14,7 @@ import {
 import { Text } from '@/components/ui/text';
 import { radius, themes } from '@/src/lib/theme';
 import { useTheme } from '@/src/providers/ThemeProvider';
-import type { DateString, StatsDateRange } from '@/src/types/statsDateRange ';
+import type { DateString, StatsDateRange } from '@/src/types/statsDateRange';
 
 type DateRangePickerModalProps = {
   open: boolean;

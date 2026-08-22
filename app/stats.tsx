@@ -13,7 +13,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import type { GroupV2 } from '@/src/api/generated/mahjongApi.schemas';
 import { useGroupQueries } from '@/src/hooks/useGroups';
-import type { StatsDateRange } from '@/src/types/statsDateRange ';
+import type { StatsDateRange } from '@/src/types/statsDateRange';
 
 const StatsPage = () => {
   const [selectedGroup, setSelectedGroup] = useState<GroupV2 | null>(null);
