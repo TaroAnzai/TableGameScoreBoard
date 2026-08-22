@@ -284,7 +284,20 @@
       "rank4_or_lower_count": "4位以下回数"
     },
     "dialogTitle": "プレイヤー成績",
-    "dialogDescription": "{{playerName}}さんの成績"
+    "dialogDescription": "{{playerName}}さんの成績",
+    "dateRangePicker": {
+      "title": "集計期間を選択",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "selectStartDate": "開始日を選択",
+      "selectEndDate": "終了日を選択",
+      "unselected": "未選択",
+      "all": "全期間",
+      "selectAll": "全期間を選択",
+      "selectYearHeading": "年を一括選択",
+      "selectYear": "{{year}}年を選択",
+      "rangeError": "開始日は終了日以前の日付を選択してください。"
+    }
   },
   "contactPage": {
     "title": "お問い合わせ",

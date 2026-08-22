@@ -285,7 +285,20 @@
       "rank4_or_lower_count": "4th Place or Lower Count"
     },
     "dialogTitle": "Player Statistics",
-    "dialogDescription": "Statistics for {{playerName}}"
+    "dialogDescription": "Statistics for {{playerName}}",
+    "dateRangePicker": {
+      "title": "Select statistics period",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "selectStartDate": "Select start date",
+      "selectEndDate": "Select end date",
+      "unselected": "Not selected",
+      "all": "All time",
+      "selectAll": "Select all time",
+      "selectYearHeading": "Select a full year",
+      "selectYear": "Select {{year}}",
+      "rangeError": "The start date must be on or before the end date."
+    }
   },
   "contactPage": {
     "title": "Contact Us",
