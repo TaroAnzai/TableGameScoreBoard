@@ -16,8 +16,10 @@ tags:
     timeout: 30000
 - assertNotVisible: '${TOURNAMENT_NAME}を編集'
 - assertNotVisible: '参加者を追加'
-- assertNotVisible: '大会新規作成'
-- assertNotVisible: '大会を削除'
+- assertNotVisible: '参加者を削除'
+- assertVisible:
+    text: '記録用紙を新規作成'
+    enabled: false
 
 - openLink:
     link: ${TOURNAMENT_EDIT_LINK}
@@ -26,8 +28,11 @@ tags:
     visible: ${TOURNAMENT_NAME}
     timeout: 30000
 - assertVisible: '${TOURNAMENT_NAME}を編集'
-- assertVisible: '削除する大会を選択'
-- assertVisible: '大会新規作成'
+- assertVisible: '参加者を削除'
+- assertVisible: '参加者を追加'
+- assertVisible:
+    text: '記録用紙を新規作成'
+    enabled: true
 
 # OWNER 専用の大会削除は、グループ画面で確認する。
 - openLink:

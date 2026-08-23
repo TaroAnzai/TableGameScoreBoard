@@ -90,14 +90,17 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
   return function MockPageTitleBar({
     title,
     onParentPress,
+    onTitleChange,
   }: {
     title: string;
     onParentPress?: () => void;
+    onTitleChange?: (newTitle: string) => void;
   }) {
     return (
       <View>
         <Text>{title}</Text>
         <Pressable accessibilityLabel="親ページに戻る" onPress={onParentPress} />
+        {onTitleChange && <Pressable accessibilityLabel="タイトルを編集" />}
       </View>
     );
   };
@@ -155,7 +158,7 @@ const groupState = {
   data: {
     id: 1,
     name: 'テストグループ',
-    group_links: [{ access_level: 'EDIT', short_key: 'group-key' }],
+    group_links: [{ access_level: 'OWNER', short_key: 'group-key' }],
   },
   isLoading: false,
   isError: false,
@@ -354,6 +357,28 @@ describe('グループ詳細ページ', () => {
 
     expect(screen.queryByLabelText('大会新規作成')).toBeNull();
     expect(screen.queryByLabelText('グループメンバー追加')).toBeNull();
+  });
+
+  it('EDIT権限ではタイトル編集と大会削除を表示しない', async () => {
+    mockUseGroup.mockReturnValue({
+      ...groupState,
+      data: {
+        ...groupState.data,
+        group_links: [{ access_level: 'EDIT', short_key: 'group-key' }],
+      },
+    });
+    await render(<GroupPage />);
+
+    expect(screen.queryByLabelText('タイトルを編集')).toBeNull();
+    expect(screen.queryByLabelText('削除する大会を選択')).toBeNull();
+    expect(screen.getByLabelText('大会新規作成')).toBeTruthy();
+  });
+
+  it('OWNER権限ではタイトル編集と大会削除を表示する', async () => {
+    await render(<GroupPage />);
+
+    expect(screen.getByLabelText('タイトルを編集')).toBeTruthy();
+    expect(screen.getByLabelText('削除する大会を選択')).toBeTruthy();
   });
 
   it('作成・削除処理中は対応する操作ボタンを無効化する', async () => {

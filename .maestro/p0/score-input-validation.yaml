@@ -16,16 +16,11 @@ tags:
     timeout: 30000
 - tapOn: '第1局のスコアを編集'
 
-# 2人だけでは確定不可。
+# 4人でも合計が0でなければ確定不可。
 - tapOn: '${PLAYER_1}の点数'
 - inputText: '100'
 - tapOn: '${PLAYER_2}の点数'
 - inputText: '-100'
-- assertVisible:
-    text: '確定'
-    enabled: false
-
-# 4人でも合計が0でなければ確定不可。
 - tapOn: '${PLAYER_3}の点数'
 - inputText: '1'
 - tapOn: '${PLAYER_4}の点数'
@@ -36,8 +31,8 @@ tags:
     enabled: false
 
 # 合計0なら確定可能。二重タップしても1局だけ作成される。
+- tapOn: '${PLAYER_3}の点数'
 - tapOn: '${PLAYER_4}の点数'
-- eraseText
 - inputText: '-1'
 - assertVisible: '合計: 0'
 - tapOn: '確定'
@@ -45,25 +40,28 @@ tags:
     text: '確定'
     optional: true
 - assertVisible: '100'
-- assertNotVisible: '第2局のスコアを編集'
 
 # 失敗時はモーダルと入力を保持し、再試行しても重複局を作らない。
-- openLink:
-    link: ${SCORE_FAILURE_TABLE_EDIT_LINK}
-- runFlow: ../flows/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${SCORE_FAILURE_TABLE_NAME}
-    timeout: 30000
 - tapOn: '第1局のスコアを編集'
 - tapOn: '${PLAYER_1}の点数'
-- inputText: '100'
+- inputText: '200'
 - tapOn: '${PLAYER_2}の点数'
-- inputText: '-100'
+- inputText: '-200'
 - tapOn: '${PLAYER_3}の点数'
 - inputText: '0'
 - tapOn: '${PLAYER_4}の点数'
 - inputText: '0'
+- setAirplaneMode: enabled
 - tapOn: '確定'
+- stopApp
+- launchApp
+- assertVisible: '麻雀大会 集計'
+- openLink:
+    link: ${SCORE_TABLE_EDIT_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${SCORE_TABLE_NAME}
+    timeout: 30000
 - assertVisible: '${PLAYER_1}の点数'
 - assertVisible: '100'
 - tapOn: '確定'

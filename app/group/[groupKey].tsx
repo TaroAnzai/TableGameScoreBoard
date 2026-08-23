@@ -76,6 +76,7 @@ const GroupPage = () => {
   const allowNavigation = useRef(false);
   const isLeaveDialogOpen = useRef(false);
   const accessLevel = getAccessLevelstring(group?.group_links);
+  const isOwner = accessLevel === 'OWNER';
   const groupErrorPresentation = getUserFacingApiError(groupError, {
     messageOverrides: {
       notFound: t('groupPage.groupNotFound'),
@@ -245,7 +246,7 @@ const GroupPage = () => {
               : t('Common.loading')
         }
         shareLinks={group ? group.group_links : []}
-        onTitleChange={accessLevel === 'VIEW' || isGroupNotFound ? undefined : handleTitleChange}
+        onTitleChange={isOwner && !isGroupNotFound ? handleTitleChange : undefined}
         parentUrl="/"
         onParentPress={() => {
           if (isGroupNotFound) {
@@ -297,16 +298,18 @@ const GroupPage = () => {
                     >
                       <Icon as={SquarePlus} className="text-on-surface" size={24} />
                     </Button>
-                    <Button
-                      accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
-                      className="h-10 w-10 rounded-full p-0"
-                      disabled={isGroupNotFound || isDeletingTournament}
-                      size="icon"
-                      variant="ghost"
-                      onPress={() => setShowDeleteTournamentModal(true)}
-                    >
-                      <Icon as={SquareMinus} className="text-error" size={24} />
-                    </Button>
+                    {isOwner && (
+                      <Button
+                        accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
+                        className="h-10 w-10 rounded-full p-0"
+                        disabled={isGroupNotFound || isDeletingTournament}
+                        size="icon"
+                        variant="ghost"
+                        onPress={() => setShowDeleteTournamentModal(true)}
+                      >
+                        <Icon as={SquareMinus} className="text-error" size={24} />
+                      </Button>
+                    )}
                   </>
                 )
               }
