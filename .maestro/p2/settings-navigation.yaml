@@ -6,10 +6,12 @@ tags:
   - navigation
 ---
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - tapOn: '設定を開く'
 - tapOn: 'ダーク'
 - stopApp
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - tapOn: '設定を開く'
 - assertVisible: 'ダーク'
 
@@ -27,6 +29,7 @@ tags:
 - tapOn: '日本語'
 - openLink:
     link: ${VALID_TABLE_DIRECT_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${VALID_TABLE_NAME}
     timeout: 30000
@@ -34,6 +37,7 @@ tags:
 - assertVisible: '登録グループ一覧'
 - openLink:
     link: ${VALID_TOURNAMENT_DIRECT_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${VALID_TOURNAMENT_NAME}
     timeout: 30000
@@ -44,7 +48,9 @@ tags:
 # 不正・期限切れ・形式不正リンクは、アプリがクラッシュせずエラーを表示する。
 - openLink:
     link: ${INVALID_FORMAT_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - assertVisible: ${INVALID_FORMAT_ERROR}
 - openLink:
     link: ${EXPIRED_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - assertVisible: ${EXPIRED_LINK_ERROR}

@@ -341,7 +341,7 @@ const TournamentPage = () => {
             accessLevel !== 'VIEW' && (
               <>
                 <Button
-                  accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
+                  accessibilityLabel={t('tournamentPage.buttonAddPlayer')}
                   className="h-10 w-10 rounded-full p-0"
                   disabled={isAddingTournamentPlayer}
                   size="icon"
@@ -351,7 +351,7 @@ const TournamentPage = () => {
                   <Icon as={UserPlus} className="text-on-surface" size={24} />
                 </Button>
                 <Button
-                  accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
+                  accessibilityLabel={t('tournamentPage.buttonDeletePlayer')}
                   className="h-10 w-10 rounded-full p-0"
                   disabled={isDeletingTournamentPlayer}
                   size="icon"

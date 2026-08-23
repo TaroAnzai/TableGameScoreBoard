@@ -1,0 +1,35 @@
+# Shared Maestro configuration for the dedicated test group.
+# Update this file when the fixture links are rotated.
+env:
+  APP_ID: com.anzaihome.mahjongapp.dev
+
+  GROUP_NAME: Maestroテストグループ
+  GROUP_OWNER_LINK: mahjongapp-dev://mahjong/group/Ro65oGomhoYd
+  GROUP_EDIT_LINK: mahjongapp-dev://mahjong/group/aP6LvMLaYkdP
+  GROUP_VIEW_LINK: mahjongapp-dev://mahjong/group/1s5bv-jkvKUH
+
+  TOURNAMENT_NAME: Maestro大会編集済み1786850044289
+  TOURNAMENT_EDIT_LINK: mahjongapp-dev://mahjong/tournament/DVGpboYduy45
+  TOURNAMENT_VIEW_LINK: mahjongapp-dev://mahjong/tournament/4V8DfcFmc-pB
+  TOURNAMENT_DIRECT_LINK: mahjongapp-dev://mahjong/tournament/4V8DfcFmc-pB
+
+  TABLE_NAME: 卓1
+  TABLE_EDIT_LINK: mahjongapp-dev://mahjong/table/9g-8xUGqSrP2
+  TABLE_VIEW_LINK: mahjongapp-dev://mahjong/table/Yt4rk4uZ6Ggo
+  TABLE_DIRECT_LINK: mahjongapp-dev://mahjong/table/Yt4rk4uZ6Ggo
+  VIEW_CHILD_TABLE_LINK: mahjongapp-dev://mahjong/table/Yt4rk4uZ6Ggo
+  EDIT_CHILD_TABLE_LINK: mahjongapp-dev://mahjong/table/9g-8xUGqSrP2
+  SCORE_TABLE_NAME: 卓1
+  SCORE_TABLE_EDIT_LINK: mahjongapp-dev://mahjong/table/9g-8xUGqSrP2
+
+  CHIP_TABLE_NAME: チップ
+  CHIP_TABLE_EDIT_LINK: mahjongapp-dev://mahjong/table/qaoMu_kBzh3N
+  CHIP_TABLE_VIEW_LINK: mahjongapp-dev://mahjong/table/Lv06FBgK9aeP
+
+  PLAYER_1: 東テスト1786850044289
+  PLAYER_2: 南テスト1786850044289
+  PLAYER_3: 西テスト1786850044289
+  PLAYER_4: 北テスト1786850044289
+
+# SCORE_FAILURE_TABLE_EDIT_LINK is intentionally not set. Its flow requires a
+# separate fixture that returns 5xx only for the first score-save request.

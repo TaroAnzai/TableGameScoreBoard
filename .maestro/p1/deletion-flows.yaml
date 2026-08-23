@@ -6,8 +6,10 @@ tags:
 ---
 # 前提: DELETE_TABLE_LINK には1局、DELETE_TOURNAMENT_LINK には上記卓がある E2E fixture。
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - openLink:
     link: ${DELETE_TABLE_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${DELETE_TABLE_NAME}
     timeout: 30000
@@ -33,6 +35,7 @@ tags:
 # 保存した卓を親大会から削除すると大会画面へ遷移する。
 - openLink:
     link: ${DELETE_TABLE_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - tapOn: '記録表削除'
 - assertVisible: '記録表削除'
 - tapOn: 'OK'
@@ -43,6 +46,7 @@ tags:
 # 直接リンクで開いた卓を削除した場合はホームへ戻る。
 - openLink:
     link: ${DIRECT_DELETE_TABLE_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${DIRECT_DELETE_TABLE_NAME}
     timeout: 30000
@@ -55,6 +59,7 @@ tags:
 # 大会削除後はグループ一覧から消え、保存済みページにも残らない。
 - openLink:
     link: ${DELETE_GROUP_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${DELETE_GROUP_NAME}
     timeout: 30000

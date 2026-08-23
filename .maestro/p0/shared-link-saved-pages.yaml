@@ -7,6 +7,7 @@ tags:
 # 前提: TOURNAMENT_DIRECT_LINK と TABLE_DIRECT_LINK は、それぞれ未保存の実在する VIEW/EDIT/OWNER リンク。
 #       実行前にアプリデータをクリアし、日本語を選択する。
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - openLink:
     link: ${TOURNAMENT_DIRECT_LINK}
 - extendedWaitUntil:
@@ -24,6 +25,7 @@ tags:
 # 再起動すると未保存ページとして再び促進され、保存できる。
 - stopApp
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - openLink:
     link: ${TOURNAMENT_DIRECT_LINK}
 - assertVisible: 'このページを保存しますか？'
@@ -43,6 +45,7 @@ tags:
 # アプリ再起動後、保存済み一覧から大会を開く。開いた項目は最終表示順の先頭になる。
 - stopApp
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - tapOn: '保存済み'
 - assertVisible: '保存済みページ'
 - assertVisible: ${TOURNAMENT_NAME}

@@ -154,7 +154,9 @@ const TableScoreInputModal = ({
                   >
                     <Input
                       testID={`score-input-${player.id}`}
-                      accessibilityLabel={`${player.name}の点数`}
+                      accessibilityLabel={t('scoreBoard.scoreInputLabel', {
+                        playerName: player.name,
+                      })}
                       value={scores[player.id] ?? ''}
                       editable={!isSaving}
                       onChangeText={(value) => handleScoreChange(player.id, value)}

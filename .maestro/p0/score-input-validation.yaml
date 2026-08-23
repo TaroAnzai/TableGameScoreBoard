@@ -7,8 +7,10 @@ tags:
 # 前提: SCORE_TABLE_EDIT_LINK は参加者4人を持つ通常卓。
 #       SCORE_FAILURE_TABLE_EDIT_LINK は、最初の保存だけ 5xx を返す E2E fixture。
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - openLink:
     link: ${SCORE_TABLE_EDIT_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${SCORE_TABLE_NAME}
     timeout: 30000
@@ -48,6 +50,7 @@ tags:
 # 失敗時はモーダルと入力を保持し、再試行しても重複局を作らない。
 - openLink:
     link: ${SCORE_FAILURE_TABLE_EDIT_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${SCORE_FAILURE_TABLE_NAME}
     timeout: 30000

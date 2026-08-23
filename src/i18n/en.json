@@ -206,6 +206,7 @@
   "scoreBoard": {
     "gameTitle": "Game",
     "gameLabel": "Game{{index}}",
+    "scoreInputLabel": "Score for {{playerName}}",
     "inputTitle": "Enter scores for {{game}}",
     "totalLabel": "Total",
     "totalMustBeZero": "The total for a standard table must be zero",

@@ -7,6 +7,7 @@ tags:
 # 前提: PENDING_GROUP_A/B は API で発行済み、A のみ登録可能にした状態で開始する。
 # このテストはメール承認を API fixture が制御するため、実行中に手動操作を必要としない。
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - assertVisible: '申請中のグループ'
 - assertVisible: ${PENDING_GROUP_A_NAME}
 - assertVisible: ${PENDING_GROUP_B_NAME}
@@ -22,6 +23,7 @@ tags:
 # バックグラウンド復帰と連打でも未承認キーを失わない。
 - stopApp
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - tapOn: '申請状況を更新'
 - tapOn: '申請状況を更新'
 - assertVisible: ${PENDING_GROUP_B_NAME}

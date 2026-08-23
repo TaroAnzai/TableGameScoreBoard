@@ -305,7 +305,7 @@ describe('大会詳細ページ', () => {
     });
     await render(<TournamentPage />);
 
-    fireEvent.press(screen.getByRole('button', { name: '大会新規作成' }));
+    fireEvent.press(screen.getByRole('button', { name: '参加者を追加' }));
     expect(mockAlertDialog).toHaveBeenCalledWith(
       expect.objectContaining({
         title: '参加者を追加できません',

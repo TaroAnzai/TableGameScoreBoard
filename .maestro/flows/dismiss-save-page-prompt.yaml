@@ -1,0 +1,8 @@
+# 未保存の共有ページを開いた際に表示される場合だけ、保存せずにテストを続行する。
+appId: ${APP_ID}
+---
+- runFlow:
+    when:
+      visible: '保存せず続行'
+    commands:
+      - tapOn: '保存せず続行'

@@ -6,8 +6,10 @@ tags:
 ---
 # 前提: STATS_GROUP_A_LINK/B_LINK は異なる成績を持つ保存済みグループ。
 - launchApp
+- assertVisible: '麻雀大会 集計'
 - openLink:
     link: ${STATS_GROUP_A_LINK}
+- runFlow: ../flows/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${STATS_GROUP_A_NAME}
     timeout: 30000
