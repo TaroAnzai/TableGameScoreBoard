@@ -4,64 +4,96 @@
 
 ```text
 .maestro/
-├── flows/     # 既存の開発・回帰フローと共通起動フロー
-├── p0/        # リリースを止める主要導線（保存、権限、点数入力）
-├── p1/        # 削除、統計期間、承認待ち同期
-├── p2/        # 設定、言語、戻る操作、Deep Link エラー
-└── scripts/   # API フィクスチャとテストデータ生成
+├── config.yaml  # 共通のアプリ ID と固定 fixture のリンク・表示名
+├── flows/       # 開発・回帰フローと共通フロー
+├── p0/          # リリースを止める主要導線（保存、権限、点数入力）
+├── p1/          # 削除、統計期間、承認待ち同期
+├── p2/          # 設定、言語、戻る操作、Deep Link エラー
+└── scripts/     # テスト実行、通信切替、API fixture・テストデータ生成
 ```
 
-`flows/mahjong-full-journey.yaml`、`flows/cache-invalidation-journey.yaml`、
-`flows/edit-link-registration-journey.yaml` は既存回帰テストです。移動後も `runFlow` / `runScript`
-の相対パスを更新済みです。
+`config.yaml` には専用 E2E fixture の値を置きます。fixture を作り直した場合は、このファイルのリンクと
+表示名を更新してください。公開データや日常利用しているキーは E2E に使わないでください。
 
 ## 実行前提
 
+- Maestro CLI が `PATH` にあること
 - Android 開発ビルドと Metro が起動していること
-- 対象アプリ ID を `APP_ID` に設定すること（開発ビルドは `com.anzaihome.mahjongapp.dev`）
-- P0/P1/P2 のリンク系フローは、専用の使い捨てバックエンド fixture を作り、必要なリンク・表示名を
-  環境変数で渡すこと
-- 保存済みページ・言語・テーマを検証する前にはアプリデータをクリアすること
+- `config.yaml` の `APP_ID` とリンクがテスト対象の開発ビルド・バックエンドを指していること
+- 日本語 UI を検証するフローでは、`flows/select-japanese.yaml` をアプリ起動後に追加すること。
+- 保存済み共有リンクが空である必要があるフローだけは、`flows/clear-app-data-and-select-japanese.yaml` を使うこと。
+  `clearState` は開発ビルドの defaultLaunchURL を消すため使わず、保存済みページを長押しで全削除する。
+- 通信異常を検証する場合は、`http://127.0.0.1:9099` に通信モード切替用のテストサーバーが起動していること
 
-リンクは `mahjongapp-dev:///tournament/<key>` のようなアプリスキーム、または App Link を渡せます。
-VIEW / EDIT / OWNER は同一リソースから発行した実キーを使ってください。公開データや日常利用のキーを
-E2E に使わないでください。
+P0/P1/P2 の一部は固定 fixture に加えて個別の fixture を必要とします。必要な環境変数は各 YAML の先頭コメントを
+確認してください。たとえば `score-input-validation.yaml` の `SCORE_FAILURE_TABLE_EDIT_LINK` は、最初の
+スコア保存だけが失敗する fixture を指す必要があります。
 
-```sh
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev \
-  -e TOURNAMENT_DIRECT_LINK='mahjongapp-dev:///tournament/<key>' \
-  -e TOURNAMENT_NAME='E2E 大会' \
-  -e TABLE_DIRECT_LINK='mahjongapp-dev:///table/<key>' \
-  -e TABLE_NAME='E2E 卓' \
-  .maestro/p0/shared-link-saved-pages.yaml
-```
+## テストの実行
 
-権限・異常系・承認待ちの各フローが要求する変数は、当該 YAML の先頭コメントに記載しています。
-特に `score-input-validation.yaml` の `SCORE_FAILURE_TABLE_EDIT_LINK` は、最初のゲーム作成だけ 5xx を返す
-fixture である必要があります。これにより「モーダル保持」「再試行」「重複作成なし」を実際の API と
-合わせて検証できます。
-
-## P0 の実行
+**Maestro テストは必ずプロジェクトルートから `.maestro/scripts/maestro-test.sh` 経由で実行してください。**
+`maestro test` を直接実行しません。このスクリプトは `config.yaml` の `env` を読み込み、`--config` と環境変数を
+Maestro に渡したうえで、開始前と終了時に通信モードを `normal` に戻します。
 
 ```sh
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/shared-link-saved-pages.yaml
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/access-control.yaml
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/score-input-validation.yaml
+.maestro/scripts/maestro-test.sh <flow-or-directory> [maestro test options...]
 ```
 
-`access-control.yaml` はモバイル UI と親→子リンクの権限を確認します。EDIT で OWNER 専用の大会削除が
-露出しないこと、OWNER で露出することを明示的に検証します。現在の実装との差異があれば、この P0 は
-失敗します。さらに、同じ fixture キーでバックエンドの permission contract test も組にして実行し、
-UI 非表示だけで権限制御を済ませないでください。
-
-## P1/P2 の実行
+例:
 
 ```sh
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p1/deletion-flows.yaml
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p1/stats-period.yaml
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p1/pending-groups.yaml
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p2/settings-navigation.yaml
+.maestro/scripts/maestro-test.sh .maestro/p0/access-control.yaml
+.maestro/scripts/maestro-test.sh .maestro/p1
+.maestro/scripts/maestro-test.sh .maestro/p2/settings-navigation.yaml --format junit
 ```
 
-Maestro の `assertVisible` / `assertNotVisible` は短時間の状態変化を自動的に待機するため、任意の固定 sleep は
-入れていません。長い API 待機だけ `extendedWaitUntil` を使っています。
+### P0
+
+```sh
+.maestro/scripts/maestro-test.sh .maestro/p0/shared-link-saved-pages.yaml
+.maestro/scripts/maestro-test.sh .maestro/p0/access-control.yaml
+.maestro/scripts/maestro-test.sh .maestro/p0/score-input-validation.yaml
+```
+
+`access-control.yaml` は、VIEW・EDIT・OWNER の UI 権限を確認します。グループ画面では EDIT で大会削除が表示されず、
+OWNER では表示されることを検証します。UI の非表示だけで完結させず、同じ fixture キーを使うバックエンドの
+permission contract test も実行してください。
+
+### P1 / P2
+
+```sh
+.maestro/scripts/maestro-test.sh .maestro/p1/deletion-flows.yaml
+.maestro/scripts/maestro-test.sh .maestro/p1/stats-period.yaml
+.maestro/scripts/maestro-test.sh .maestro/p1/pending-groups.yaml
+.maestro/scripts/maestro-test.sh .maestro/p2/settings-navigation.yaml
+```
+
+### 既存の回帰フロー
+
+`flows/` にはグループ作成・登録、キャッシュ無効化、共有 EDIT リンク、フルジャーニーなどの回帰フローがあります。
+API を利用するフローは、ローカル API（既定では `http://localhost:6080`）に接続できる状態で実行します。
+
+```sh
+.maestro/scripts/maestro-test.sh .maestro/flows/new-group-request-test.yaml
+.maestro/scripts/maestro-test.sh .maestro/flows/edit-link-registration-journey.yaml
+.maestro/scripts/maestro-test.sh .maestro/flows/cache-invalidation-journey.yaml
+.maestro/scripts/maestro-test.sh .maestro/flows/mahjong-full-journey.yaml
+```
+
+## 通信テスト
+
+フロー内で通信をオフラインに切り替えるには、次の `runScript` を入れます。
+
+```yaml
+- runScript:
+    file: ../scripts/set-network-mode.js
+    env:
+      MODE: offline
+```
+
+`set-network-mode.js` で指定できる値は `normal`、`offline`、`500` です。フロー内で切り替えた後も、
+`maestro-test.sh` が終了時に `normal` へ戻します。途中で通信を復旧して後続操作を検証したい場合は、同じ形式で
+`MODE: normal` を指定してください。
+
+Maestro の `assertVisible` / `assertNotVisible` は短時間の状態変化を待機するため、固定の `sleep` は追加しません。
+長い API 待機には `extendedWaitUntil` を使用します。

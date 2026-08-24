@@ -58,10 +58,11 @@ export default function TablePage() {
   const { mutateAsync: deleteGame, isPending: isDeletingGame } = useDeleteGame();
   const { remove: removeSavedLink } = useSavedLinks();
   //Query系フック設定
-  const { tableKey, parentTournamentKey, parentGroupKey } = useLocalSearchParams<{
+  const { tableKey, parentTournamentKey, parentGroupKey, openedFromSavedLinks } = useLocalSearchParams<{
     tableKey: string;
     parentTournamentKey?: string;
     parentGroupKey?: string;
+    openedFromSavedLinks?: string;
   }>();
   const {
     dashboard,
@@ -100,6 +101,7 @@ export default function TablePage() {
     parentGroupName: dashboard?.parent?.group?.name,
     parentTournamentName: dashboard?.parent?.tournament?.name,
     isDirectView: !parentTournamentKey,
+    suppressSavePrompt: openedFromSavedLinks === 'true',
   });
   // Early retrurn
   // --- ① 不正URL対応 ---

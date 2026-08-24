@@ -6,7 +6,7 @@ tags:
 ---
 # 前提: DELETE_TABLE_LINK には1局、DELETE_TOURNAMENT_LINK には上記卓がある E2E fixture。
 - launchApp
-- assertVisible: '麻雀大会 集計'
+- runFlow: ../flows/select-japanese.yaml
 - openLink:
     link: ${DELETE_TABLE_LINK}
 - runFlow: ../flows/dismiss-save-page-prompt.yaml

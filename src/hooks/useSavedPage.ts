@@ -12,6 +12,7 @@ type UseSavedPageParams = {
   parentGroupName?: string;
   parentTournamentName?: string;
   isDirectView: boolean;
+  suppressSavePrompt?: boolean;
 };
 
 export const useSavedPage = ({
@@ -23,6 +24,7 @@ export const useSavedPage = ({
   parentGroupName,
   parentTournamentName,
   isDirectView,
+  suppressSavePrompt = false,
 }: UseSavedPageParams) => {
   const [dismissedPage, setDismissedPage] = useState<string>();
   const { savedLinks, isLoading, isError, error, save, remove, touch, isSaving, isRemoving } =
@@ -76,7 +78,13 @@ export const useSavedPage = ({
     isSaving,
     isRemoving,
     shouldPromptSave:
-      isDirectView && !isLoading && !isError && !isSaved && canSave && !hasDismissedPrompt,
+      isDirectView &&
+      !suppressSavePrompt &&
+      !isLoading &&
+      !isError &&
+      !isSaved &&
+      canSave &&
+      !hasDismissedPrompt,
     dismissSavePrompt: () => setDismissedPage(pageIdentifier),
     hasDismissedPrompt,
     isLoading,

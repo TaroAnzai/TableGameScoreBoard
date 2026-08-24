@@ -56,9 +56,10 @@ const TournamentPage = () => {
   const { alertDialog } = useAlertDialog();
   const { showError, showSuccess } = useMutationFeedback();
   const handleBack = useBackFallback(router);
-  const { tournamentKey, parentGroupKey } = useLocalSearchParams<{
+  const { tournamentKey, parentGroupKey, openedFromSavedLinks } = useLocalSearchParams<{
     tournamentKey: string;
     parentGroupKey?: string;
+    openedFromSavedLinks?: string;
   }>();
   //Query系フック設定
   const {
@@ -105,6 +106,7 @@ const TournamentPage = () => {
     accessLevel,
     parentGroupName: dashboard?.parent?.group?.name,
     isDirectView: !parentGroupKey,
+    suppressSavePrompt: openedFromSavedLinks === 'true',
   });
 
   const tournamentErrorPresentation = getUserFacingApiError(dashboardError, {

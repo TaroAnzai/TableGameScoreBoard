@@ -73,7 +73,26 @@ fi
 ENV_COUNT=$((${#ENV_ARGS[@]} / 2))
 echo "Loaded ${ENV_COUNT} Maestro environment variables from ${CONFIG_FILE}."
 
-exec maestro test \
+CONTROL_URL="http://127.0.0.1:9099"
+
+reset_network() {
+  curl -s -X POST "$CONTROL_URL/mode/normal" > /dev/null || true
+}
+
+cleanup() {
+  echo
+  echo "Resetting network mode..."
+  reset_network
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# 前回の失敗で異常モードが残っていても必ずリセット
+reset_network
+
+maestro test \
   --config "$CONFIG_FILE" \
   "${ENV_ARGS[@]}" \
   "$@"

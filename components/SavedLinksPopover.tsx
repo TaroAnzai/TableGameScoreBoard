@@ -59,9 +59,15 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
     }
 
     if (link.type === 'tournament') {
-      router.push({ pathname: '/tournament/[tournamentKey]', params: { tournamentKey: link.key } });
+      router.push({
+        pathname: '/tournament/[tournamentKey]',
+        params: { tournamentKey: link.key, openedFromSavedLinks: 'true' },
+      });
     } else {
-      router.push({ pathname: '/table/[tableKey]', params: { tableKey: link.key } });
+      router.push({
+        pathname: '/table/[tableKey]',
+        params: { tableKey: link.key, openedFromSavedLinks: 'true' },
+      });
     }
 
     void touch({ type: link.type, key: link.key }).catch(showSavedLinkOperationError);

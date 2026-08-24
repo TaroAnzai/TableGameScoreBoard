@@ -60,6 +60,11 @@ describe('useSavedPage', () => {
       params: { isDirectView: false, name: '大会名' },
     },
     {
+      description: '保存済み一覧から開いたページ',
+      state: {},
+      params: { isDirectView: true, suppressSavePrompt: true, name: '大会名' },
+    },
+    {
       description: 'APIデータ未確定',
       state: {},
       params: { isDirectView: true, name: undefined },

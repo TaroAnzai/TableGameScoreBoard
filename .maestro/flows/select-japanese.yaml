@@ -1,0 +1,8 @@
+# 日本語 UI を前提とするフロー向けの軽量な共通セットアップ。
+appId: ${APP_ID}
+---
+- tapOn:
+    text: '設定を開く|Open settings'
+- tapOn: '日本語'
+- pressKey: back
+- assertVisible: '麻雀大会 集計'

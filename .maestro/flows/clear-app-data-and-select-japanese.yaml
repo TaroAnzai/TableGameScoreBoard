@@ -1,0 +1,20 @@
+# 保存済み共有リンクが空である必要があるフロー用の共通前提。
+# 開発ビルドの defaultLaunchURL を維持するため `clearState` は使用しない。
+# 保存済みページの先頭項目を長押し削除し、一覧が空になるまで繰り返す。
+appId: ${APP_ID}
+---
+- launchApp
+- runFlow: select-japanese.yaml
+- tapOn: '保存済み'
+- repeat:
+    while:
+      visible:
+        id: saved-link-0
+    commands:
+      - longPressOn:
+          id: saved-link-0
+      - assertVisible: '保存済みページを削除'
+      - tapOn: 'OK'
+      - waitForAnimationToEnd
+- assertVisible: '保存済みの大会・卓はありません'
+- tapOn: '保存済み'

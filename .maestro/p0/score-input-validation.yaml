@@ -7,7 +7,7 @@ tags:
 # 前提: SCORE_TABLE_EDIT_LINK は参加者4人を持つ通常卓。
 #       SCORE_FAILURE_TABLE_EDIT_LINK は、最初の保存だけ 5xx を返す E2E fixture。
 - launchApp
-- assertVisible: '麻雀大会 集計'
+- runFlow: ../flows/select-japanese.yaml
 - openLink:
     link: ${SCORE_TABLE_EDIT_LINK}
 - runFlow: ../flows/dismiss-save-page-prompt.yaml
@@ -51,9 +51,17 @@ tags:
 - inputText: '0'
 - tapOn: '${PLAYER_4}の点数'
 - inputText: '0'
-- setAirplaneMode: enabled
+- runScript:
+    file: ../scripts/set-network-mode.js
+    env:
+      MODE: offline
 - tapOn: '確定'
+- assertVisible: '対局の更新に失敗しました'
 - stopApp
+- runScript:
+    file: ../scripts/set-network-mode.js
+    env:
+      MODE: normal
 - launchApp
 - assertVisible: '麻雀大会 集計'
 - openLink:
@@ -62,8 +70,9 @@ tags:
 - extendedWaitUntil:
     visible: ${SCORE_TABLE_NAME}
     timeout: 30000
+- tapOn: '第1局のスコアを編集'
 - assertVisible: '${PLAYER_1}の点数'
 - assertVisible: '100'
 - tapOn: '確定'
 - assertVisible: '100'
-- assertNotVisible: '第2局のスコアを編集'
+- assertVisible: '第2局のスコアを編集'

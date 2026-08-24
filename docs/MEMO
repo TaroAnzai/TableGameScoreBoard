@@ -47,6 +47,8 @@ maestro test .maestro/smoke-test.yaml
 MaestroによるE2Eテスト実行で描画時の2重描画を抑制
 maestro --no-ansi test .maestro/new-group-request-test.yaml
 
+maestro hierarchy >temp/hierarchy.txt
+
 apkのバージョンなどの情報を取得
 ~/Android/Sdk/build-tools/<バージョン>/aapt dump badging app.apk
 

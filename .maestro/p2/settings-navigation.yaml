@@ -6,7 +6,7 @@ tags:
   - navigation
 ---
 - launchApp
-- assertVisible: '麻雀大会 集計'
+- runFlow: ../flows/select-japanese.yaml
 - tapOn: '設定を開く'
 - tapOn: 'ダーク'
 - stopApp

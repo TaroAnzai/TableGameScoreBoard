@@ -106,7 +106,7 @@ describe('SavedLinksPopover', () => {
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/table/[tableKey]',
-      params: { tableKey: 'newer-table' },
+      params: { tableKey: 'newer-table', openedFromSavedLinks: 'true' },
     });
     await waitFor(() =>
       expect(mockTouch).toHaveBeenCalledWith({ type: 'table', key: 'newer-table' }),

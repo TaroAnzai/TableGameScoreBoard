@@ -7,7 +7,7 @@ tags:
 # 前提: すべて同じ E2E 用大会の実キー。各リンクは API 側で発行した実リンクを渡す。
 # VIEW は編集 UI を提供せず、EDIT/OWNER は編集 UI を提供する。
 - launchApp
-- assertVisible: '麻雀大会 集計'
+- runFlow: ../flows/select-japanese.yaml
 - openLink:
     link: ${TOURNAMENT_VIEW_LINK}
 - runFlow: ../flows/dismiss-save-page-prompt.yaml
