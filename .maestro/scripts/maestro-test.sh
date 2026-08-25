@@ -2,7 +2,18 @@
 set -euo pipefail
 
 # Run this script from the project root.
+ENV_FILE=".env"
 CONFIG_FILE=".maestro/config.yaml"
+
+if [[ -f "$ENV_FILE" ]]; then
+  # Export .env values for Maestro scripts. Values passed from config.yaml below
+  # use explicit -e arguments and therefore take precedence over these values.
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+  echo "Loaded environment variables from ${ENV_FILE}."
+fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "Error: $CONFIG_FILE was not found. Run this script from the project root." >&2

@@ -1,6 +1,7 @@
 # Shared Maestro configuration for the dedicated test group.
 # Update this file when the fixture links are rotated.
 env:
+  MAIL_ADDRESS: 5uP7p@example.com
   APP_ID: com.anzaihome.mahjongapp.dev
 
   GROUP_NAME: Maestroテストグループ

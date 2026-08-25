@@ -9,7 +9,9 @@ appId: com.anzaihome.mahjongapp.dev
 - runScript:
     file: ../scripts/create-group-via-api.js
     env:
-      API_BASE_URL: 'http://localhost:6080'
+      MAESTRO_DEV_API_URL: 'http://localhost:6080'
+      GROUP_NAME: ${output.groupName}
+      MAIL_ADDRESS: ${output.email}
 
 # APIで作成したグループをeditリンクから直接開く
 - launchApp
@@ -17,7 +19,7 @@ appId: com.anzaihome.mahjongapp.dev
     visible: '麻雀大会 集計'
     timeout: 30000
 - openLink:
-    link: ${output.groupEditDeepLink}
+    link: mahjongapp-dev:///group/${output.editLink}
 - extendedWaitUntil:
     visible: ${output.groupName}
     timeout: 30000
@@ -65,7 +67,7 @@ appId: com.anzaihome.mahjongapp.dev
     visible: ${output.tournamentName}
     timeout: 30000
 - assertVisible: '大会成績'
-- tapOn: '大会新規作成'
+- tapOn: '参加者を削除'
 - assertVisible: '参加者を選択'
 - tapOn: ${output.player1}
 - tapOn: 'OK'
