@@ -113,7 +113,7 @@ npm run lint
 Maestro の E2E フローは `.maestro/` にあります。Android 開発ビルドと Metro を起動し、対象のアプリ ID を指定して実行します。
 
 ```bash
-maestro test -e APP_ID=com.anzaihome.mahjongapp.dev .maestro/p0/access-control.yaml
+.maestro/scripts/maestro-test.sh .maestro/tests/p0/access-control.yaml
 ```
 
 リンク・権限・スコア入力を検証するフローには追加の環境変数や API fixture が必要です。詳細は [.maestro/README.md](.maestro/README.md) を参照してください。

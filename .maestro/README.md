@@ -1,99 +1,57 @@
-# Maestro E2E
+# Maestro E2E tests
 
-## 構成
+Run every Maestro test through `scripts/maestro-test.sh` from the project root. It loads the root `.env` first, then passes non-secret Maestro settings from `config.yaml`, and always restores the local network-mode controller on exit.
 
 ```text
 .maestro/
-├── config.yaml  # 共通のアプリ ID と固定 fixture のリンク・表示名
-├── flows/       # 開発・回帰フローと共通フロー
-├── p0/          # リリースを止める主要導線（保存、権限、点数入力）
-├── p1/          # 削除、統計期間、承認待ち同期
-├── p2/          # 設定、言語、戻る操作、Deep Link エラー
-└── scripts/     # テスト実行、通信切替、API fixture・テストデータ生成
+├── config.yaml
+├── tests/               # independently runnable test cases
+│   ├── p0/              # critical permissions, score, and saved-link tests
+│   ├── p1/              # deletion, pending-group, and statistics tests
+│   ├── p2/              # settings, navigation, and invalid-link tests
+│   └── journeys/        # reserved for non-duplicated long journeys (currently empty)
+├── flows/common/        # small reusable UI operations only
+├── fixtures/setup/      # API-backed server-data setup scripts
+├── fixtures/teardown/   # API-backed cleanup scripts
+└── scripts/             # test runner, GUI launcher, and network-mode control
 ```
 
-`config.yaml` には専用 E2E fixture の値を置きます。fixture を作り直した場合は、このファイルのリンクと
-表示名を更新してください。公開データや日常利用しているキーは E2E に使わないでください。
+`config.yaml` contains only Maestro settings such as `APP_ID`, fixture naming prefixes, and fixed UI calendar values. API URLs and administrator credentials remain only in the root `.env`; do not copy them into `config.yaml` or print them. The runner keeps the existing local names: `MAESTRO_DEV_API_URL`, `MAESTRO_DEV_ADMIN`, and `MAESTRO_DEV_ADMIN_PASSWORD`.
 
-## 実行前提
+## Fixtures and cleanup
 
-- Maestro CLI が `PATH` にあること
-- Android 開発ビルドと Metro が起動していること
-- `config.yaml` の `APP_ID` とリンクがテスト対象の開発ビルド・バックエンドを指していること
-- 日本語 UI を検証するフローでは、`flows/select-japanese.yaml` をアプリ起動後に追加すること。
-- 保存済み共有リンクが空である必要があるフローだけは、`flows/clear-app-data-and-select-japanese.yaml` を使うこと。
-  `clearState` は開発ビルドの defaultLaunchURL を消すため使わず、保存済みページを長押しで全削除する。
-- 通信異常を検証する場合は、`http://127.0.0.1:9099` に通信モード切替用のテストサーバーが起動していること
+Tests that need server data call `fixtures/setup/create-test-data.js` in `onFlowStart`. Each call declares the graph directly with `FIXTURE_GROUP_COUNT`, `FIXTURE_PLAYER_COUNT`, `FIXTURE_CREATE_GAME`, `FIXTURE_CREATE_EXTRA_TABLE`, and `FIXTURE_ADD_INVALID_LINK`, so the created data can be understood from the test YAML alone. `FIXTURE_LABEL` is used only for unique names. The script assigns `output.fixture.groupKey` immediately after creating the first group and records every created group in `output.fixture.groupKeys`; all UI values are returned under `output.fixture.*`.
 
-P0/P1/P2 の一部は固定 fixture に加えて個別の fixture を必要とします。必要な環境変数は各 YAML の先頭コメントを
-確認してください。たとえば `score-input-validation.yaml` の `SCORE_FAILURE_TABLE_EDIT_LINK` は、最初の
-スコア保存だけが失敗する fixture を指す必要があります。
+The setup options mean:
 
-## テストの実行
+- `FIXTURE_GROUP_COUNT`: number of groups. Every group receives one tournament and one normal table.
+- `FIXTURE_PLAYER_COUNT`: players created in the first group and registered with its tournament and table.
+- `FIXTURE_SECOND_GROUP_PLAYER_COUNT`: player count for the second group when two groups are requested.
+- `FIXTURE_CREATE_GAME`: creates one game with four scores in every requested group; therefore each group must have four players.
+- `FIXTURE_CREATE_EXTRA_TABLE`: creates an additional empty table for direct-deletion checks.
+- `FIXTURE_ADD_INVALID_LINK`: exposes a nonexistent table link and its expected error label under `output.fixture`.
 
-**Maestro テストは必ずプロジェクトルートから `.maestro/scripts/maestro-test.sh` 経由で実行してください。**
-`maestro test` を直接実行しません。このスクリプトは `config.yaml` の `env` を読み込み、`--config` と環境変数を
-Maestro に渡したうえで、開始前と終了時に通信モードを `normal` に戻します。
+Those tests call `fixtures/teardown/delete-group.js` from `onFlowComplete`. It logs in using the root `.env` credentials and issues `DELETE /api/admin/groups/{group_key}`. The backend owns cascading logical deletion of tournaments, tables, and games. Missing fixture keys print `cleanup skipped`; a 404 from deletion is treated as already cleaned up. Authentication and other API failures remain visible without exposing credentials.
 
-```sh
-.maestro/scripts/maestro-test.sh <flow-or-directory> [maestro test options...]
+Do not create a giant shared fixture. A test with no server-data dependency must not add setup or teardown hooks. `flows/common` is only for reusable UI fragments such as language selection, opening the app, dismissing the save prompt, and clearing saved links—not an entire scenario.
+
+## Running tests
+
+```bash
+# P0 / P1 / P2 directories
+.maestro/scripts/maestro-test.sh .maestro/tests/p0
+.maestro/scripts/maestro-test.sh .maestro/tests/p1
+.maestro/scripts/maestro-test.sh .maestro/tests/p2
+
+# One test
+.maestro/scripts/maestro-test.sh .maestro/tests/p0/access-control.yaml
+
+# Tag filtering (Maestro CLI)
+.maestro/scripts/maestro-test.sh .maestro/tests --include-tags=p0
 ```
 
-例:
+Start the development build, Metro, API, and (when needed) the local network controller before running. The score-input test changes the controller with `scripts/set-network-mode.js`; `maestro-test.sh` resets it to `normal` before and after every run, including interrupt/error exits.
 
-```sh
-.maestro/scripts/maestro-test.sh .maestro/p0/access-control.yaml
-.maestro/scripts/maestro-test.sh .maestro/p1
-.maestro/scripts/maestro-test.sh .maestro/p2/settings-navigation.yaml --format junit
-```
+`pending-groups.yaml` currently exercises app-local pending storage plus server-side approval/expiry. The published API available to this repository has no endpoint for seeding that storage or controlling approval/expiry, so it intentionally has no fabricated API fixture. It requires its dedicated pending-state test environment until the backend exposes a supported test-control API; its labels are retained in `config.yaml` only as display settings.
 
-### P0
-
-```sh
-.maestro/scripts/maestro-test.sh .maestro/p0/shared-link-saved-pages.yaml
-.maestro/scripts/maestro-test.sh .maestro/p0/access-control.yaml
-.maestro/scripts/maestro-test.sh .maestro/p0/score-input-validation.yaml
-```
-
-`access-control.yaml` は、VIEW・EDIT・OWNER の UI 権限を確認します。グループ画面では EDIT で大会削除が表示されず、
-OWNER では表示されることを検証します。UI の非表示だけで完結させず、同じ fixture キーを使うバックエンドの
-permission contract test も実行してください。
-
-### P1 / P2
-
-```sh
-.maestro/scripts/maestro-test.sh .maestro/p1/deletion-flows.yaml
-.maestro/scripts/maestro-test.sh .maestro/p1/stats-period.yaml
-.maestro/scripts/maestro-test.sh .maestro/p1/pending-groups.yaml
-.maestro/scripts/maestro-test.sh .maestro/p2/settings-navigation.yaml
-```
-
-### 既存の回帰フロー
-
-`flows/` にはグループ作成・登録、キャッシュ無効化、共有 EDIT リンク、フルジャーニーなどの回帰フローがあります。
-API を利用するフローは、ローカル API（既定では `http://localhost:6080`）に接続できる状態で実行します。
-
-```sh
-.maestro/scripts/maestro-test.sh .maestro/flows/new-group-request-test.yaml
-.maestro/scripts/maestro-test.sh .maestro/flows/edit-link-registration-journey.yaml
-.maestro/scripts/maestro-test.sh .maestro/flows/cache-invalidation-journey.yaml
-.maestro/scripts/maestro-test.sh .maestro/flows/mahjong-full-journey.yaml
-```
-
-## 通信テスト
-
-フロー内で通信をオフラインに切り替えるには、次の `runScript` を入れます。
-
-```yaml
-- runScript:
-    file: ../scripts/set-network-mode.js
-    env:
-      MODE: offline
-```
-
-`set-network-mode.js` で指定できる値は `normal`、`offline`、`500` です。フロー内で切り替えた後も、
-`maestro-test.sh` が終了時に `normal` へ戻します。途中で通信を復旧して後続操作を検証したい場合は、同じ形式で
-`MODE: normal` を指定してください。
-
-Maestro の `assertVisible` / `assertNotVisible` は短時間の状態変化を待機するため、固定の `sleep` は追加しません。
-長い API 待機には `extendedWaitUntil` を使用します。
+Run static validation before relying on a new fixture: check YAML syntax, every `runFlow`/`runScript` path, JavaScript syntax, and all output references. If setup fails after group creation, `onFlowComplete` still uses the early `output.fixture.groupKey` to remove the partial fixture.

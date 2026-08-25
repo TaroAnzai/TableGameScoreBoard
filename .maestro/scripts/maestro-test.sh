@@ -27,7 +27,7 @@ fi
 
 if [[ $# -eq 0 ]]; then
   echo "Usage: $0 <flow-or-directory> [maestro test options...]" >&2
-  echo "Example: $0 .maestro/p0/access-control.yaml" >&2
+  echo "Example: $0 .maestro/tests/p0/access-control.yaml" >&2
   exit 1
 fi
 

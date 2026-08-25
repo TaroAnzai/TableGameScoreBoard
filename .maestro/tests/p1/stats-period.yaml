@@ -3,15 +3,28 @@ name: P1 - 成績期間とグループ切替
 tags:
   - p1
   - stats
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: stats-period
+        FIXTURE_GROUP_COUNT: '2'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_SECOND_GROUP_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
 ---
-# 前提: STATS_GROUP_A_LINK/B_LINK は異なる成績を持つ保存済みグループ。
 - launchApp
 - assertVisible: '麻雀大会 集計'
 - openLink:
-    link: ${STATS_GROUP_A_LINK}
-- runFlow: ../flows/dismiss-save-page-prompt.yaml
+    link: ${output.fixture.statsGroupALink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
-    visible: ${STATS_GROUP_A_NAME}
+    visible: ${output.fixture.statsGroupAName}
     timeout: 30000
 - tapOn: '統計'
 - assertVisible: 'グループメンバー成績'
@@ -53,8 +66,8 @@ tags:
 
 # 保存済みグループを切り替えると API 結果が切り替わり、空期間は空表示になる。
 - tapOn: 'グループを選択'
-- tapOn: ${STATS_GROUP_B_NAME}
-- assertVisible: ${STATS_GROUP_B_UNIQUE_PLAYER}
+- tapOn: ${output.fixture.statsGroupBName}
+- assertVisible: ${output.fixture.statsGroupBUniquePlayer}
 - tapOn:
     id: stats-date-range-selector
 - tapOn: ${EMPTY_PERIOD_START_DATE}

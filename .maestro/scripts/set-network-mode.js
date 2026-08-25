@@ -1,15 +1,15 @@
 /* global MODE http */
 /*
 - runScript:
-  file: ../scripts/set-network-mode.js
+  file: ../../scripts/set-network-mode.js
   env:
     MODE: normal
 - runScript:
-    file: ../scripts/set-network-mode.js
+    file: ../../scripts/set-network-mode.js
     env:
       MODE: offline
 - runScript:
-    file: ../scripts/set-network-mode.js
+    file: ../../scripts/set-network-mode.js
     env:
       MODE: 500
 */

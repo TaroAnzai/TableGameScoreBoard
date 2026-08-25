@@ -3,15 +3,27 @@ name: P1 - 削除確認・集計・遷移・保存リンク整理
 tags:
   - p1
   - deletion
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: deletion-flows
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'true'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
 ---
-# 前提: DELETE_TABLE_LINK には1局、DELETE_TOURNAMENT_LINK には上記卓がある E2E fixture。
 - launchApp
-- runFlow: ../flows/select-japanese.yaml
+- runFlow: ../../flows/common/select-japanese.yaml
 - openLink:
-    link: ${DELETE_TABLE_LINK}
-- runFlow: ../flows/dismiss-save-page-prompt.yaml
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
-    visible: ${DELETE_TABLE_NAME}
+    visible: ${output.fixture.tableName}
     timeout: 30000
 
 # 対局削除ダイアログのキャンセルは状態を変えない。
@@ -28,27 +40,27 @@ tags:
 - assertNotVisible: '100'
 - tapOn: '上の階層へ移動'
 - extendedWaitUntil:
-    visible: ${DELETE_TOURNAMENT_NAME}
+    visible: ${output.fixture.tournamentName}
     timeout: 30000
 - assertNotVisible: '100'
 
 # 保存した卓を親大会から削除すると大会画面へ遷移する。
 - openLink:
-    link: ${DELETE_TABLE_LINK}
-- runFlow: ../flows/dismiss-save-page-prompt.yaml
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - tapOn: '記録表削除'
 - assertVisible: '記録表削除'
 - tapOn: 'OK'
 - extendedWaitUntil:
-    visible: ${DELETE_TOURNAMENT_NAME}
+    visible: ${output.fixture.tournamentName}
     timeout: 30000
 
 # 直接リンクで開いた卓を削除した場合はホームへ戻る。
 - openLink:
-    link: ${DIRECT_DELETE_TABLE_LINK}
-- runFlow: ../flows/dismiss-save-page-prompt.yaml
+    link: ${output.fixture.directDeleteTableLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
-    visible: ${DIRECT_DELETE_TABLE_NAME}
+    visible: ${output.fixture.directDeleteTableName}
     timeout: 30000
 - tapOn: '記録表削除'
 - tapOn: 'OK'
@@ -58,14 +70,14 @@ tags:
 
 # 大会削除後はグループ一覧から消え、保存済みページにも残らない。
 - openLink:
-    link: ${DELETE_GROUP_LINK}
-- runFlow: ../flows/dismiss-save-page-prompt.yaml
+    link: ${output.fixture.groupOwnerLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
-    visible: ${DELETE_GROUP_NAME}
+    visible: ${output.fixture.groupName}
     timeout: 30000
 - tapOn: '大会削除'
-- tapOn: ${DELETE_TOURNAMENT_NAME}
+- tapOn: ${output.fixture.tournamentName}
 - tapOn: 'OK'
-- assertNotVisible: ${DELETE_TOURNAMENT_NAME}
+- assertNotVisible: ${output.fixture.tournamentName}
 - tapOn: '保存済み'
-- assertNotVisible: ${DELETE_TOURNAMENT_NAME}
+- assertNotVisible: ${output.fixture.tournamentName}

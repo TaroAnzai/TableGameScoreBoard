@@ -42,10 +42,10 @@ adb -s R58M123456A shell pm clear com.anzaihome.mahjongapp
 adb devices
 
 MaestroによるE2Eテスト実行
-maestro test .maestro/smoke-test.yaml
+.maestro/scripts/maestro-test.sh .maestro/tests/p0/access-control.yaml
 
 MaestroによるE2Eテスト実行で描画時の2重描画を抑制
-maestro --no-ansi test .maestro/new-group-request-test.yaml
+.maestro/scripts/maestro-test.sh .maestro/tests/p0/access-control.yaml --no-ansi
 
 maestro hierarchy >temp/hierarchy.txt
 

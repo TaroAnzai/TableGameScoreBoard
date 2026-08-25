@@ -1,0 +1,89 @@
+appId: ${APP_ID}
+name: P0 - 点数入力の異常系と再試行
+tags:
+  - p0
+  - scores
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: score-input-validation
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'false'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+- launchApp
+- runFlow: ../../flows/common/select-japanese.yaml
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: '第1局のスコアを編集'
+
+# 4人でも合計が0でなければ確定不可。
+- tapOn: '${output.fixture.player1}の点数'
+- inputText: '100'
+- tapOn: '${output.fixture.player2}の点数'
+- inputText: '-100'
+- tapOn: '${output.fixture.player3}の点数'
+- inputText: '1'
+- tapOn: '${output.fixture.player4}の点数'
+- inputText: '0'
+- assertVisible: '通常卓の合計は0にしてください'
+- assertVisible:
+    text: '確定'
+    enabled: false
+
+# 合計0なら確定可能。二重タップしても1局だけ作成される。
+- tapOn: '${output.fixture.player3}の点数'
+- tapOn: '${output.fixture.player4}の点数'
+- inputText: '-1'
+- assertVisible: '合計: 0'
+- tapOn: '確定'
+- tapOn:
+    text: '確定'
+    optional: true
+- assertVisible: '100'
+
+# 失敗時はモーダルと入力を保持し、再試行しても重複局を作らない。
+- tapOn: '第1局のスコアを編集'
+- tapOn: '${output.fixture.player1}の点数'
+- inputText: '200'
+- tapOn: '${output.fixture.player2}の点数'
+- inputText: '-200'
+- tapOn: '${output.fixture.player3}の点数'
+- inputText: '0'
+- tapOn: '${output.fixture.player4}の点数'
+- inputText: '0'
+- runScript:
+    file: ../../scripts/set-network-mode.js
+    env:
+      MODE: offline
+- tapOn: '確定'
+- assertVisible: '対局の更新に失敗しました'
+- stopApp
+- runScript:
+    file: ../../scripts/set-network-mode.js
+    env:
+      MODE: normal
+- launchApp
+- assertVisible: '麻雀大会 集計'
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: '第1局のスコアを編集'
+- assertVisible: '${output.fixture.player1}の点数'
+- assertVisible: '100'
+- tapOn: '確定'
+- assertVisible: '100'
+- assertVisible: '第2局のスコアを編集'

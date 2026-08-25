@@ -1,0 +1,65 @@
+appId: ${APP_ID}
+name: P2 - 設定・戻る操作・不正 Deep Link
+tags:
+  - p2
+  - settings
+  - navigation
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: settings-navigation
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '0'
+        FIXTURE_CREATE_GAME: 'false'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'true'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+- launchApp
+- runFlow: ../../flows/common/select-japanese.yaml
+- tapOn: '設定を開く'
+- tapOn: 'ダーク'
+- stopApp
+- launchApp
+- assertVisible: '麻雀大会 集計'
+- tapOn: '設定を開く'
+- assertVisible: 'ダーク'
+
+# 英語化が全画面へ反映され、再起動後も保持される。
+- tapOn: 'English'
+- assertVisible: 'Settings'
+- tapOn: 'Home'
+- assertVisible: 'Mahjong Tournament Score'
+- stopApp
+- launchApp
+- assertVisible: 'Mahjong Tournament Score'
+
+# 日本語に戻し、履歴の有無で Android Back の遷移先が変わることを確認する。
+- tapOn: 'Settings'
+- tapOn: '日本語'
+- openLink:
+    link: ${output.fixture.tableViewLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- pressKey: back
+- assertVisible: '登録グループ一覧'
+- openLink:
+    link: ${output.fixture.tournamentViewLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- tapOn: '上の階層へ移動'
+- pressKey: back
+- assertVisible: ${output.fixture.tournamentName}
+
+# 不正形式・存在しない共有リンクでも、アプリがクラッシュせずエラーを表示する。
+- openLink:
+    link: ${output.fixture.invalidFormatLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- assertVisible: ${output.fixture.invalidFormatError}
