@@ -1,0 +1,19 @@
+# 保存済みグループをすべて削除する。
+# フロー終了処理用
+# 前提:グループページ
+
+appId: ${APP_ID}
+---
+- assertVisible: '麻雀大会 集計'
+
+- repeat:
+    while:
+      visible:
+        id: 'saved-group-.*'
+    commands:
+      - tapOn: '登録グループを削除'
+      - tapOn:
+          id: 'select-.*'
+      - assertVisible: '登録グループから削除'
+      - tapOn: 'OK'
+- assertVisible: '「新しいグループを作成」ボタンから新しいグループを作成してください。'

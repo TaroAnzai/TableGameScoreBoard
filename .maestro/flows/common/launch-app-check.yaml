@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp
+
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+
+- runFlow:
+    when:
+      visible: 'グループ取得エラー'
+    commands:
+      - tapOn: 'OK'
+- assertVisible: '麻雀大会 集計'

@@ -1,0 +1,7 @@
+# グループページで、グループをアプリに登録する。
+appId: ${APP_ID}
+---
+- tapOn: 'アプリに登録'
+- assertVisible: '登録グループ追加'
+- tapOn: 'OK'
+- assertVisible: ${SAVED_GROUP_NAME}

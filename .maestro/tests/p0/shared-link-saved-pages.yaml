@@ -17,6 +17,11 @@ onFlowComplete:
   - runScript:
       file: ../../fixtures/teardown/delete-group.js
 ---
+# 安全な立ち上げ launchApp 代替
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
 # 保存済み共有リンクを全削除し、日本語を選択してから開始する。
 - runFlow: ../../flows/common/clear-app-data-and-select-japanese.yaml
 - openLink:

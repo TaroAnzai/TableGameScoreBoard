@@ -17,8 +17,13 @@ onFlowComplete:
   - runScript:
       file: ../../fixtures/teardown/delete-group.js
 ---
+# 安全な立ち上げ launchApp 代替
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+
 # VIEW は編集 UI を提供せず、EDIT/OWNER は編集 UI を提供する。
-- launchApp
 - runFlow: ../../flows/common/select-japanese.yaml
 - openLink:
     link: ${output.fixture.tournamentViewLink}
