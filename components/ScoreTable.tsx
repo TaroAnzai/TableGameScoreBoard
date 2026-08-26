@@ -68,6 +68,7 @@ export const ScoreTable = ({ scoreMap, onClick }: ScoreTableProps) => {
               {sortedTables.map((table) => (
                 <Pressable
                   key={table.id}
+                  testID={`score-table-${table.id}`}
                   hitSlop={2}
                   role="button"
                   accessibilityLabel={t('scoreTable.openTable', { tableName: table.name })}

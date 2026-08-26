@@ -46,10 +46,7 @@ export default function TablePage() {
   const [showDeleteGameModal, setShowDeleteGameModal] = useState(false);
   //Mutation系フック
   const { mutateAsync: updateTable } = useUpdateTable();
-  const {
-    mutateAsync: deleteTable,
-    isPending: isDeletingTable,
-  } = useDeleteTable();
+  const { mutateAsync: deleteTable, isPending: isDeletingTable } = useDeleteTable();
   const { mutateAsync: addTablePlayer, isPending: isAddingTablePlayer } = useAddTablePlayer();
   const { mutateAsync: deleteTablePlayer, isPending: isDeletingTablePlayer } =
     useDeleteTablePlayer();
@@ -58,12 +55,13 @@ export default function TablePage() {
   const { mutateAsync: deleteGame, isPending: isDeletingGame } = useDeleteGame();
   const { remove: removeSavedLink } = useSavedLinks();
   //Query系フック設定
-  const { tableKey, parentTournamentKey, parentGroupKey, openedFromSavedLinks } = useLocalSearchParams<{
-    tableKey: string;
-    parentTournamentKey?: string;
-    parentGroupKey?: string;
-    openedFromSavedLinks?: string;
-  }>();
+  const { tableKey, parentTournamentKey, parentGroupKey, openedFromSavedLinks } =
+    useLocalSearchParams<{
+      tableKey: string;
+      parentTournamentKey?: string;
+      parentGroupKey?: string;
+      openedFromSavedLinks?: string;
+    }>();
   const {
     dashboard,
     isLoadingDashboard,
@@ -186,7 +184,7 @@ export default function TablePage() {
     });
     if (!confirmed) return;
     try {
-      await deleteTable({ tableKey: tableKey! });
+      await deleteTable({ tableKey: tableKey!, tournamentKey });
     } catch {
       // The mutation hook shows the error. Keep this page available for retrying.
       return;
@@ -199,7 +197,7 @@ export default function TablePage() {
     }
 
     if (tournamentKey) {
-      router.replace({
+      router.dismissTo({
         pathname: '/tournament/[tournamentKey]',
         params: {
           tournamentKey,
@@ -361,6 +359,7 @@ export default function TablePage() {
               name: t('tablePage.gameLabel', { index: index + 1 }),
             }))}
           emptyMessage={t('tablePage.noGamesToDelete')}
+          getItemTestId={(game) => game.id}
           onSelect={handleDeleteGame}
           onClose={() => setShowDeleteGameModal(false)}
           isPending={isDeletingGame}

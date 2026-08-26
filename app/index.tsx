@@ -317,6 +317,7 @@ export default function Index() {
         title={t('welcomPage.SelectGroupToRemove')}
         open={isRemoveGroupModalOpen}
         items={removableGroups}
+        getItemTestId={(group) => group.id}
         onSelect={handleRemoveGroup}
         onClose={() => setIsRemoveGroupModalOpen(false)}
       />

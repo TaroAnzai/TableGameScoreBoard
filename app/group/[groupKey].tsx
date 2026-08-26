@@ -289,7 +289,7 @@ const GroupPage = () => {
                 accessLevel !== 'VIEW' && (
                   <>
                     <Button
-                      accessibilityLabel={t('groupPage.modalCreateTournamentTitle')}
+                      accessibilityLabel={t('groupPage.buttonCreateTournament')}
                       className="h-10 w-10 rounded-full p-0"
                       disabled={isGroupNotFound || isCreatingTournament}
                       size="icon"
@@ -300,7 +300,7 @@ const GroupPage = () => {
                     </Button>
                     {isOwner && (
                       <Button
-                        accessibilityLabel={t('groupPage.modalDeleteTournamentTitle')}
+                        accessibilityLabel={t('groupPage.buttonDeleteTournament')}
                         className="h-10 w-10 rounded-full p-0"
                         disabled={isGroupNotFound || isDeletingTournament}
                         size="icon"
@@ -437,6 +437,7 @@ const GroupPage = () => {
           title={t('groupPage.modalDeleteTournamentTitle')}
           open={showDeleteTournamentModal}
           items={tournaments}
+          getItemTestId={(tournament) => tournament.id}
           onSelect={handleDeleteTournament}
           onClose={() => setShowDeleteTournamentModal(false)}
           emptyMessage={t('groupPage.modalDeleteTournamentEmpty')}

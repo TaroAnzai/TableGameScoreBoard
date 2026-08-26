@@ -172,12 +172,32 @@ export const useUpdateTable = () => {
 export const useDeleteTable = () => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useMutationFeedback();
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { tableKey: string }) => {
+    mutationFn: (data: { tableKey: string; tournamentKey?: string }) => {
       return deleteApiV2TablesTableKey(data.tableKey);
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
       showSuccess(t('notifications.table.deleteSuccess'));
+
+      queryClient.removeQueries({
+        queryKey: getGetApiV2TablesTableKeyDashboardQueryKey(variables.tableKey),
+        exact: true,
+      });
+
+      if (variables.tournamentKey) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: getGetApiTournamentsTournamentKeyTablesQueryKey(variables.tournamentKey),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiTournamentsTournamentKeyScoreMapQueryKey(variables.tournamentKey),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetApiV2TournamentsTournamentKeyDashboardQueryKey(variables.tournamentKey),
+          }),
+        ]);
+      }
     },
     onError: (error: any) => {
       console.error('Error deleting table:', error);

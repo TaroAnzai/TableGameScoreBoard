@@ -1,5 +1,5 @@
 appId: ${APP_ID}
-name: P1 - 削除確認・集計・遷移・保存リンク整理
+name: P1 - ゲーム・記録表・大会・登録グループ削除
 tags:
   - p1
   - deletion
@@ -8,10 +8,11 @@ onFlowStart:
       file: ../../fixtures/setup/create-test-data.js
       env:
         FIXTURE_LABEL: deletion-flows
-        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_GROUP_COUNT: '2'
         FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_SECOND_GROUP_PLAYER_COUNT: '4'
         FIXTURE_CREATE_GAME: 'true'
-        FIXTURE_CREATE_EXTRA_TABLE: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
         FIXTURE_ADD_INVALID_LINK: 'false'
 onFlowComplete:
   - runScript:
@@ -19,65 +20,189 @@ onFlowComplete:
 ---
 - launchApp
 - runFlow: ../../flows/common/select-japanese.yaml
+
+# Series A: register the group, then open each resource by its direct link.
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- runFlow:
+    when:
+      visible: 'アプリに登録'
+    commands:
+      - tapOn: 'アプリに登録'
+      - assertVisible: '登録グループ追加'
+      - tapOn: 'OK'
+- runFlow: ../../flows/common/open-app.yaml
+- assertVisible: ${output.fixture.groupName}
+
+# Cancelling game deletion leaves the persisted game row in place.
 - openLink:
     link: ${output.fixture.tableEditLink}
 - runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
-    visible: ${output.fixture.tableName}
+    visible:
+      id: 'game-row-${output.fixture.gameId}'
     timeout: 30000
-
-# 対局削除ダイアログのキャンセルは状態を変えない。
 - tapOn: '対局データを削除'
-- tapOn: '第1局'
+- tapOn:
+    id: 'select-${output.fixture.gameId}'
 - assertVisible: 'ゲーム削除'
 - tapOn: 'キャンセル'
-- assertVisible: '100'
+- tapOn:
+    id: select-close
+- assertVisible:
+    id: 'game-row-${output.fixture.gameId}'
 
-# 確定後は卓から消え、親大会の集計も更新される。
+# Confirming deletion removes the persisted row, while the empty first input row remains.
 - tapOn: '対局データを削除'
-- tapOn: '第1局'
+- tapOn:
+    id: 'select-${output.fixture.gameId}'
 - tapOn: 'OK'
-- assertNotVisible: '100'
-- tapOn: '上の階層へ移動'
 - extendedWaitUntil:
-    visible: ${output.fixture.tournamentName}
+    notVisible:
+      id: 'game-row-${output.fixture.gameId}'
     timeout: 30000
-- assertNotVisible: '100'
+- assertVisible:
+    id: empty-game-row-0
+- assertVisible:
+    text: '対局データを削除'
+    enabled: false
 
-# 保存した卓を親大会から削除すると大会画面へ遷移する。
-- openLink:
-    link: ${output.fixture.tableEditLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+# A directly opened table has no parent route and returns home after deletion.
 - tapOn: '記録表削除'
 - assertVisible: '記録表削除'
 - tapOn: 'OK'
 - extendedWaitUntil:
-    visible: ${output.fixture.tournamentName}
+    visible: '登録グループ一覧'
+    timeout: 30000
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- extendedWaitUntil:
+    visible: '卓が見つかりませんでした'
     timeout: 30000
 
-# 直接リンクで開いた卓を削除した場合はホームへ戻る。
+# Tournament deletion is exposed by the parent group, not by the tournament page.
 - openLink:
-    link: ${output.fixture.directDeleteTableLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+    link: ${output.fixture.groupOwnerLink}
 - extendedWaitUntil:
-    visible: ${output.fixture.directDeleteTableName}
+    visible: ${output.fixture.tournamentName}
     timeout: 30000
+- tapOn: '大会削除'
+- tapOn:
+    id: 'select-${output.fixture.tournamentId}'
+- assertVisible: '大会削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.tournamentName}
+    timeout: 30000
+- openLink:
+    link: ${output.fixture.tournamentOwnerLink}
+- extendedWaitUntil:
+    visible: '大会が見つかりませんでした。削除されたか、URLが正しくない可能性があります。'
+    timeout: 30000
+
+# Removing a registered group only removes its local registration.
+- runFlow: ../../flows/common/open-app.yaml
+- tapOn: '登録グループを削除'
+- tapOn:
+    id: 'select-${output.fixture.groupId}'
+- assertVisible: '登録グループから削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.groupName}
+    timeout: 30000
+
+# Series B: enter through the group and retain parent route parameters while descending.
+- openLink:
+    link: ${output.fixture.groupBOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupBName}
+    timeout: 30000
+- runFlow:
+    when:
+      visible: 'アプリに登録'
+    commands:
+      - tapOn: 'アプリに登録'
+      - assertVisible: '登録グループ追加'
+      - tapOn: 'OK'
+- runFlow: ../../flows/common/open-app.yaml
+- assertVisible: ${output.fixture.groupBName}
+- tapOn: ${output.fixture.groupBName}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentBName}
+    timeout: 30000
+- tapOn: ${output.fixture.tournamentBName}
+- extendedWaitUntil:
+    visible:
+      id: 'score-table-${output.fixture.tableBId}'
+    timeout: 30000
+- tapOn:
+    id: 'score-table-${output.fixture.tableBId}'
+- extendedWaitUntil:
+    visible:
+      id: 'game-row-${output.fixture.gameBId}'
+    timeout: 30000
+
+# Repeat cancel and confirm through the parent-aware route.
+- tapOn: '対局データを削除'
+- tapOn:
+    id: 'select-${output.fixture.gameBId}'
+- assertVisible: 'ゲーム削除'
+- tapOn: 'キャンセル'
+- tapOn:
+    id: select-close
+- assertVisible:
+    id: 'game-row-${output.fixture.gameBId}'
+- tapOn: '対局データを削除'
+- tapOn:
+    id: 'select-${output.fixture.gameBId}'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible:
+      id: 'game-row-${output.fixture.gameBId}'
+    timeout: 30000
+- assertVisible:
+    id: empty-game-row-0
+
+# Parent route parameters return the app to the tournament after table deletion.
 - tapOn: '記録表削除'
 - tapOn: 'OK'
 - extendedWaitUntil:
-    visible: '登録グループ一覧'
+    visible: ${output.fixture.tournamentBName}
     timeout: 30000
+- assertNotVisible:
+    id: 'score-table-${output.fixture.tableBId}'
 
-# 大会削除後はグループ一覧から消え、保存済みページにも残らない。
-- openLink:
-    link: ${output.fixture.groupOwnerLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+# Return to the group and delete the now-empty tournament.
+- tapOn: '戻る'
 - extendedWaitUntil:
-    visible: ${output.fixture.groupName}
+    visible: ${output.fixture.groupBName}
     timeout: 30000
 - tapOn: '大会削除'
-- tapOn: ${output.fixture.tournamentName}
+- tapOn:
+    id: 'select-${output.fixture.tournamentBId}'
+- assertVisible: '大会を削除'
 - tapOn: 'OK'
-- assertNotVisible: ${output.fixture.tournamentName}
-- tapOn: '保存済み'
-- assertNotVisible: ${output.fixture.tournamentName}
+- extendedWaitUntil:
+    notVisible: ${output.fixture.tournamentBName}
+    timeout: 30000
+- tapOn: '大会削除'
+- assertVisible: '削除できる大会がありません。'
+- tapOn:
+    id: select-close
+
+# Finally remove the second group's local registration.
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- tapOn: '登録グループを削除'
+- tapOn:
+    id: 'select-${output.fixture.groupBId}'
+- assertVisible: '登録グループから削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.groupBName}
+    timeout: 30000

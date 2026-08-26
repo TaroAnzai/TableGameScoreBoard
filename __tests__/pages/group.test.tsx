@@ -370,7 +370,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
 
     expect(screen.queryByLabelText('タイトルを編集')).toBeNull();
-    expect(screen.queryByLabelText('削除する大会を選択')).toBeNull();
+    expect(screen.queryByLabelText('大会削除')).toBeNull();
     expect(screen.getByLabelText('大会新規作成')).toBeTruthy();
   });
 
@@ -378,7 +378,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
 
     expect(screen.getByLabelText('タイトルを編集')).toBeTruthy();
-    expect(screen.getByLabelText('削除する大会を選択')).toBeTruthy();
+    expect(screen.getByLabelText('大会削除')).toBeTruthy();
   });
 
   it('作成・削除処理中は対応する操作ボタンを無効化する', async () => {
@@ -393,7 +393,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
 
     expect(screen.getByLabelText('大会新規作成')).toBeDisabled();
-    expect(screen.getByLabelText('削除する大会を選択')).toBeDisabled();
+    expect(screen.getByLabelText('大会削除')).toBeDisabled();
     expect(screen.getByLabelText('グループメンバー追加')).toBeDisabled();
     expect(screen.getByLabelText('削除するメンバーを選択')).toBeDisabled();
   });
@@ -403,7 +403,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
 
     const user = userEvent.setup();
-    await user.press(screen.getByLabelText('削除する大会を選択'));
+    await user.press(screen.getByLabelText('大会削除'));
     await user.press(screen.getByLabelText('大会1を選択'));
 
     await waitFor(() => {

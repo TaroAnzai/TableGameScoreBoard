@@ -49,16 +49,16 @@ describe('PageTitleBar', () => {
   it('親ページ操作では履歴を追加せず前の画面へ戻る', async () => {
     await render(<PageTitleBar title="大会1" parentUrl="/group/group-key" />);
 
-    fireEvent.press(screen.getByLabelText('上の階層へ移動'));
+    fireEvent.press(screen.getByLabelText('戻る'));
 
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('parentUrlがnullの場合は親ページ操作を表示しない', async () => {
+  it('parentUrlがnullの場合は汎用の戻る操作だけを表示する', async () => {
     await render(<PageTitleBar title="大会1" parentUrl={null} />);
 
-    expect(screen.queryByLabelText('上の階層へ移動')).toBeNull();
+    expect(screen.getAllByLabelText('戻る')).toHaveLength(1);
   });
 
   it('親ページ指定がなくても履歴があれば戻る操作を表示する', async () => {

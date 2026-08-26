@@ -31,6 +31,7 @@ interface SelectorModalProps<T extends SelectorItem> {
   emptyMessage?: string;
   isPending?: boolean;
   pendingText?: string;
+  getItemTestId?: (item: T) => string | number;
 }
 
 const SelectorModal = <T extends SelectorItem>({
@@ -43,6 +44,7 @@ const SelectorModal = <T extends SelectorItem>({
   emptyMessage,
   isPending = false,
   pendingText,
+  getItemTestId,
 }: SelectorModalProps<T>) => {
   const { t } = useTranslation();
   const msg = emptyMessage ?? t('Common.emptyMessage');
@@ -81,9 +83,10 @@ const SelectorModal = <T extends SelectorItem>({
         ) : (
           <ScrollView className="max-h-80">
             <View className="w-full gap-2">
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <Button
                   key={String(item.id)}
+                  testID={`select-${getItemTestId ? getItemTestId(item) : index}`}
                   disabled={isProcessing}
                   onPress={() => void handleSelect(item)}
                   className="h-auto min-h-14 w-full items-start rounded-xl border border-outline bg-surface px-4 py-3"
@@ -104,6 +107,7 @@ const SelectorModal = <T extends SelectorItem>({
 
         <DialogFooter>
           <Button
+            testID={`select-close`}
             className="h-auto min-h-12 rounded-xl py-3"
             disabled={isProcessing}
             onPress={onClose}

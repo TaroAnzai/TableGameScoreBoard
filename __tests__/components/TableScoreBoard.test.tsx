@@ -58,6 +58,19 @@ describe('TableScoreBoard', () => {
     expect(ui.getByText('new-game')).toBeTruthy();
   });
 
+  it('保存済みゲーム行と空入力行に異なるtestIDを付ける', async () => {
+    const ui = await render(
+      <TableScoreBoard table={table} players={players} games={games} onUpdateGame={jest.fn()} />,
+    );
+    expect(ui.getByTestId('game-row-9')).toBeTruthy();
+
+    await ui.rerender(
+      <TableScoreBoard table={table} players={players} games={[]} onUpdateGame={jest.fn()} />,
+    );
+    expect(ui.getByTestId('empty-game-row-0')).toBeTruthy();
+    expect(ui.queryByTestId('game-row-9')).toBeNull();
+  });
+
   it('保存成功時だけモーダルを閉じ、失敗時は入力モーダルを維持する', async () => {
     const update = jest.fn().mockRejectedValueOnce(new Error('failed')).mockResolvedValueOnce(undefined);
     const ui = await render(<TableScoreBoard table={table} players={players} games={games} onUpdateGame={update} />);

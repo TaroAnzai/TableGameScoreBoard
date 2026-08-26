@@ -103,6 +103,7 @@
     "buttonDeletePlayer": "メンバー削除",
     "buttonCreateTournament": "大会新規作成",
     "buttonSelectTournament": "大会選択",
+    "buttonDeleteTournament": "大会削除",
     "buttonSaveToBrowser": "アプリに登録",
     "buttonRemoveFromBrowser": "アプリから削除",
     "buttonStats": "成績",

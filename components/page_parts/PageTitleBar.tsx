@@ -105,7 +105,7 @@ export default function PageTitleBar({
       <View className="absolute left-0 flex-row items-center">
         {hasParentPage && (
           <Button
-            accessibilityLabel={t('titleBar.parentPage')}
+            accessibilityLabel={t('titleBar.back')}
             className="h-12 w-12 rounded-full p-0"
             size="icon"
             variant="ghost"
@@ -137,20 +137,14 @@ export default function PageTitleBar({
       <View
         className={cn(
           'items-center justify-center',
-          hasParentPage && shouldShowBackButton
-            ? 'max-w-[55%]'
-            : 'max-w-[70%]',
+          hasParentPage && shouldShowBackButton ? 'max-w-[55%]' : 'max-w-[70%]',
         )}
       >
         <TextClassContext.Provider value="text-center text-2xl font-bold leading-8 text-on-surface">
           {TitleComponent ? (
             <TitleComponent onPress={onTitleClick} onLongPress={onTitleLongPress} />
           ) : (
-            <EditableTitle
-              value={title}
-              onChange={onTitleChange}
-              onLongPress={onTitleLongPress}
-            />
+            <EditableTitle value={title} onChange={onTitleChange} onLongPress={onTitleLongPress} />
           )}
         </TextClassContext.Provider>
       </View>

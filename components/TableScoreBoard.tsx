@@ -190,6 +190,7 @@ const TableScoreBoard = ({
             {displayGames.map((game, index) => (
               <Pressable
                 key={game?.id ?? `index-row-${index}`}
+                testID={game?.id === undefined ? `empty-game-row-${index}` : `game-row-${game.id}`}
                 accessibilityRole="button"
                 accessibilityLabel={t('scoreBoard.editRowLabel', {
                   game: isChipTable

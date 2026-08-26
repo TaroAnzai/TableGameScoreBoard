@@ -108,6 +108,7 @@ const createGroup = (suffix = '') => {
   });
   const token = requireString(invitation, 'token');
   const group = request('post', '/api/groups', { token });
+  if (typeof group.id !== 'number') throw new Error('Fixture group response did not contain id');
   const ownerKey = accessKey(group, 'group_links', 'OWNER');
   // Save before resolving optional child links so cleanup can remove a partial
   // fixture if a later response is incomplete.
@@ -115,6 +116,7 @@ const createGroup = (suffix = '') => {
   if (!Array.isArray(fixture.groupKeys)) fixture.groupKeys = [];
   fixture.groupKeys.push(ownerKey);
   const result = {
+    id: group.id,
     key: ownerKey,
     name: group.name || groupName,
     ownerLink: link('group', ownerKey),
@@ -135,9 +137,10 @@ const createTournament = (group, suffix = '') => {
   });
   const tournament = payload && payload.tournament;
   if (!tournament) throw new Error('Tournament fixture response did not contain tournament');
+  if (typeof tournament.id !== 'number') throw new Error('Fixture tournament response did not contain id');
   const ownerKey = accessKey(tournament, 'tournament_links', 'OWNER');
   return {
-    key: ownerKey, name: tournament.name || name,
+    id: tournament.id, key: ownerKey, name: tournament.name || name,
     ownerLink: link('tournament', ownerKey),
     editLink: link('tournament', accessKey(tournament, 'tournament_links', 'EDIT')),
     viewLink: link('tournament', accessKey(tournament, 'tournament_links', 'VIEW')),
@@ -163,6 +166,7 @@ const addTournamentPlayers = (tournament, players) => {
 
 const createTable = (tournament, name, players = []) => {
   const table = request('post', `/api/tournaments/${tournament.key}/tables`, { name, type: 'NORMAL' });
+  if (typeof table.id !== 'number') throw new Error('Fixture table response did not contain id');
   // Tables currently expose VIEW and EDIT links, but no OWNER link. EDIT is
   // the mutation key used for participant, game, and table deletion APIs.
   const editKey = accessKey(table, 'table_links', 'EDIT');
@@ -172,15 +176,21 @@ const createTable = (tournament, name, players = []) => {
     });
   }
   return {
-    key: editKey, name: table.name || name,
+    id: table.id, key: editKey, name: table.name || name,
     editLink: link('table', editKey),
     viewLink: link('table', accessKey(table, 'table_links', 'VIEW')),
   };
 };
 
-const addGame = (table, players) => request('post', `/api/tables/${table.key}/games`, {
-  scores: players.map((player, index) => ({ player_id: player.id, score: [100, -100, 0, 0][index] })),
-});
+const addGame = (table, players) => {
+  const game = request('post', `/api/tables/${table.key}/games`, {
+    scores: players.map((player, index) => ({ player_id: player.id, score: [100, -100, 0, 0][index] })),
+  });
+  if (!game || typeof game.id !== 'number') {
+    throw new Error('Fixture game response did not contain id');
+  }
+  return game;
+};
 
 const assignBasicGraph = (numberOfPlayers) => {
   const group = createGroup();
@@ -189,9 +199,9 @@ const assignBasicGraph = (numberOfPlayers) => {
   addTournamentPlayers(tournament, players);
   const table = createTable(tournament, `${MAESTRO_FIXTURE_NAME_PREFIX} 卓 ${runId}`, players);
   Object.assign(fixture, {
-    groupName: group.name, groupOwnerLink: group.ownerLink, groupEditLink: group.editLink, groupViewLink: group.viewLink,
-    tournamentName: tournament.name, tournamentOwnerLink: tournament.ownerLink, tournamentEditLink: tournament.editLink, tournamentViewLink: tournament.viewLink,
-    tableName: table.name, tableEditLink: table.editLink, tableViewLink: table.viewLink,
+    groupId: group.id, groupName: group.name, groupOwnerLink: group.ownerLink, groupEditLink: group.editLink, groupViewLink: group.viewLink,
+    tournamentId: tournament.id, tournamentName: tournament.name, tournamentOwnerLink: tournament.ownerLink, tournamentEditLink: tournament.editLink, tournamentViewLink: tournament.viewLink,
+    tableId: table.id, tableName: table.name, tableEditLink: table.editLink, tableViewLink: table.viewLink,
     players,
   });
   players.forEach((player, index) => {
@@ -202,7 +212,10 @@ const assignBasicGraph = (numberOfPlayers) => {
 
 const primary = assignBasicGraph(playerCount);
 
-if (shouldCreateGame) addGame(primary.table, primary.players);
+if (shouldCreateGame) {
+  const game = addGame(primary.table, primary.players);
+  fixture.gameId = game.id;
+}
 
 if (shouldCreateExtraTable) {
   const directTable = createTable(primary.tournament, `${MAESTRO_FIXTURE_NAME_PREFIX} 直接削除卓 ${runId}`);
@@ -225,8 +238,26 @@ if (groupCount === 2) {
     `${MAESTRO_FIXTURE_NAME_PREFIX} 卓 B ${runId}`,
     secondPlayers,
   );
-  if (shouldCreateGame) addGame(secondTable, secondPlayers);
+  let secondGame;
+  if (shouldCreateGame) secondGame = addGame(secondTable, secondPlayers);
 
+  fixture.groupBName = second.name;
+  fixture.groupBId = second.id;
+  fixture.groupBOwnerLink = second.ownerLink;
+  fixture.groupBEditLink = second.editLink;
+  fixture.groupBViewLink = second.viewLink;
+  fixture.tournamentBName = secondTournament.name;
+  fixture.tournamentBId = secondTournament.id;
+  fixture.tournamentBOwnerLink = secondTournament.ownerLink;
+  fixture.tournamentBEditLink = secondTournament.editLink;
+  fixture.tournamentBViewLink = secondTournament.viewLink;
+  fixture.tableBId = secondTable.id;
+  fixture.tableBName = secondTable.name;
+  fixture.tableBEditLink = secondTable.editLink;
+  fixture.tableBViewLink = secondTable.viewLink;
+  fixture.gameBId = secondGame && secondGame.id;
+
+  // Backward-compatible aliases used by the statistics flow.
   fixture.statsGroupBName = second.name;
   fixture.statsGroupBLink = second.ownerLink;
   fixture.statsGroupBUniquePlayer = secondPlayers[0] && secondPlayers[0].name;

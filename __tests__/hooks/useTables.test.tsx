@@ -260,21 +260,59 @@ describe('useDeleteTable', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    queryClient.clear();
   });
 
   afterAll(() => {
     queryClient.clear();
   });
 
-  it('ゲームを含むV2カスケード削除APIを使用する', async () => {
+  it('V2カスケード削除後に卓キャッシュを除去して親大会キャッシュを更新する', async () => {
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
+    const removeQueries = jest.spyOn(queryClient, 'removeQueries');
     mockDeleteTableV2.mockResolvedValue({ deleted_game_count: 2 });
     const { result, unmount } = await renderHook(() => useDeleteTable(), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync({ tableKey: 'table-owner-key' });
+      await result.current.mutateAsync({
+        tableKey: 'table-owner-key',
+        tournamentKey: 'tournament-owner-key',
+      });
     });
 
     expect(mockDeleteTableV2).toHaveBeenCalledWith('table-owner-key');
+    expect(removeQueries).toHaveBeenCalledWith({
+      queryKey: ['/api/v2/tables/table-owner-key/dashboard'],
+      exact: true,
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['/api/tournaments/tournament-owner-key/tables'],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['/api/tournaments/tournament-owner-key/score_map'],
+    });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['/api/v2/tournaments/tournament-owner-key/dashboard'],
+    });
+    expect(invalidateQueries).toHaveBeenCalledTimes(3);
+    unmount();
+  });
+
+  it('直リンクからの削除では存在しない親大会キャッシュを更新しない', async () => {
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
+    const removeQueries = jest.spyOn(queryClient, 'removeQueries');
+    mockDeleteTableV2.mockResolvedValue({ deleted_game_count: 0 });
+    const { result, unmount } = await renderHook(() => useDeleteTable(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({ tableKey: 'direct-table-key' });
+    });
+
+    expect(removeQueries).toHaveBeenCalledWith({
+      queryKey: ['/api/v2/tables/direct-table-key/dashboard'],
+      exact: true,
+    });
+    expect(invalidateQueries).not.toHaveBeenCalled();
     unmount();
   });
 });

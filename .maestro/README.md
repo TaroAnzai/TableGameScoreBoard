@@ -31,6 +31,10 @@ The setup options mean:
 - `FIXTURE_CREATE_EXTRA_TABLE`: creates an additional empty table for direct-deletion checks.
 - `FIXTURE_ADD_INVALID_LINK`: exposes a nonexistent table link and its expected error label under `output.fixture`.
 
+When two groups are requested, the first graph is exposed through the existing unqualified fields such as `groupOwnerLink`, `tournamentOwnerLink`, `tableEditLink`, and `gameId`. The second graph uses the `groupB*`, `tournamentB*`, `tableB*`, and `gameBId` fields. Resource IDs are included so Maestro can target stable component IDs such as `game-row-${output.fixture.gameId}`, `select-${output.fixture.gameId}`, and `score-table-${output.fixture.tableBId}` instead of relying on repeated score or row text.
+
+`SelectorModal` callers can opt into resource-based selectors with `getItemTestId`; callers that omit it retain the index-based `select-0`, `select-1`, and so on. Persisted score rows use `game-row-{gameId}`, while empty input rows use `empty-game-row-{index}` because deleting the first game still leaves an empty row labelled as the first game.
+
 Those tests call `fixtures/teardown/delete-group.js` from `onFlowComplete`. It logs in using the root `.env` credentials and issues `DELETE /api/admin/groups/{group_key}`. The backend owns cascading logical deletion of tournaments, tables, and games. Missing fixture keys print `cleanup skipped`; a 404 from deletion is treated as already cleaned up. Authentication and other API failures remain visible without exposing credentials.
 
 Do not create a giant shared fixture. A test with no server-data dependency must not add setup or teardown hooks. `flows/common` is only for reusable UI fragments such as language selection, opening the app, dismissing the save prompt, and clearing saved links—not an entire scenario.

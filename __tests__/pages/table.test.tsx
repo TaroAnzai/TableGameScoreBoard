@@ -6,6 +6,7 @@ import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 const mockRemoveSavedLink = jest.fn(() => Promise.resolve());
 const mockParams = jest.fn(
@@ -34,6 +35,7 @@ jest.mock('expo-router', () => ({
   router: {
     push: (...args: unknown[]) => mockPush(...args),
     replace: (...args: unknown[]) => mockReplace(...args),
+    dismissTo: (...args: unknown[]) => mockDismissTo(...args),
   },
   useLocalSearchParams: () => mockParams(),
 }));
@@ -286,9 +288,12 @@ describe('卓詳細ページ', () => {
     fireEvent.press(screen.getByText('記録表削除'));
 
     await waitFor(() => {
-      expect(deleteTable).toHaveBeenCalledWith({ tableKey: 'table-key' });
+      expect(deleteTable).toHaveBeenCalledWith({
+        tableKey: 'table-key',
+        tournamentKey: 'tournament-key',
+      });
       expect(mockRemoveSavedLink).toHaveBeenCalledWith({ type: 'table', key: 'table-key' });
-      expect(mockReplace).toHaveBeenCalledWith({
+      expect(mockDismissTo).toHaveBeenCalledWith({
         pathname: '/tournament/[tournamentKey]',
         params: { tournamentKey: 'tournament-key' },
       });

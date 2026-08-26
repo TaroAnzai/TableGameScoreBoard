@@ -53,7 +53,7 @@ onFlowComplete:
 - extendedWaitUntil:
     visible: ${output.fixture.groupName}
     timeout: 30000
-- assertNotVisible: '削除する大会を選択'
+- assertNotVisible: '大会削除'
 
 - openLink:
     link: ${output.fixture.groupOwnerLink}
@@ -61,7 +61,7 @@ onFlowComplete:
 - extendedWaitUntil:
     visible: ${output.fixture.groupName}
     timeout: 30000
-- assertVisible: '削除する大会を選択'
+- assertVisible: '大会削除'
 
 # 親（大会）キーから開いた卓に、親リンクの VIEW 権限が引き継がれる。
 - openLink:
