@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { Calendar } from 'react-native-calendars';
 
+import { DatePickerModal } from '@/components/DatePickerModal';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,8 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Text } from '@/components/ui/text';
-import { radius, themes } from '@/src/lib/theme';
-import { useTheme } from '@/src/providers/ThemeProvider';
+import { radius } from '@/src/lib/theme';
 import type { DateString, StatsDateRange } from '@/src/types/statsDateRange';
 
 type DateRangePickerModalProps = {
@@ -27,10 +26,6 @@ type DateRangePickerModalProps = {
 };
 
 type SelectionMode = 'start' | 'end';
-type CalendarColors = Pick<
-  (typeof themes)[keyof typeof themes],
-  'primary' | 'onPrimary' | 'primaryContainer' | 'onPrimaryContainer'
->;
 
 const dateStringPattern = /^(\d{4,})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
@@ -63,42 +58,6 @@ const isInDateBounds = (value: DateString, minDate?: DateString, maxDate?: DateS
   (!minDate || value >= minDate) &&
   (!maxDate || value <= maxDate);
 
-const getPeriodMarkings = (
-  startDate: DateString | null,
-  endDate: DateString | null,
-  colors: CalendarColors,
-) => {
-  if (!startDate) return {};
-  if (!endDate) {
-    return {
-      [startDate]: {
-        startingDay: true,
-        endingDay: true,
-        color: colors.primary,
-        textColor: colors.onPrimary,
-      },
-    };
-  }
-
-  const markings: Record<string, object> = {};
-  const cursor = parseDateString(startDate);
-  const end = parseDateString(endDate);
-  if (!cursor || !end) return markings;
-  while (cursor <= end) {
-    const date = toDateString(cursor);
-    const isStart = date === startDate;
-    const isEnd = date === endDate;
-    markings[date] = {
-      startingDay: isStart,
-      endingDay: isEnd,
-      color: isStart || isEnd ? colors.primary : colors.primaryContainer,
-      textColor: isStart || isEnd ? colors.onPrimary : colors.onPrimaryContainer,
-    };
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return markings;
-};
-
 const DateRangePickerModalContent = ({
   open,
   initialValue,
@@ -109,8 +68,6 @@ const DateRangePickerModalContent = ({
   onCancel,
 }: DateRangePickerModalProps) => {
   const { t } = useTranslation();
-  const { resolvedTheme } = useTheme();
-  const theme = themes[resolvedTheme];
   const [draftStartDate, setDraftStartDate] = useState<DateString | null>(
     initialValue.type === 'range' ? initialValue.startDate : null,
   );
@@ -118,6 +75,7 @@ const DateRangePickerModalContent = ({
     initialValue.type === 'range' ? initialValue.endDate : null,
   );
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('start');
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
 
   const isRangeValid = Boolean(
@@ -126,17 +84,6 @@ const DateRangePickerModalContent = ({
     draftStartDate <= draftEndDate &&
     isInDateBounds(draftStartDate, minDate, maxDate) &&
     isInDateBounds(draftEndDate, minDate, maxDate),
-  );
-  const calendarMinDate =
-    selectionMode === 'end' && draftStartDate
-      ? minDate && minDate > draftStartDate
-        ? minDate
-        : draftStartDate
-      : minDate;
-  const calendarCurrent = draftStartDate ?? minDate ?? maxDate ?? toDateString(new Date());
-  const markedDates = useMemo(
-    () => getPeriodMarkings(draftStartDate, draftEndDate, theme),
-    [draftEndDate, draftStartDate, theme],
   );
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -152,20 +99,15 @@ const DateRangePickerModalContent = ({
     return Array.from({ length: currentYear - firstYear + 1 }, (_, index) => currentYear - index);
   }, [minDate, selectableYears]);
 
-  const handleDayPress = ({ dateString }: { dateString: string }) => {
-    const selectedDate = dateString as DateString;
-    if (
-      !isInDateBounds(selectedDate, minDate, maxDate) ||
-      (selectionMode === 'end' && (!draftStartDate || selectedDate < draftStartDate))
-    )
-      return;
+  const handleDateSelected = (selectedDate: DateString) => {
     if (selectionMode === 'start') {
       setDraftStartDate(selectedDate);
       setDraftEndDate(null);
       setSelectionMode('end');
-      return;
+    } else {
+      setDraftEndDate(selectedDate);
     }
-    setDraftEndDate(selectedDate);
+    setIsDatePickerOpen(false);
   };
 
   const handleAllSelected = () => onConfirm({ type: 'all', startDate: null, endDate: null });
@@ -212,13 +154,19 @@ const DateRangePickerModalContent = ({
             </View>
             <View className="border-border border-t" />
             <View className="gap-2">
+              <Text className="text-xl font-bold leading-7 text-on-surface">
+                {t('statsPage.dateRangePicker.selectByPeriod')}
+              </Text>
               <Button
                 accessibilityLabel={t('statsPage.dateRangePicker.selectStartDate')}
                 accessibilityState={{ selected: selectionMode === 'start' }}
                 className="h-auto min-h-12 justify-between rounded-xl px-3 py-3"
                 testID="date-range-start-date"
                 variant={selectionMode === 'start' ? 'default' : 'outline'}
-                onPress={() => setSelectionMode('start')}
+                onPress={() => {
+                  setSelectionMode('start');
+                  setIsDatePickerOpen(true);
+                }}
               >
                 <Text>{t('statsPage.dateRangePicker.startDate')}</Text>
                 <Text>
@@ -237,7 +185,11 @@ const DateRangePickerModalContent = ({
                 disabled={!draftStartDate}
                 testID="date-range-end-date"
                 variant={selectionMode === 'end' ? 'default' : 'outline'}
-                onPress={() => draftStartDate && setSelectionMode('end')}
+                onPress={() => {
+                  if (!draftStartDate) return;
+                  setSelectionMode('end');
+                  setIsDatePickerOpen(true);
+                }}
               >
                 <Text>{t('statsPage.dateRangePicker.endDate')}</Text>
                 <Text>
@@ -255,34 +207,6 @@ const DateRangePickerModalContent = ({
                   : t('statsPage.dateRangePicker.selectEndInstruction')}
               </Text>
             </View>
-            <Calendar
-              current={calendarCurrent}
-              disableAllTouchEventsForDisabledDays={selectionMode === 'end'}
-              enableSwipeMonths
-              firstDay={1}
-              markedDates={markedDates}
-              markingType="period"
-              maxDate={maxDate}
-              minDate={calendarMinDate}
-              monthFormat="yyyy年 M月"
-              testID="date-range-calendar"
-              theme={{
-                arrowColor: theme.primary,
-                calendarBackground: theme.surface,
-                dayTextColor: theme.onSurface,
-                monthTextColor: theme.onSurface,
-                textDayFontSize: 14,
-                textDayHeaderFontSize: 12,
-                textDayHeaderFontWeight: '600',
-                textDayFontWeight: '400',
-                textDisabledColor: theme.disabled,
-                textMonthFontSize: 16,
-                textMonthFontWeight: '600',
-                textSectionTitleColor: theme.onSurfaceVariant,
-                todayTextColor: theme.primary,
-              }}
-              onDayPress={handleDayPress}
-            />
           </View>
           <DialogFooter>
             <Button
@@ -304,6 +228,21 @@ const DateRangePickerModalContent = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <DatePickerModal
+        key={`${selectionMode}-${isDatePickerOpen}`}
+        maxDate={maxDate}
+        minDate={selectionMode === 'end' ? draftStartDate ?? minDate : minDate}
+        open={isDatePickerOpen}
+        selectableYears={selectableYears}
+        title={
+          selectionMode === 'start'
+            ? t('statsPage.dateRangePicker.selectStartDate')
+            : t('statsPage.dateRangePicker.selectEndDate')
+        }
+        value={selectionMode === 'start' ? draftStartDate : draftEndDate}
+        onCancel={() => setIsDatePickerOpen(false)}
+        onSelect={handleDateSelected}
+      />
       <Dialog open={isYearPickerOpen} onOpenChange={setIsYearPickerOpen}>
         <DialogContent className="bg-surface" style={{ borderRadius: radius.xl }}>
           <DialogHeader>

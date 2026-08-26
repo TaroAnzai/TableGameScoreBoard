@@ -47,10 +47,10 @@ const StatsPage = () => {
           <Pressable
             accessibilityLabel={t('statsPage.selectGroup')}
             accessibilityRole="button"
-            className="ml-4 flex-row items-center gap-2"
+            className="ml-4 flex-1 flex-row items-center gap-2"
             onPress={() => setIsGroupSelectorOpen(true)}
           >
-            <Text className="" numberOfLines={1}>
+            <Text className="min-w-0 flex-1 truncate" numberOfLines={1}>
               {effectiveGroup?.name}
             </Text>
             <Icon as={ChevronRight} size={20} />
@@ -67,7 +67,7 @@ const StatsPage = () => {
             testID="stats-date-range-selector"
             onPress={() => setIsDateRangePickerOpen(true)}
           >
-            <Text className="flex-1 text-right" numberOfLines={1}>
+            <Text className="flex-1 text-right truncate" numberOfLines={1}>
               {dateRangeLabel}
             </Text>
             <Icon as={ChevronRight} size={20} />

@@ -235,6 +235,7 @@ export default function Index() {
                       group && (
                         <MahjongListItem
                           key={group.id + getAccessLevelstring(group.group_links)}
+                          testID={`saved-group-${group.id}`}
                           title={group.name}
                           badge={t(`Common.accessLevel.${getAccessLevelstring(group.group_links)}`)}
                           accessories={[

@@ -81,7 +81,9 @@ describe('DateRangePickerModal', () => {
   it('日付範囲をYYYY-MM-DD形式で確定する', async () => {
     const { onConfirm } = await renderModal({ type: 'all', startDate: null, endDate: null });
 
+    await fireEvent.press(screen.getByTestId('date-range-start-date'));
     await selectDate('2025-01-02');
+    await fireEvent.press(screen.getByTestId('date-range-end-date'));
     await selectDate('2025-02-03');
     await fireEvent.press(screen.getByRole('button', { name: '期間を決定' }));
 
@@ -146,6 +148,21 @@ describe('DateRangePickerModal', () => {
       startDate: '2025-02-02',
       endDate: '2025-02-02',
     });
+  });
+
+  it('日付モーダルで年と月を別々に選択して表示月を変更する', async () => {
+    await renderModal(
+      { type: 'range', startDate: '2025-02-02', endDate: '2025-02-03' },
+      { selectableYears: [2025, 2026] },
+    );
+
+    await fireEvent.press(screen.getByTestId('date-range-start-date'));
+    await fireEvent.press(screen.getByTestId('calendar-year-picker'));
+    await fireEvent.press(screen.getByTestId('calendar-year-2026'));
+    await fireEvent.press(screen.getByTestId('calendar-month-picker'));
+    await fireEvent.press(screen.getByTestId('calendar-month-8'));
+
+    expect(screen.getByTestId('date-range-calendar').props.current).toBe('2026-08-01');
   });
 
   it('年を選択するとその年の開始日と終了日を設定する', async () => {
