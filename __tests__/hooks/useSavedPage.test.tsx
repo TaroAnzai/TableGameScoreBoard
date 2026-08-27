@@ -59,12 +59,14 @@ describe('useSavedPage', () => {
     );
 
     expect(result.current.shouldPromptSave).toBe(false);
+    expect(result.current.savePromptMode).toBeUndefined();
     expect(mockAddListener).not.toHaveBeenCalled();
 
     mockGlobalParams = {};
     await rerender({});
 
     expect(result.current.shouldPromptSave).toBe(true);
+    expect(result.current.savePromptMode).toBe('initial');
     expect(mockAddListener).toHaveBeenCalledWith('beforeRemove', expect.any(Function));
   });
 
@@ -92,6 +94,7 @@ describe('useSavedPage', () => {
 
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(result.current.shouldPromptSave).toBe(true);
+    expect(result.current.savePromptMode).toBe('navigation');
     expect(mockDispatch).not.toHaveBeenCalled();
 
     await act(async () => {

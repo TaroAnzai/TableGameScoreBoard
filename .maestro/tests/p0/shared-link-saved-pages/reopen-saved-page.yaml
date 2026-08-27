@@ -17,3 +17,5 @@ appId: ${APP_ID}
 - assertVisible: '大会成績'
 - tapOn: '保存済み'
 - assertVisible: '${output.fixture.tournamentName}, ${output.fixture.groupName}, 閲覧'
+- tapOn: '保存済み'
+- assertNotVisible: '保存済みページ'

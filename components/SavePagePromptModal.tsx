@@ -16,6 +16,7 @@ import { radius } from '@/src/lib/theme';
 
 type SavePagePromptModalProps = {
   open: boolean;
+  mode: 'initial' | 'navigation' | undefined;
   onSave: () => void | Promise<void>;
   onContinueWithoutSaving: () => void;
   onCancel: () => void;
@@ -24,6 +25,7 @@ type SavePagePromptModalProps = {
 
 export const SavePagePromptModal = ({
   open,
+  mode,
   onSave,
   onContinueWithoutSaving,
   onCancel,
@@ -48,21 +50,27 @@ export const SavePagePromptModal = ({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && !isProcessing && onCancel()}>
-      <DialogContent className="bg-surface -translate-y-20" style={{ borderRadius: radius.xl }}>
+      <DialogContent
+        testID="unsaved-link-dialog"
+        className="bg-surface -translate-y-20"
+        style={{ borderRadius: radius.xl }}
+      >
         <DialogHeader>
           <DialogTitle>{t('savePagePrompt.title')}</DialogTitle>
           <DialogDescription>{t('savePagePrompt.description')}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            accessibilityLabel={t('Common.Cancel')}
-            className="h-auto min-h-12 rounded-xl py-3"
-            variant="ghost"
-            disabled={isProcessing}
-            onPress={onCancel}
-          >
-            <Text>{t('Common.Cancel')}</Text>
-          </Button>
+          {mode === 'navigation' && (
+            <Button
+              accessibilityLabel={t('Common.Cancel')}
+              className="h-auto min-h-12 rounded-xl py-3"
+              variant="ghost"
+              disabled={isProcessing}
+              onPress={onCancel}
+            >
+              <Text>{t('Common.Cancel')}</Text>
+            </Button>
+          )}
           <Button
             accessibilityLabel={t('savePagePrompt.continue')}
             className="h-auto min-h-12 rounded-xl py-3"

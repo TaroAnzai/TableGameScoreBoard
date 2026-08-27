@@ -89,6 +89,7 @@ export default function TablePage() {
     save: savePage,
     isSaving: isSavingPage,
     shouldPromptSave,
+    savePromptMode,
     continueWithoutSaving,
     completeSavePrompt,
     cancelSavePrompt,
@@ -245,6 +246,7 @@ export default function TablePage() {
       />
       <SavePagePromptModal
         open={shouldPromptSave}
+        mode={savePromptMode}
         isSaving={isSavingPage}
         onSave={saveTablePageFromPrompt}
         onContinueWithoutSaving={continueWithoutSaving}

@@ -60,11 +60,11 @@ onFlowComplete:
     visible: ${output.fixture.tournamentName}
     timeout: 30000
 - pressKey: back
-- tapOn: '保存せず続行'
+- tapOn: 'キャンセル'
 - assertVisible: ${output.fixture.tournamentName}
 
 # 不正形式・存在しない共有リンクでも、アプリがクラッシュせずエラーを表示する。
 - openLink:
     link: ${output.fixture.invalidFormatLink}
 - runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- assertVisible: ${output.fixture.invalidFormatError}
+- assertVisible: '卓が見つかりませんでした'

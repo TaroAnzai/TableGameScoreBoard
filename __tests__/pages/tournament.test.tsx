@@ -99,6 +99,7 @@ jest.mock('@/src/hooks/useSavedPage', () => ({
       save: jest.fn(),
       isSaving: false,
       shouldPromptSave: false,
+      savePromptMode: undefined,
       continueWithoutSaving: jest.fn(),
       completeSavePrompt: jest.fn(),
       cancelSavePrompt: jest.fn(),

@@ -98,6 +98,7 @@ const TournamentPage = () => {
     save: savePage,
     isSaving: isSavingPage,
     shouldPromptSave,
+    savePromptMode,
     continueWithoutSaving,
     completeSavePrompt,
     cancelSavePrompt,
@@ -320,6 +321,7 @@ const TournamentPage = () => {
       />
       <SavePagePromptModal
         open={shouldPromptSave}
+        mode={savePromptMode}
         isSaving={isSavingPage}
         onSave={saveTournamentPageFromPrompt}
         onContinueWithoutSaving={continueWithoutSaving}

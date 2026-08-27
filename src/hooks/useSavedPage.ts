@@ -55,6 +55,13 @@ export const useSavedPage = ({
     !isError &&
     !isSaved &&
     canSave;
+  const savePromptMode: 'initial' | 'navigation' | undefined = !canPromptSave
+    ? undefined
+    : hasRequestedPrompt
+      ? 'navigation'
+      : !hasDismissedPrompt
+        ? 'initial'
+        : undefined;
 
   useEffect(() => {
     if (!canPromptSave) return;
@@ -130,7 +137,8 @@ export const useSavedPage = ({
     touch: touchCurrentPage,
     isSaving,
     isRemoving,
-    shouldPromptSave: canPromptSave && (!hasDismissedPrompt || hasRequestedPrompt),
+    shouldPromptSave: savePromptMode !== undefined,
+    savePromptMode,
     continueWithoutSaving,
     completeSavePrompt,
     cancelSavePrompt,

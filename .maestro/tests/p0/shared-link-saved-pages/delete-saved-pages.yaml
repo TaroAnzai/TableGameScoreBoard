@@ -1,13 +1,16 @@
 appId: ${APP_ID}
 ---
 # 長押し削除後、一覧から消える。卓も同様に削除する。
+- tapOn: '保存済み'
 - longPressOn: '${output.fixture.tournamentName}, ${output.fixture.groupName}, 閲覧'
 - assertVisible: '保存済みページを削除'
 - tapOn: 'OK'
+- tapOn: '保存済み'
 - assertVisible: '保存済みページ'
 - longPressOn: '${output.fixture.tableName}, ${output.fixture.groupName} / ${output.fixture.tournamentName}, 閲覧'
 - assertVisible: '保存済みページを削除'
 - tapOn: 'OK'
+- tapOn: '保存済み'
 - assertVisible: '保存済みページ'
 - assertNotVisible: '${output.fixture.tournamentName}, ${output.fixture.groupName}, 閲覧'
 - assertNotVisible: '${output.fixture.tableName}, ${output.fixture.groupName} / ${output.fixture.tournamentName}, 閲覧'

@@ -1,14 +1,16 @@
 appId: ${APP_ID}
 ---
-# 保存を断ったページでは、同一プロセス内で促進モーダルを再表示しない。
+# 開いた時はキャンセルが非常時、未保存で移動時はキャンセル表示
 - openLink:
     link: ${output.fixture.tournamentViewLink}
 - extendedWaitUntil:
     visible: ${output.fixture.tournamentName}
     timeout: 30000
-- assertVisible: '保存せず続行'
-- tapOn: '保存せず続行'
-- assertNotVisible: '保存せず続行'
-- openLink:
-    link: ${output.fixture.tournamentViewLink}
-- assertNotVisible: '保存せず続行'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- assertNotVisible: 'キャンセル'
+- tapOn: "保存せず続行"
+- pressKey: back
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: 'キャンセル'
