@@ -3,7 +3,7 @@
 flows:
   # The pattern is evaluated from the directory passed to `maestro test`.
   # `**` supports both `.maestro/tests/p0` and `.maestro/tests` invocations.
-  - '**'
+  - '*'
 
 env:
   APP_ID: com.anzaihome.mahjongapp.dev

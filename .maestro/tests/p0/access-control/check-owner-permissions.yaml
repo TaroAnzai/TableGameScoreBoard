@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+---
+# OWNER 専用の大会削除は、グループ画面で確認する。
+- openLink:
+    link: ${output.fixture.groupEditLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- assertNotVisible: '大会削除'
+
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- assertVisible: '大会削除'

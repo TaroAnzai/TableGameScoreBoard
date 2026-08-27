@@ -6,8 +6,14 @@ tags:
 ---
 # 前提: PENDING_GROUP_A/B は API で発行済み、A のみ登録可能にした状態で開始する。
 # このテストはメール承認を API fixture が制御するため、実行中に手動操作を必要としない。
-- launchApp
+
+# 安全な立ち上げ launchApp 代替
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
 - assertVisible: '麻雀大会 集計'
+
 - assertVisible: '申請中のグループ'
 - assertVisible: ${PENDING_GROUP_A_NAME}
 - assertVisible: ${PENDING_GROUP_B_NAME}

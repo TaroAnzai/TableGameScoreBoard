@@ -1,0 +1,39 @@
+appId: ${APP_ID}
+---
+# 失敗時はエラーを表示し、再起動後の再試行でも重複局を作らない。
+- tapOn: '第1局のスコアを編集'
+- tapOn: '${output.fixture.player1}の点数'
+- inputText: '200'
+- tapOn: '${output.fixture.player2}の点数'
+- inputText: '-200'
+- tapOn: '${output.fixture.player3}の点数'
+- inputText: '0'
+- tapOn: '${output.fixture.player4}の点数'
+- inputText: '0'
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: offline
+- tapOn: '確定'
+- assertVisible: '対局の更新に失敗しました'
+- stopApp
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: normal
+- runFlow:
+    file: ../../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: '第1局のスコアを編集'
+- assertVisible: '${output.fixture.player1}の点数'
+- assertVisible: '100'
+- tapOn: '確定'
+- assertVisible: '100'
+- assertVisible: '第2局のスコアを編集'

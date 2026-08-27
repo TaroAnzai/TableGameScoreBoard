@@ -1,0 +1,23 @@
+appId: ${APP_ID}
+---
+# 再起動すると未保存ページとして再び促進され、保存できる。
+- stopApp
+- runFlow:
+    file: ../../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- openLink:
+    link: ${output.fixture.tournamentViewLink}
+- assertVisible: '保存せず続行'
+- tapOn: '保存する'
+- assertNotVisible: '保存せず続行'
+
+# 卓について同じ保存フローを実施する。
+- openLink:
+    link: ${output.fixture.tableViewLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- assertVisible: '保存せず続行'
+- tapOn: '保存する'
+- assertNotVisible: '保存せず続行'

@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+# 親（大会）キーから開いた卓に、親リンクの VIEW 権限が引き継がれる。
+- openLink:
+    link: ${output.fixture.tableViewLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- assertNotVisible: '${output.fixture.tableName}を編集'
+- assertNotVisible: '参加者を追加'
+- assertVisible:
+    text: '対局データを削除'
+    enabled: false
+
+# EDIT 親キーから開いた卓では編集できる。
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- assertVisible: '${output.fixture.tableName}を編集'
+- assertVisible: '参加者を追加'

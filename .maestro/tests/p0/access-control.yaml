@@ -23,71 +23,8 @@ onFlowComplete:
     env:
       APP_ID: ${APP_ID}
 
-# VIEW は編集 UI を提供せず、EDIT/OWNER は編集 UI を提供する。
 - runFlow: ../../flows/common/select-japanese.yaml
-- openLink:
-    link: ${output.fixture.tournamentViewLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${output.fixture.tournamentName}
-    timeout: 30000
-- assertNotVisible: '${output.fixture.tournamentName}を編集'
-- assertNotVisible: '参加者を追加'
-- assertNotVisible: '参加者を削除'
-- assertVisible:
-    text: '記録用紙を新規作成'
-    enabled: false
-
-- openLink:
-    link: ${output.fixture.tournamentEditLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${output.fixture.tournamentName}
-    timeout: 30000
-- assertVisible: '${output.fixture.tournamentName}を編集'
-- assertVisible: '参加者を削除'
-- assertVisible: '参加者を追加'
-- assertVisible:
-    text: '記録用紙を新規作成'
-    enabled: true
-
-# OWNER 専用の大会削除は、グループ画面で確認する。
-- openLink:
-    link: ${output.fixture.groupEditLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${output.fixture.groupName}
-    timeout: 30000
-- assertNotVisible: '大会削除'
-
-- openLink:
-    link: ${output.fixture.groupOwnerLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${output.fixture.groupName}
-    timeout: 30000
-- assertVisible: '大会削除'
-
-# 親（大会）キーから開いた卓に、親リンクの VIEW 権限が引き継がれる。
-- openLink:
-    link: ${output.fixture.tableViewLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${output.fixture.tableName}
-    timeout: 30000
-- assertNotVisible: '${output.fixture.tableName}を編集'
-- assertNotVisible: '参加者を追加'
-- assertVisible:
-    text: '対局データを削除'
-    enabled: false
-
-# EDIT 親キーから開いた卓では編集できる。
-- openLink:
-    link: ${output.fixture.tableEditLink}
-- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- extendedWaitUntil:
-    visible: ${output.fixture.tableName}
-    timeout: 30000
-- assertVisible: '${output.fixture.tableName}を編集'
-- assertVisible: '参加者を追加'
+- runFlow: access-control/check-tournament-permissions.yaml
+- runFlow: access-control/check-owner-permissions.yaml
+- runFlow: access-control/check-table-permissions.yaml
 # この UI 確認に加え、CI は同じ fixture キーでバックエンドの permission contract test を実行する。

@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+---
+# 4人でも合計が0でなければ確定不可。
+- tapOn: '第1局のスコアを編集'
+- tapOn: '${output.fixture.player1}の点数'
+- inputText: '100'
+- tapOn: '${output.fixture.player2}の点数'
+- inputText: '-100'
+- tapOn: '${output.fixture.player3}の点数'
+- inputText: '1'
+- tapOn: '${output.fixture.player4}の点数'
+- inputText: '0'
+- assertVisible: '通常卓の合計は0にしてください'
+- assertVisible:
+    text: '確定'
+    enabled: false

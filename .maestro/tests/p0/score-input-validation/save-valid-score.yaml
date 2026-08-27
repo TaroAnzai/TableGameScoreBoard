@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+---
+# 合計0なら確定可能。二重タップしても1局だけ作成される。
+- tapOn: '${output.fixture.player3}の点数'
+- tapOn: '${output.fixture.player4}の点数'
+- inputText: '-1'
+- assertVisible: '合計: 0'
+- tapOn: '確定'
+- tapOn:
+    text: '確定'
+    optional: true
+- assertVisible: '100'

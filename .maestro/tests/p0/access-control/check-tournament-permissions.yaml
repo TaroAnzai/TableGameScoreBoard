@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+---
+# VIEW は編集 UI を提供せず、EDIT は編集 UI を提供する。
+- openLink:
+    link: ${output.fixture.tournamentViewLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- assertNotVisible: '${output.fixture.tournamentName}を編集'
+- assertNotVisible: '参加者を追加'
+- assertNotVisible: '参加者を削除'
+- assertVisible:
+    text: '記録用紙を新規作成'
+    enabled: false
+
+- openLink:
+    link: ${output.fixture.tournamentEditLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- assertVisible: '${output.fixture.tournamentName}を編集'
+- assertVisible: '参加者を削除'
+- assertVisible: '参加者を追加'
+- assertVisible:
+    text: '記録用紙を新規作成'
+    enabled: true
