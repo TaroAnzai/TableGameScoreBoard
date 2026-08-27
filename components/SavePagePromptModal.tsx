@@ -17,14 +17,16 @@ import { radius } from '@/src/lib/theme';
 type SavePagePromptModalProps = {
   open: boolean;
   onSave: () => void | Promise<void>;
-  onClose: () => void;
+  onContinueWithoutSaving: () => void;
+  onCancel: () => void;
   isSaving?: boolean;
 };
 
 export const SavePagePromptModal = ({
   open,
   onSave,
-  onClose,
+  onContinueWithoutSaving,
+  onCancel,
   isSaving = false,
 }: SavePagePromptModalProps) => {
   const { t } = useTranslation();
@@ -37,7 +39,6 @@ export const SavePagePromptModal = ({
     setIsSubmitting(true);
     try {
       await onSave();
-      onClose();
     } catch {
       // The caller presents the storage error using the app-wide feedback pattern.
     } finally {
@@ -46,7 +47,7 @@ export const SavePagePromptModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && !isProcessing && onClose()}>
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && !isProcessing && onCancel()}>
       <DialogContent className="bg-surface -translate-y-20" style={{ borderRadius: radius.xl }}>
         <DialogHeader>
           <DialogTitle>{t('savePagePrompt.title')}</DialogTitle>
@@ -54,11 +55,20 @@ export const SavePagePromptModal = ({
         </DialogHeader>
         <DialogFooter>
           <Button
+            accessibilityLabel={t('Common.Cancel')}
+            className="h-auto min-h-12 rounded-xl py-3"
+            variant="ghost"
+            disabled={isProcessing}
+            onPress={onCancel}
+          >
+            <Text>{t('Common.Cancel')}</Text>
+          </Button>
+          <Button
             accessibilityLabel={t('savePagePrompt.continue')}
             className="h-auto min-h-12 rounded-xl py-3"
             variant="outline"
             disabled={isProcessing}
-            onPress={onClose}
+            onPress={onContinueWithoutSaving}
           >
             <Text>{t('savePagePrompt.continue')}</Text>
           </Button>

@@ -98,7 +98,9 @@ const TournamentPage = () => {
     save: savePage,
     isSaving: isSavingPage,
     shouldPromptSave,
-    dismissSavePrompt,
+    continueWithoutSaving,
+    completeSavePrompt,
+    cancelSavePrompt,
   } = useSavedPage({
     type: 'tournament',
     key: tournamentKey,
@@ -247,6 +249,10 @@ const TournamentPage = () => {
       throw error;
     }
   };
+  const saveTournamentPageFromPrompt = async () => {
+    await saveTournamentPage();
+    completeSavePrompt();
+  };
 
   const TitleWithModal = ({
     onPress,
@@ -315,8 +321,9 @@ const TournamentPage = () => {
       <SavePagePromptModal
         open={shouldPromptSave}
         isSaving={isSavingPage}
-        onSave={saveTournamentPage}
-        onClose={dismissSavePrompt}
+        onSave={saveTournamentPageFromPrompt}
+        onContinueWithoutSaving={continueWithoutSaving}
+        onCancel={cancelSavePrompt}
       />
       <View className="mb-2 flex-row items-center justify-center">
         {tournament && (

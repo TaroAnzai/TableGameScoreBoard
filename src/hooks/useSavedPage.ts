@@ -71,17 +71,24 @@ export const useSavedPage = ({
     });
   }, [canPromptSave, navigation, pageIdentifier]);
 
-  const dismissSavePrompt = useCallback(() => {
+  const closeSavePrompt = useCallback((resumeNavigation: boolean) => {
     setDismissedPage(pageIdentifier);
     setRequestedPage(undefined);
 
     const action = pendingNavigationAction.current;
-    if (!action) return;
-
     pendingNavigationAction.current = undefined;
+    if (!action || !resumeNavigation) return;
+
     allowNavigation.current = true;
     navigation.dispatch(action);
   }, [navigation, pageIdentifier]);
+
+  const continueWithoutSaving = useCallback(
+    () => closeSavePrompt(true),
+    [closeSavePrompt],
+  );
+  const completeSavePrompt = useCallback(() => closeSavePrompt(true), [closeSavePrompt]);
+  const cancelSavePrompt = useCallback(() => closeSavePrompt(false), [closeSavePrompt]);
 
   const saveCurrentPage = useCallback(async () => {
     if (!key || !name) {
@@ -124,7 +131,9 @@ export const useSavedPage = ({
     isSaving,
     isRemoving,
     shouldPromptSave: canPromptSave && (!hasDismissedPrompt || hasRequestedPrompt),
-    dismissSavePrompt,
+    continueWithoutSaving,
+    completeSavePrompt,
+    cancelSavePrompt,
     hasDismissedPrompt,
     isLoading,
     isError,

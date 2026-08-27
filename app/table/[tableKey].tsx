@@ -89,7 +89,9 @@ export default function TablePage() {
     save: savePage,
     isSaving: isSavingPage,
     shouldPromptSave,
-    dismissSavePrompt,
+    continueWithoutSaving,
+    completeSavePrompt,
+    cancelSavePrompt,
   } = useSavedPage({
     type: 'table',
     key: tableKey,
@@ -125,6 +127,10 @@ export default function TablePage() {
       });
       throw error;
     }
+  };
+  const saveTablePageFromPrompt = async () => {
+    await saveTablePage();
+    completeSavePrompt();
   };
   if (isErrorDashboard) {
     return (
@@ -240,8 +246,9 @@ export default function TablePage() {
       <SavePagePromptModal
         open={shouldPromptSave}
         isSaving={isSavingPage}
-        onSave={saveTablePage}
-        onClose={dismissSavePrompt}
+        onSave={saveTablePageFromPrompt}
+        onContinueWithoutSaving={continueWithoutSaving}
+        onCancel={cancelSavePrompt}
       />
 
       <MahjongSection

@@ -82,7 +82,7 @@ describe('useSavedPage', () => {
     const action = { type: 'RESET', payload: { index: 1 } };
 
     await act(async () => {
-      result.current.dismissSavePrompt();
+      result.current.continueWithoutSaving();
     });
     expect(result.current.shouldPromptSave).toBe(false);
 
@@ -95,10 +95,31 @@ describe('useSavedPage', () => {
     expect(mockDispatch).not.toHaveBeenCalled();
 
     await act(async () => {
-      result.current.dismissSavePrompt();
+      result.current.continueWithoutSaving();
     });
 
     expect(mockDispatch).toHaveBeenCalledWith(action);
+  });
+
+  it('キャンセル時は保留中の遷移を破棄して画面に留まる', async () => {
+    const { result } = await renderHook(() =>
+      useSavedPage({
+        type: 'tournament',
+        key: 'tournament-key',
+        name: '大会名',
+        isDirectView: true,
+      }),
+    );
+    const beforeRemove = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const action = { type: 'GO_BACK' };
+
+    await act(async () => {
+      beforeRemove({ preventDefault: jest.fn(), data: { action } });
+      result.current.cancelSavePrompt();
+    });
+
+    expect(result.current.shouldPromptSave).toBe(false);
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 
   it('ダイレクト表示の未保存ページで、名称確定後に保存案内を表示する', async () => {
@@ -160,7 +181,7 @@ describe('useSavedPage', () => {
     );
 
     await act(async () => {
-      result.current.dismissSavePrompt();
+      result.current.continueWithoutSaving();
     });
     expect(result.current.shouldPromptSave).toBe(false);
 

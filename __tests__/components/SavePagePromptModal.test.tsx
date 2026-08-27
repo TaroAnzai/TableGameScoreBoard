@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import { SavePagePromptModal } from '@/components/SavePagePromptModal';
@@ -18,38 +18,48 @@ jest.mock('@/components/ui/dialog', () => {
 });
 
 describe('SavePagePromptModal', () => {
-  it('保存方法と保存せず続行する操作を表示する', async () => {
-    await render(<SavePagePromptModal open onSave={jest.fn()} onClose={jest.fn()} />);
+  const defaultProps = {
+    open: true,
+    onSave: jest.fn(),
+    onContinueWithoutSaving: jest.fn(),
+    onCancel: jest.fn(),
+  };
+
+  it('保存、保存せず続行、キャンセルの操作を表示する', async () => {
+    await render(<SavePagePromptModal {...defaultProps} />);
 
     expect(screen.getByText('このページを保存しますか？')).toBeTruthy();
     expect(screen.getByText(/ページタイトルを長押しして保存/)).toBeTruthy();
     expect(screen.getByRole('button', { name: '保存する' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '保存せず続行' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeTruthy();
   });
 
-  it('保存成功時にモーダルを閉じる', async () => {
+  it('保存操作では保存ハンドラーを実行する', async () => {
     const onSave = jest.fn().mockResolvedValue(undefined);
-    const onClose = jest.fn();
-    await render(<SavePagePromptModal open onSave={onSave} onClose={onClose} />);
+    await render(<SavePagePromptModal {...defaultProps} onSave={onSave} />);
 
-    await act(async () => {
-      fireEvent.press(screen.getByRole('button', { name: '保存する' }));
-    });
+    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
 
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
-  it('保存失敗時はモーダルを閉じない', async () => {
-    const onClose = jest.fn();
+  it('保存せず続行とキャンセルを別々のハンドラーへ通知する', async () => {
+    const onContinueWithoutSaving = jest.fn();
+    const onCancel = jest.fn();
     await render(
-      <SavePagePromptModal open onSave={jest.fn().mockRejectedValue(new Error('storage error'))} onClose={onClose} />,
+      <SavePagePromptModal
+        {...defaultProps}
+        onContinueWithoutSaving={onContinueWithoutSaving}
+        onCancel={onCancel}
+      />,
     );
 
-    await act(async () => {
-      fireEvent.press(screen.getByRole('button', { name: '保存する' }));
-    });
+    fireEvent.press(screen.getByRole('button', { name: '保存せず続行' }));
+    expect(onContinueWithoutSaving).toHaveBeenCalledTimes(1);
+    expect(onCancel).not.toHaveBeenCalled();
 
-    await waitFor(() => expect(onClose).not.toHaveBeenCalled());
+    fireEvent.press(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });
