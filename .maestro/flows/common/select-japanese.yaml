@@ -1,6 +1,11 @@
 # 日本語 UI を前提とするフロー向けの軽量な共通セットアップ。
 appId: ${APP_ID}
 ---
+- runFlow:
+    when:
+      visible: 'グループ取得エラー|Error Loading Groups'
+    commands:
+      - tapOn: 'OK'
 - tapOn:
     text: '設定を開く|Open settings'
 - tapOn: '日本語'

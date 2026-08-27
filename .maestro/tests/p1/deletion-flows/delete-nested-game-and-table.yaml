@@ -1,0 +1,31 @@
+appId: ${APP_ID}
+---
+# 親route経由でもゲーム削除のキャンセルと確定が動作する。
+- tapOn: '対局データを削除'
+- tapOn:
+    id: 'select-${output.fixture.gameBId}'
+- assertVisible: 'ゲーム削除'
+- tapOn: 'キャンセル'
+- tapOn:
+    id: select-close
+- assertVisible:
+    id: 'game-row-${output.fixture.gameBId}'
+- tapOn: '対局データを削除'
+- tapOn:
+    id: 'select-${output.fixture.gameBId}'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible:
+      id: 'game-row-${output.fixture.gameBId}'
+    timeout: 30000
+- assertVisible:
+    id: empty-game-row-0
+
+# 記録表削除後は親の大会へ戻る。
+- tapOn: '記録表削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentBName}
+    timeout: 30000
+- assertNotVisible:
+    id: 'score-table-${output.fixture.tableBId}'

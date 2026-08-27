@@ -1,0 +1,48 @@
+appId: ${APP_ID}
+---
+# アプリから異なるメールアドレスで2件を申請し、それぞれのtokenを保持する。
+- tapOn: '新しいグループを作成'
+- tapOn:
+    id: primaryInput
+- inputText: ${output.pendingGroups.groupAName}
+- tapOn:
+    id: twoInput
+- inputText: ${output.pendingGroups.groupAEmail}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: 'グループ作成用メールを送信しました'
+    timeout: 30000
+- tapOn: 'OK'
+- scrollUntilVisible:
+    element: ${output.pendingGroups.groupAEmail}
+    direction: DOWN
+    timeout: 30000
+- copyTextFrom:
+    id: 'pending-.*'
+    below: ${output.pendingGroups.groupAName}
+- evalScript: ${output.pendingGroups.tokenA = maestro.copiedText}
+
+- tapOn: '新しいグループを作成'
+- tapOn:
+    id: primaryInput
+- inputText: ${output.pendingGroups.groupBName}
+- tapOn:
+    id: twoInput
+- inputText: ${output.pendingGroups.groupBEmail}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: 'グループ作成用メールを送信しました'
+    timeout: 30000
+- tapOn: 'OK'
+- scrollUntilVisible:
+    element: ${output.pendingGroups.groupBEmail}
+    direction: DOWN
+    timeout: 30000
+- copyTextFrom:
+    id: 'pending-.*'
+    below: ${output.pendingGroups.groupBName}
+- evalScript: ${output.pendingGroups.tokenB = maestro.copiedText}
+- assertVisible:
+    id: ${'pending-' + output.pendingGroups.tokenA}
+- assertVisible:
+    id: ${'pending-' + output.pendingGroups.tokenB}

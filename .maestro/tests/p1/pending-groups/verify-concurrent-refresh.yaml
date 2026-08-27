@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+# 同期要求を続けて発生させても、未承認tokenは失われない。
+- scrollUntilVisible:
+    element: '申請状況を更新'
+    direction: UP
+    timeout: 30000
+- tapOn: '申請状況を更新'
+- swipe:
+    start: 50%, 30%
+    end: 50%, 80%
+    duration: 300
+- swipe:
+    start: 50%, 30%
+    end: 50%, 80%
+    duration: 300
+- scrollUntilVisible:
+    element: ${output.pendingGroups.groupBName}
+    direction: DOWN
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: ${'pending-' + output.pendingGroups.tokenB}
+    timeout: 30000

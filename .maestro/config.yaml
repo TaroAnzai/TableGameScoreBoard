@@ -19,8 +19,6 @@ env:
   EMPTY_PERIOD_START_DATE: '2026-02-01'
   EMPTY_PERIOD_END_DATE: '2026-02-02'
 
-  # The public API cannot seed app-local pending-group storage or control
-  # approval/expiry; these are only display labels for pending-groups.yaml.
+  # Prefixes for the two uniquely named requests created by pending-groups.yaml.
   PENDING_GROUP_A_NAME: Maestro pending A
   PENDING_GROUP_B_NAME: Maestro pending B
-  EXPIRED_PENDING_GROUP_NAME: Maestro pending expired

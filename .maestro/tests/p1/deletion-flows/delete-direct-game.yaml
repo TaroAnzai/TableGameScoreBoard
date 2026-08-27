@@ -1,0 +1,50 @@
+appId: ${APP_ID}
+---
+# Series Aを登録し、直接リンクからゲームを開く。
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- runFlow:
+    when:
+      visible: 'アプリに登録'
+    commands:
+      - tapOn: 'アプリに登録'
+      - assertVisible: '登録グループ追加'
+      - tapOn: 'OK'
+- runFlow: ../../../flows/common/open-app.yaml
+- assertVisible: ${output.fixture.groupName}
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible:
+      id: 'game-row-${output.fixture.gameId}'
+    timeout: 30000
+
+# キャンセル時はゲームが残る。
+- tapOn: '対局データを削除'
+- tapOn:
+    id: 'select-${output.fixture.gameId}'
+- assertVisible: 'ゲーム削除'
+- tapOn: 'キャンセル'
+- tapOn:
+    id: select-close
+- assertVisible:
+    id: 'game-row-${output.fixture.gameId}'
+
+# 確定時はゲームが削除され、空の入力行だけが残る。
+- tapOn: '対局データを削除'
+- tapOn:
+    id: 'select-${output.fixture.gameId}'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible:
+      id: 'game-row-${output.fixture.gameId}'
+    timeout: 30000
+- assertVisible:
+    id: empty-game-row-0
+- assertVisible:
+    text: '対局データを削除'
+    enabled: false

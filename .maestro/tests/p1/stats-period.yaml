@@ -25,7 +25,7 @@ onFlowComplete:
     env:
       APP_ID: ${APP_ID}
 
-# 最初に2つのグループをアプリに登録する
+# 最初に2つのグループをアプリに登録する。
 - openLink:
     link: ${output.fixture.statsGroupALink}
 - runFlow:
@@ -44,76 +44,5 @@ onFlowComplete:
 - runFlow: ../../flows/common/dismiss-move-unsaved-page-prompt.yaml
 - assertVisible: 'グループメンバー成績'
 - assertVisible: '全期間'
-
-# 年選択と任意期間を確認する。
-- tapOn:
-    id: stats-date-range-selector
-- tapOn:
-    id: date-range-year-picker
-- tapOn:
-    id: date-range-year-${STATS_YEAR}
-- assertVisible: '${STATS_YEAR}-01-01 ～ ${STATS_YEAR}-12-31'
-- tapOn:
-    id: stats-date-range-selector
-- tapOn:
-    id: date-range-start-date
-# 日付モーダルの年・月選択から対象月を表示する。
-- tapOn:
-    id: calendar-year-picker
-- tapOn:
-    id: calendar-year-${STATS_YEAR}
-- tapOn:
-    id: calendar-month-picker
-- tapOn:
-    id: calendar-month-1
-- tapOn:
-    id: date-range-calendar.day_${STATS_START_DATE}
-# 日付選択後にモーダルが閉じ、終了日ボタンから再度開けることを確認する。
-- tapOn:
-    id: date-range-end-date
-# 開始日より前はカレンダー上で無効になり、期間決定は有効化されない。
-- tapOn:
-    id: date-range-calendar.day_${STATS_END_BEFORE_START}
-    optional: true
-- tapOn: 'キャンセル'
-- assertVisible:
-    text: '期間を決定'
-    enabled: false
-- tapOn:
-    id: date-range-end-date
-- tapOn:
-    id: date-range-calendar.day_${STATS_END_DATE}
-- tapOn: '期間を決定'
-- assertVisible: '${STATS_START_DATE} ～ ${STATS_END_DATE}'
-
-# 全期間選択を確認する。
-- tapOn:
-    id: stats-date-range-selector
-- tapOn:
-    id: date-range-all
-- assertVisible: '全期間'
-
-# 保存済みグループを切り替えると API 結果が切り替わり、空期間は空表示になる。
-- tapOn: 'グループを選択'
-- tapOn: ${output.fixture.statsGroupBName}
-- assertVisible: ${output.fixture.statsGroupBUniquePlayer}
-- tapOn:
-    id: stats-date-range-selector
-- tapOn:
-    id: date-range-start-date
-- tapOn:
-    id: calendar-year-picker
-- tapOn:
-    id: calendar-year-${STATS_YEAR}
-- tapOn:
-    id: calendar-month-picker
-- tapOn:
-    id: calendar-month-2
-- tapOn:
-    id: date-range-calendar.day_${EMPTY_PERIOD_START_DATE}
-- tapOn:
-    id: date-range-end-date
-- tapOn:
-    id: date-range-calendar.day_${EMPTY_PERIOD_END_DATE}
-- tapOn: '期間を決定'
-- assertVisible: '統計データがありません。'
+- runFlow: stats-period/verify-date-ranges.yaml
+- runFlow: stats-period/verify-group-switch.yaml

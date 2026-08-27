@@ -1,0 +1,48 @@
+appId: ${APP_ID}
+---
+# 年選択を確認する。
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-year-picker
+- tapOn:
+    id: date-range-year-${STATS_YEAR}
+- assertVisible: '${STATS_YEAR}-01-01 ～ ${STATS_YEAR}-12-31'
+
+# 任意期間を選択し、開始日より前の終了日が無効になることを確認する。
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-start-date
+- tapOn:
+    id: calendar-year-picker
+- tapOn:
+    id: calendar-year-${STATS_YEAR}
+- tapOn:
+    id: calendar-month-picker
+- tapOn:
+    id: calendar-month-1
+- tapOn:
+    id: date-range-calendar.day_${STATS_START_DATE}
+- tapOn:
+    id: date-range-end-date
+- tapOn:
+    id: date-range-calendar.day_${STATS_END_BEFORE_START}
+    optional: true
+- tapOn: 'キャンセル'
+- assertVisible:
+    text: '期間を決定'
+    enabled: false
+- tapOn:
+    id: date-range-end-date
+- tapOn:
+    id: date-range-calendar.day_${STATS_END_DATE}
+- tapOn: '期間を決定'
+- assertVisible: '${STATS_START_DATE} ～ ${STATS_END_DATE}'
+
+# 全期間へ戻せることを確認する。
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-all
+- assertVisible: '全期間'

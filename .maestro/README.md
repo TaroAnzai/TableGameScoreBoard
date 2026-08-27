@@ -56,6 +56,6 @@ Do not create a giant shared fixture. A test with no server-data dependency must
 
 Start the development build, Metro, API, and (when needed) the local network controller before running. The score-input test changes the controller with `scripts/set-network-mode.js`; `maestro-test.sh` resets it to `normal` before and after every run, including interrupt/error exits.
 
-`pending-groups.yaml` currently exercises app-local pending storage plus server-side approval/expiry. The published API available to this repository has no endpoint for seeding that storage or controlling approval/expiry, so it intentionally has no fabricated API fixture. It requires its dedicated pending-state test environment until the backend exposes a supported test-control API; its labels are retained in `config.yaml` only as display settings.
+`pending-groups.yaml` creates two requests through the app, approves one through the development API, and uses the local mitmproxy controller to expire the other. Start mitmproxy for this flow and route the development build through its API entrypoint. The flow resets expiration overrides on start and completion and removes the approved fixture on completion.
 
 Run static validation before relying on a new fixture: check YAML syntax, every `runFlow`/`runScript` path, JavaScript syntax, and all output references. If setup fails after group creation, `onFlowComplete` still uses the early `output.fixture.groupKey` to remove the partial fixture.

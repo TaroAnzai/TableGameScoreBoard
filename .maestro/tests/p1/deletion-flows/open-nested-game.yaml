@@ -1,0 +1,32 @@
+appId: ${APP_ID}
+---
+# Series Bはグループから大会・記録表を順に開き、親routeを維持する。
+- openLink:
+    link: ${output.fixture.groupBOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupBName}
+    timeout: 30000
+- runFlow:
+    when:
+      visible: 'アプリに登録'
+    commands:
+      - tapOn: 'アプリに登録'
+      - assertVisible: '登録グループ追加'
+      - tapOn: 'OK'
+- runFlow: ../../../flows/common/open-app.yaml
+- assertVisible: ${output.fixture.groupBName}
+- tapOn: ${output.fixture.groupBName}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentBName}
+    timeout: 30000
+- tapOn: ${output.fixture.tournamentBName}
+- extendedWaitUntil:
+    visible:
+      id: 'score-table-${output.fixture.tableBId}'
+    timeout: 30000
+- tapOn:
+    id: 'score-table-${output.fixture.tableBId}'
+- extendedWaitUntil:
+    visible:
+      id: 'game-row-${output.fixture.gameBId}'
+    timeout: 30000

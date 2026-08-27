@@ -298,6 +298,7 @@ export default function Index() {
                   {pendingGroups.map((group) => (
                     <MahjongListItem
                       key={group.token}
+                      testID={`pending-${group.token}`}
                       title={group.groupName}
                       accessories={[
                         group.expiresAt &&
@@ -305,6 +306,15 @@ export default function Index() {
                             date: format(group.expiresAt, 'yyyy-MM-dd HH:mm'),
                           }),
                         group.email,
+                        __DEV__ && (
+                          <Text
+                            key="maestro-token"
+                            testID={`pending-token-${group.token}`}
+                            className="h-px w-px text-[1px] opacity-[0.01]"
+                          >
+                            {group.token}
+                          </Text>
+                        ),
                       ]}
                     />
                   ))}

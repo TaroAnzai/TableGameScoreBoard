@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+# Aだけを承認し、同期後に登録一覧へ移動したことをgroup IDで確認する。
+- runScript:
+    file: ../../../scripts/approve-pending-group.js
+    env:
+      TOKEN: ${output.pendingGroups.tokenA}
+- scrollUntilVisible:
+    element: '申請状況を更新'
+    direction: UP
+    timeout: 30000
+- tapOn: '申請状況を更新'
+- extendedWaitUntil:
+    visible:
+      id: ${'saved-group-' + output.pendingGroups.approvedGroupId}
+    timeout: 10000
+- scrollUntilVisible:
+    element: ${output.pendingGroups.groupBName}
+    direction: DOWN
+    timeout: 30000
+- assertNotVisible:
+    id: ${'pending-' + output.pendingGroups.tokenA}
+- assertVisible:
+    id: ${'pending-' + output.pendingGroups.tokenB}

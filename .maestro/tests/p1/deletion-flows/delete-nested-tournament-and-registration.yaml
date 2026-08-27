@@ -1,0 +1,33 @@
+appId: ${APP_ID}
+---
+# 空になった大会を削除する。
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: ${output.fixture.groupBName}
+    timeout: 30000
+- tapOn: '大会削除'
+- tapOn:
+    id: 'select-${output.fixture.tournamentBId}'
+- assertVisible: '大会を削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.tournamentBName}
+    timeout: 30000
+- tapOn: '大会削除'
+- assertVisible: '削除できる大会がありません。'
+- tapOn:
+    id: select-close
+
+# Series Bの端末内登録を削除する。
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- tapOn: '登録グループを削除'
+- tapOn:
+    id: 'select-${output.fixture.groupBId}'
+- assertVisible: '登録グループから削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.groupBName}
+    timeout: 30000

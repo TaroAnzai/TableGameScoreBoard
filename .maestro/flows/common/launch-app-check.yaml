@@ -3,12 +3,12 @@ appId: ${APP_ID}
 - launchApp
 
 - extendedWaitUntil:
-    visible: '麻雀大会 集計'
+    visible: '麻雀大会 集計|Table Game Scoreboard'
     timeout: 30000
 
 - runFlow:
     when:
-      visible: 'グループ取得エラー'
+      visible: 'グループ取得エラー|Error Loading Groups'
     commands:
       - tapOn: 'OK'
-- assertVisible: '麻雀大会 集計'
+- assertVisible: '麻雀大会 集計|Table Game Scoreboard'

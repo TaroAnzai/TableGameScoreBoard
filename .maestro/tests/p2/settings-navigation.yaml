@@ -18,7 +18,11 @@ onFlowComplete:
   - runScript:
       file: ../../fixtures/teardown/delete-group.js
 ---
-- launchApp
+# 安全な立ち上げ launchApp 代替
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
 - runFlow: ../../flows/common/select-japanese.yaml
 - tapOn: '設定を開く'
 - tapOn: 'ダーク'
@@ -32,10 +36,10 @@ onFlowComplete:
 - tapOn: 'English'
 - assertVisible: 'Settings'
 - tapOn: 'Home'
-- assertVisible: 'Mahjong Tournament Score'
+- assertVisible: 'Table Game Scoreboard'
 - stopApp
 - launchApp
-- assertVisible: 'Mahjong Tournament Score'
+- assertVisible: 'Table Game Scoreboard'
 
 # 日本語に戻し、履歴の有無で Android Back の遷移先が変わることを確認する。
 - tapOn: 'Settings'

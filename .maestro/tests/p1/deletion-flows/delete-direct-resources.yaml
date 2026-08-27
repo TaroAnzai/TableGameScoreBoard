@@ -1,0 +1,45 @@
+appId: ${APP_ID}
+---
+# 親routeを持たない記録表を削除するとホームへ戻る。
+- tapOn: '記録表削除'
+- assertVisible: '記録表削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- extendedWaitUntil:
+    visible: '卓が見つかりませんでした'
+    timeout: 30000
+
+# 大会はグループ画面から削除する。
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- tapOn: '大会削除'
+- tapOn:
+    id: 'select-${output.fixture.tournamentId}'
+- assertVisible: '大会削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.tournamentName}
+    timeout: 30000
+- openLink:
+    link: ${output.fixture.tournamentOwnerLink}
+- extendedWaitUntil:
+    visible: '大会が見つかりませんでした。削除されたか、URLが正しくない可能性があります。'
+    timeout: 30000
+
+# 登録グループの削除は端末内の登録だけを削除する。
+- runFlow: ../../../flows/common/open-app.yaml
+- tapOn: '登録グループを削除'
+- tapOn:
+    id: 'select-${output.fixture.groupId}'
+- assertVisible: '登録グループから削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    notVisible: ${output.fixture.groupName}
+    timeout: 30000

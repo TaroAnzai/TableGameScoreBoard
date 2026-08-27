@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+---
+# Bをmitmproxyでexpired対象にし、次の同期でpending一覧から除去する。
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: expired
+      TOKEN: ${output.pendingGroups.tokenB}
+- scrollUntilVisible:
+    element: '申請状況を更新'
+    direction: UP
+    timeout: 30000
+- tapOn: '申請状況を更新'
+- assertVisible:
+    id: ${'saved-group-' + output.pendingGroups.approvedGroupId}
+- assertNotVisible:
+    id: ${output.pendingGroups.groupBName}
+- repeat:
+    times: 10
+    commands:
+      - scroll
+      - assertNotVisible: ${output.pendingGroups.groupBName}

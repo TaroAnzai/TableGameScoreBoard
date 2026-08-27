@@ -3,37 +3,25 @@ name: P1 - 承認待ちグループの同期
 tags:
   - p1
   - pending-groups
+onFlowStart:
+  - runScript: ../../scripts/prepare-pending-groups.js
+  - runScript:
+      file: ../../scripts/set-network-mode.js
+      env:
+        MODE: pending-reset
+onFlowComplete:
+  - runScript: ../../fixtures/teardown/delete-group.js
+  - runScript:
+      file: ../../scripts/set-network-mode.js
+      env:
+        MODE: pending-reset
 ---
-# 前提: PENDING_GROUP_A/B は API で発行済み、A のみ登録可能にした状態で開始する。
-# このテストはメール承認を API fixture が制御するため、実行中に手動操作を必要としない。
-
-# 安全な立ち上げ launchApp 代替
 - runFlow:
     file: ../../flows/common/launch-app-check.yaml
     env:
       APP_ID: ${APP_ID}
-- assertVisible: '麻雀大会 集計'
-
-- assertVisible: '申請中のグループ'
-- assertVisible: ${PENDING_GROUP_A_NAME}
-- assertVisible: ${PENDING_GROUP_B_NAME}
-- tapOn: '申請状況を更新'
-- extendedWaitUntil:
-    visible: ${PENDING_GROUP_A_NAME}
-    timeout: 30000
-- assertVisible: '登録グループ一覧'
-- assertVisible: ${PENDING_GROUP_A_NAME}
-- assertVisible: '申請中のグループ'
-- assertVisible: ${PENDING_GROUP_B_NAME}
-
-# バックグラウンド復帰と連打でも未承認キーを失わない。
-- stopApp
-- launchApp
-- assertVisible: '麻雀大会 集計'
-- tapOn: '申請状況を更新'
-- tapOn: '申請状況を更新'
-- assertVisible: ${PENDING_GROUP_B_NAME}
-
-# fixture が期限切れにしたキーは同期時に消える。
-- tapOn: '申請状況を更新'
-- assertNotVisible: ${EXPIRED_PENDING_GROUP_NAME}
+- runFlow: ../../flows/common/select-japanese.yaml
+- runFlow: pending-groups/create-requests.yaml
+- runFlow: pending-groups/approve-one-request.yaml
+- runFlow: pending-groups/verify-concurrent-refresh.yaml
+- runFlow: pending-groups/expire-request.yaml

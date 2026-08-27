@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+---
+# 保存済みグループを切り替えるとAPI結果が切り替わる。
+- tapOn: 'グループを選択'
+- tapOn: ${output.fixture.statsGroupBName}
+- assertVisible: ${output.fixture.statsGroupBUniquePlayer}
+
+# データのない期間は空表示になる。
+- tapOn:
+    id: stats-date-range-selector
+- tapOn:
+    id: date-range-start-date
+- tapOn:
+    id: calendar-year-picker
+- tapOn:
+    id: calendar-year-${STATS_YEAR}
+- tapOn:
+    id: calendar-month-picker
+- tapOn:
+    id: calendar-month-2
+- tapOn:
+    id: date-range-calendar.day_${EMPTY_PERIOD_START_DATE}
+- tapOn:
+    id: date-range-end-date
+- tapOn:
+    id: date-range-calendar.day_${EMPTY_PERIOD_END_DATE}
+- tapOn: '期間を決定'
+- assertVisible: '統計データがありません。'
