@@ -17,4 +17,16 @@ describe('redirectSystemPath', () => {
       expect(redirectSystemPath({ path, initial: true })).toBe('/group/create?token=token');
     },
   );
+
+  it.each([
+    ['mahjongapp://table/table-key', '/table/table-key'],
+    [
+      'https://anzai-home.com/mahjong/tournament/tournament-key?view=summary',
+      '/tournament/tournament-key?view=summary',
+    ],
+  ])('marks a warm-start external link: %s', (path, expectedPrefix) => {
+    expect(redirectSystemPath({ path, initial: false })).toMatch(
+      new RegExp(`^${expectedPrefix.replace(/[?]/g, '\\?')}[&?]__externalEntry=\\d+-\\d+$`),
+    );
+  });
 });

@@ -1,7 +1,7 @@
 import type { TriggerRef } from '@rn-primitives/popover';
 import { router, usePathname } from 'expo-router';
 import { Bookmark } from 'lucide-react-native';
-import { type ReactElement, useRef } from 'react';
+import { type ReactElement, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
@@ -28,11 +28,18 @@ const getLinkPathname = (link: SavedLink) =>
 
 export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
   const triggerRef = useRef<TriggerRef>(null);
+  const [removingLinks, setRemovingLinks] = useState<Set<SavedLink>>(() => new Set());
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
   const pathname = usePathname();
   const { savedLinks, isLoading, isError, touch, remove } = useSavedLinks();
-  const sortedLinks = [...savedLinks].sort(compareByLastOpenedAt);
+  const sortedLinks = useMemo(
+    () =>
+      savedLinks
+        .filter((link) => !removingLinks.has(link))
+        .sort(compareByLastOpenedAt),
+    [removingLinks, savedLinks],
+  );
   const isCurrentLink = (link: SavedLink) => pathname === getLinkPathname(link);
 
   const closePopover = () => {
@@ -89,10 +96,17 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
     }
 
     if (!confirmed) return;
+    setRemovingLinks((current) => new Set(current).add(link));
 
     try {
       await remove({ type: link.type, key: link.key });
+      closePopover();
     } catch (error) {
+      setRemovingLinks((current) => {
+        const next = new Set(current);
+        next.delete(link);
+        return next;
+      });
       showSavedLinkOperationError(error);
     }
   };
@@ -117,7 +131,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
           <Text className="py-4 text-center text-muted-foreground">{t('savedLinks.empty')}</Text>
         ) : (
           <ScrollView className="max-h-80" contentContainerClassName="gap-1">
-            <View className="flex-1 flex-wrap gap-1">
+            <View className="gap-1">
               {sortedLinks.map((link, index) => {
                 const current = isCurrentLink(link);
                 const parentNames = getParentNames(link);

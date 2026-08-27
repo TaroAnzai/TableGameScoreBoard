@@ -1,7 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useGlobalSearchParams, useNavigation } from 'expo-router';
+import type { NavigationAction } from 'expo-router/react-navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSavedLinks } from '@/src/hooks/useSavedLinks';
 import type { SavedLink } from '@/src/types/savedLink';
+import { EXTERNAL_ENTRY_PARAM } from '@/src/utils/externalNavigation';
 
 type UseSavedPageParams = {
   type: SavedLink['type'];
@@ -26,7 +29,12 @@ export const useSavedPage = ({
   isDirectView,
   suppressSavePrompt = false,
 }: UseSavedPageParams) => {
+  const navigation = useNavigation();
+  const globalParams = useGlobalSearchParams();
   const [dismissedPage, setDismissedPage] = useState<string>();
+  const [requestedPage, setRequestedPage] = useState<string>();
+  const pendingNavigationAction = useRef<NavigationAction | undefined>(undefined);
+  const allowNavigation = useRef(false);
   const { savedLinks, isLoading, isError, error, save, remove, touch, isSaving, isRemoving } =
     useSavedLinks();
   const isSaved = useMemo(
@@ -36,6 +44,44 @@ export const useSavedPage = ({
   const canSave = Boolean(key && name);
   const pageIdentifier = `${type}:${key ?? ''}`;
   const hasDismissedPrompt = dismissedPage === pageIdentifier;
+  const hasRequestedPrompt = requestedPage === pageIdentifier;
+  const isPreparingExternalNavigation =
+    typeof globalParams[EXTERNAL_ENTRY_PARAM] === 'string';
+  const canPromptSave =
+    isDirectView &&
+    !isPreparingExternalNavigation &&
+    !suppressSavePrompt &&
+    !isLoading &&
+    !isError &&
+    !isSaved &&
+    canSave;
+
+  useEffect(() => {
+    if (!canPromptSave) return;
+
+    return navigation.addListener('beforeRemove', (event) => {
+      if (allowNavigation.current) {
+        allowNavigation.current = false;
+        return;
+      }
+
+      event.preventDefault();
+      pendingNavigationAction.current = event.data.action;
+      setRequestedPage(pageIdentifier);
+    });
+  }, [canPromptSave, navigation, pageIdentifier]);
+
+  const dismissSavePrompt = useCallback(() => {
+    setDismissedPage(pageIdentifier);
+    setRequestedPage(undefined);
+
+    const action = pendingNavigationAction.current;
+    if (!action) return;
+
+    pendingNavigationAction.current = undefined;
+    allowNavigation.current = true;
+    navigation.dispatch(action);
+  }, [navigation, pageIdentifier]);
 
   const saveCurrentPage = useCallback(async () => {
     if (!key || !name) {
@@ -77,15 +123,8 @@ export const useSavedPage = ({
     touch: touchCurrentPage,
     isSaving,
     isRemoving,
-    shouldPromptSave:
-      isDirectView &&
-      !suppressSavePrompt &&
-      !isLoading &&
-      !isError &&
-      !isSaved &&
-      canSave &&
-      !hasDismissedPrompt,
-    dismissSavePrompt: () => setDismissedPage(pageIdentifier),
+    shouldPromptSave: canPromptSave && (!hasDismissedPrompt || hasRequestedPrompt),
+    dismissSavePrompt,
     hasDismissedPrompt,
     isLoading,
     isError,

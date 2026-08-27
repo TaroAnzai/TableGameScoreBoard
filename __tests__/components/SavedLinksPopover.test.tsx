@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { View } from 'react-native';
 
@@ -7,6 +7,7 @@ import { SavedLinksPopover } from '@/components/SavedLinksPopover';
 const mockPush = jest.fn();
 const mockTouch = jest.fn();
 const mockRemove = jest.fn();
+const mockClosePopover = jest.fn();
 const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 let mockSavedLinksState: {
   savedLinks: {
@@ -42,9 +43,10 @@ jest.mock('@/components/ui/popover', () => {
   const React = jest.requireActual('react');
   const { View } = jest.requireActual('react-native');
   const MockPopoverTrigger = React.forwardRef(
-    ({ children }: { children?: React.ReactNode }, ref: React.ForwardedRef<unknown>) => (
-      <View ref={ref}>{children}</View>
-    ),
+    ({ children }: { children?: React.ReactNode }, ref: React.ForwardedRef<unknown>) => {
+      React.useImperativeHandle(ref, () => ({ close: mockClosePopover }));
+      return <View>{children}</View>;
+    },
   );
   MockPopoverTrigger.displayName = 'MockPopoverTrigger';
 
@@ -116,11 +118,15 @@ describe('SavedLinksPopover', () => {
   it('保存項目を削除できる', async () => {
     await render(<SavedLinksPopover trigger={<View />} />);
 
-    fireEvent(screen.getByText('古い大会'), 'longPress');
+    await act(async () => {
+      fireEvent(screen.getByText('古い大会'), 'longPress');
+    });
 
     await waitFor(() =>
       expect(mockRemove).toHaveBeenCalledWith({ type: 'tournament', key: 'older-tournament' }),
     );
+    expect(screen.queryByText('古い大会')).toBeNull();
+    expect(mockClosePopover).toHaveBeenCalledTimes(1);
   });
 
   it('最終表示日時の更新に失敗した場合はエラーを表示する', async () => {
@@ -139,6 +145,7 @@ describe('SavedLinksPopover', () => {
       }),
     );
     expect(consoleError).toHaveBeenCalledWith('Error updating saved link:', error);
+    expect(screen.getByText('古い大会')).toBeTruthy();
     consoleError.mockRestore();
   });
 
@@ -148,7 +155,9 @@ describe('SavedLinksPopover', () => {
     mockRemove.mockRejectedValueOnce(error);
     await render(<SavedLinksPopover trigger={<View />} />);
 
-    fireEvent(screen.getByText('古い大会'), 'longPress');
+    await act(async () => {
+      fireEvent(screen.getByText('古い大会'), 'longPress');
+    });
 
     await waitFor(() =>
       expect(mockAlertDialog).toHaveBeenLastCalledWith({

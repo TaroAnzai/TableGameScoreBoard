@@ -7,6 +7,16 @@ import { useSavedPage } from '@/src/hooks/useSavedPage';
 import { savedLinkStorage } from '@/src/storage/savedLinkStorage';
 import type { SavedLink } from '@/src/types/savedLink';
 
+const mockNavigation = {
+  addListener: jest.fn(() => jest.fn()),
+  dispatch: jest.fn(),
+};
+
+jest.mock('expo-router', () => ({
+  useGlobalSearchParams: () => ({}),
+  useNavigation: () => mockNavigation,
+}));
+
 jest.mock('@/src/storage/savedLinkStorage', () => ({
   savedLinkStorage: {
     getSavedLinks: jest.fn(),

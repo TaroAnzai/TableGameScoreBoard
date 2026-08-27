@@ -5,6 +5,9 @@ import { useSavedPage } from '@/src/hooks/useSavedPage';
 const mockSave = jest.fn();
 const mockRemove = jest.fn();
 const mockTouch = jest.fn();
+const mockDispatch = jest.fn();
+const mockAddListener = jest.fn();
+let mockGlobalParams: Record<string, string>;
 let mockSavedLinksState: {
   savedLinks: Array<{ type: 'tournament' | 'table'; key: string }>;
   isLoading: boolean;
@@ -23,15 +26,79 @@ jest.mock('@/src/hooks/useSavedLinks', () => ({
   }),
 }));
 
+jest.mock('expo-router', () => ({
+  useGlobalSearchParams: () => mockGlobalParams,
+  useNavigation: () => ({
+    addListener: mockAddListener,
+    dispatch: mockDispatch,
+  }),
+}));
+
 describe('useSavedPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAddListener.mockReturnValue(jest.fn());
+    mockGlobalParams = {};
     mockSavedLinksState = {
       savedLinks: [],
       isLoading: false,
       isError: false,
       error: null,
     };
+  });
+
+  it('外部リンクの履歴リセット前は保存案内を表示しない', async () => {
+    mockGlobalParams = { __externalEntry: 'external-entry' };
+    const { result, rerender } = await renderHook(() =>
+      useSavedPage({
+        type: 'tournament',
+        key: 'tournament-key',
+        name: '大会名',
+        isDirectView: true,
+      }),
+    );
+
+    expect(result.current.shouldPromptSave).toBe(false);
+    expect(mockAddListener).not.toHaveBeenCalled();
+
+    mockGlobalParams = {};
+    await rerender({});
+
+    expect(result.current.shouldPromptSave).toBe(true);
+    expect(mockAddListener).toHaveBeenCalledWith('beforeRemove', expect.any(Function));
+  });
+
+  it('未保存ページからの遷移を保留し、保存確認を閉じた後に再開する', async () => {
+    const { result } = await renderHook(() =>
+      useSavedPage({
+        type: 'table',
+        key: 'table-key',
+        name: '卓名',
+        isDirectView: true,
+      }),
+    );
+    const beforeRemove = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const preventDefault = jest.fn();
+    const action = { type: 'RESET', payload: { index: 1 } };
+
+    await act(async () => {
+      result.current.dismissSavePrompt();
+    });
+    expect(result.current.shouldPromptSave).toBe(false);
+
+    await act(async () => {
+      beforeRemove({ preventDefault, data: { action } });
+    });
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(result.current.shouldPromptSave).toBe(true);
+    expect(mockDispatch).not.toHaveBeenCalled();
+
+    await act(async () => {
+      result.current.dismissSavePrompt();
+    });
+
+    expect(mockDispatch).toHaveBeenCalledWith(action);
   });
 
   it('ダイレクト表示の未保存ページで、名称確定後に保存案内を表示する', async () => {

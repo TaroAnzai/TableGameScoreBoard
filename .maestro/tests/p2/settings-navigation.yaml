@@ -45,21 +45,22 @@ onFlowComplete:
 - tapOn: 'Settings'
 - tapOn: '日本語'
 - openLink:
-    link: ${output.fixture.tableViewLink}
+    link: ${output.fixture.tableViewLink} #Table
 - runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${output.fixture.tableName}
     timeout: 30000
-- pressKey: back
+- pressKey: back #Root
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - assertVisible: '登録グループ一覧'
 - openLink:
-    link: ${output.fixture.tournamentViewLink}
+    link: ${output.fixture.tournamentViewLink} #tournament
 - runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
 - extendedWaitUntil:
     visible: ${output.fixture.tournamentName}
     timeout: 30000
-- tapOn: '上の階層へ移動'
 - pressKey: back
+- tapOn: '保存せず続行'
 - assertVisible: ${output.fixture.tournamentName}
 
 # 不正形式・存在しない共有リンクでも、アプリがクラッシュせずエラーを表示する。
