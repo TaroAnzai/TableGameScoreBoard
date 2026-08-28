@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
 import { SavePagePromptModal } from '@/components/SavePagePromptModal';
@@ -38,11 +38,10 @@ describe('SavePagePromptModal', () => {
 
   it('保存操作では保存ハンドラーを実行する', async () => {
     const onSave = jest.fn().mockResolvedValue(undefined);
+
     await render(<SavePagePromptModal {...defaultProps} onSave={onSave} />);
 
-    await act(async () => {
-      fireEvent.press(screen.getByRole('button', { name: '保存する' }));
-    });
+    await fireEvent.press(screen.getByRole('button', { name: '保存する' }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
   });
@@ -50,6 +49,7 @@ describe('SavePagePromptModal', () => {
   it('保存せず続行とキャンセルを別々のハンドラーへ通知する', async () => {
     const onContinueWithoutSaving = jest.fn();
     const onCancel = jest.fn();
+
     await render(
       <SavePagePromptModal
         {...defaultProps}
@@ -59,11 +59,13 @@ describe('SavePagePromptModal', () => {
       />,
     );
 
-    fireEvent.press(screen.getByRole('button', { name: '保存せず続行' }));
+    await fireEvent.press(screen.getByRole('button', { name: '保存せず続行' }));
+
     expect(onContinueWithoutSaving).toHaveBeenCalledTimes(1);
     expect(onCancel).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByRole('button', { name: 'キャンセル' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'キャンセル' }));
+
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });
