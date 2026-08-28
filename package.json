@@ -80,6 +80,11 @@
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
     ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/src/api/generated/",
+      "/components/ui/"
+    ],
     "transform": {
       "^.+\\.mjs$": "babel-jest"
     },
