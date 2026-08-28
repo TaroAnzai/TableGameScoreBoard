@@ -45,3 +45,4 @@ yarn-error.*
 docs/_output.md
 
 /temp
+coverage/
