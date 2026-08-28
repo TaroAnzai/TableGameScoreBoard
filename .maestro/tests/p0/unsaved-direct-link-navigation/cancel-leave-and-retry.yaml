@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+---
+# 前のフローで開いた保存済み一覧を閉じ、未保存の大会直リンクを再度開く。
+- tapOn: '保存済み'
+- openLink:
+    link: ${output.fixture.tournamentEditLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存せず続行'
+
+# 戻る操作で表示された確認をキャンセルすると、大会から移動しない。
+- tapOn: '戻る'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: 'キャンセル'
+- assertNotVisible:
+    id: 'unsaved-link-dialog'
+- assertVisible: ${output.fixture.tournamentName}
+
+# 再度戻ると、離脱の保存確認モーダルがもう一度表示される。
+- tapOn: '戻る'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- assertVisible: 'キャンセル'

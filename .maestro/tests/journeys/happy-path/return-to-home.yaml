@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+---
+# 親routeを順にたどり、卓からルートページまで戻る。
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: '大会成績'
+    timeout: 30000
+- assertVisible: ${'Happy大会 ' + output.pendingGroups.runId}
+
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: ${output.pendingGroups.groupAName}
+    timeout: 30000
+- assertVisible: '大会一覧'
+
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- assertVisible: '麻雀大会 集計'

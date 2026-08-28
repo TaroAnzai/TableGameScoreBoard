@@ -1,0 +1,32 @@
+appId: ${APP_ID}
+name: P0 - 未保存の大会直リンクから離脱時に保存できる
+tags:
+  - p0
+  - saved-links
+  - navigation
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: unsaved-direct-link-navigation
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '0'
+        FIXTURE_CREATE_GAME: 'false'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+# 安全な立ち上げ launchApp 代替
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+# 保存済みページを空にし、日本語表示で開始する。
+- runFlow: ../../flows/common/clear-app-data-and-select-japanese.yaml
+- runFlow: unsaved-direct-link-navigation/leave-after-creating-table.yaml
+- runFlow: unsaved-direct-link-navigation/delete-and-leave-without-saving.yaml
+- runFlow: unsaved-direct-link-navigation/cancel-leave-and-retry.yaml
+- runFlow: unsaved-direct-link-navigation/leave-table-without-saving.yaml
+- runFlow: unsaved-direct-link-navigation/leave-table-with-saving.yaml

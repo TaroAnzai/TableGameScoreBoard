@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+---
+# 同じ卓を直リンクから開き直し、初回の保存確認では保存せず続行する。
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存せず続行'
+
+# 戻る操作で表示される確認から卓を保存し、保留中の離脱を実行する。
+- tapOn: '戻る'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- assertVisible: 'キャンセル'
+- tapOn: '保存する'
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- assertNotVisible:
+    id: 'unsaved-link-dialog'
+
+# ルートの保存済み一覧に、親大会付きの卓リンクが登録されている。
+- tapOn: '保存済み'
+- assertVisible: '保存済みページ'
+- assertVisible: '${output.fixture.tableName}, ${output.fixture.groupName} / ${output.fixture.tournamentName}, 編集'

@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+---
+# 合計0の第1局を確定し、保存された行と点数を確認する。
+- tapOn: '第1局のスコアを編集'
+- tapOn: ${'東 Happy ' + output.pendingGroups.runId + 'の点数'}
+- inputText: '100'
+- tapOn: ${'南 Happy ' + output.pendingGroups.runId + 'の点数'}
+- inputText: '-100'
+- tapOn: ${'西 Happy ' + output.pendingGroups.runId + 'の点数'}
+- inputText: '50'
+- tapOn: ${'北 Happy ' + output.pendingGroups.runId + 'の点数'}
+- inputText: '-50'
+- assertVisible: '合計: 0'
+- tapOn: '確定'
+- extendedWaitUntil:
+    visible:
+      id: 'game-row-.*'
+    timeout: 30000
+- assertVisible: '100'
+- assertVisible: '-100'
+- assertVisible: '50'
+- assertVisible: '-50'

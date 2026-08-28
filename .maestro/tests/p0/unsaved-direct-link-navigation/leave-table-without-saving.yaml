@@ -1,0 +1,39 @@
+appId: ${APP_ID}
+---
+# 前のフローで表示中の大会離脱確認から、保存せずルートへ戻る。
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存せず続行'
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+
+# 未保存の卓直リンクを開き、初回の保存確認では保存せず続行する。
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存せず続行'
+
+# 戻る操作をキャンセルすると卓に留まり、再度戻ると確認が再表示される。
+- tapOn: '戻る'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: 'キャンセル'
+- assertNotVisible:
+    id: 'unsaved-link-dialog'
+- assertVisible: ${output.fixture.tableName}
+- tapOn: '戻る'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+
+# 保存せず離脱するとルートへ戻る。
+- tapOn: '保存せず続行'
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- assertNotVisible:
+    id: 'unsaved-link-dialog'

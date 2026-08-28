@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+---
+# 卓を作成して開き、大会参加者4人を卓へ追加する。
+- tapOn: '記録用紙を新規作成'
+
+- extendedWaitUntil:
+    visible: '卓.*記録表'
+    timeout: 30000
+
+- tapOn: '参加者を追加'
+- tapOn: ${'東 Happy ' + output.pendingGroups.runId}
+- tapOn: ${'南 Happy ' + output.pendingGroups.runId}
+- tapOn: ${'西 Happy ' + output.pendingGroups.runId}
+- tapOn: ${'北 Happy ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'北 Happy ' + output.pendingGroups.runId}
+    timeout: 30000

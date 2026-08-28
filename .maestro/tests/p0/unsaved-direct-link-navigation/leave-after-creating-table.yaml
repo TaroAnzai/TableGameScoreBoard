@@ -1,0 +1,49 @@
+appId: ${APP_ID}
+---
+# 未保存の大会直リンクを開くと、初回の保存確認が表示される。
+- openLink:
+    link: ${output.fixture.tournamentEditLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- assertNotVisible: 'キャンセル'
+- tapOn: '保存せず続行'
+
+# 未保存のまま戻ろうとすると再度確認され、キャンセルすれば大会に留まる。
+- pressKey: back
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: 'キャンセル'
+- assertVisible: ${output.fixture.tournamentName}
+
+# 記録用紙の作成では保存確認を出さず、作成した卓へ移動する。
+- tapOn: '記録用紙を新規作成'
+- extendedWaitUntil:
+    visible: '卓1 記録表'
+    timeout: 30000
+- assertNotVisible:
+    id: 'unsaved-link-dialog'
+
+# 卓から大会へ戻り、さらに離脱すると表示される確認から大会を保存する。
+- pressKey: back
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- pressKey: back
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存する'
+
+# 保留されていた戻る操作が再開され、ルート画面へ戻る。
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- assertNotVisible:
+    id: 'unsaved-link-dialog'
+
+# 保存した大会が保存済みページ一覧に表示される。
+- tapOn: '保存済み'
+- assertVisible: '保存済みページ'
+- assertVisible: '${output.fixture.tournamentName}, ${output.fixture.groupName}, 編集'

@@ -1,0 +1,40 @@
+appId: ${APP_ID}
+---
+# アプリから1件申請し、保持されたtokenを既存スクリプトで承認する。
+- tapOn: '新しいグループを作成'
+- tapOn:
+    id: primaryInput
+- inputText: ${output.pendingGroups.groupAName}
+- tapOn:
+    id: twoInput
+- inputText: ${output.pendingGroups.groupAEmail}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: 'グループ作成用メールを送信しました'
+    timeout: 30000
+- tapOn: 'OK'
+- scrollUntilVisible:
+    element: ${output.pendingGroups.groupAEmail}
+    direction: DOWN
+    timeout: 30000
+- copyTextFrom:
+    id: 'pending-.*'
+    below: ${output.pendingGroups.groupAName}
+- evalScript: ${output.pendingGroups.tokenA = maestro.copiedText}
+- assertVisible:
+    id: ${'pending-' + output.pendingGroups.tokenA}
+- runScript:
+    file: ../../../scripts/approve-pending-group.js
+    env:
+      TOKEN: ${output.pendingGroups.tokenA}
+- scrollUntilVisible:
+    element: '申請状況を更新'
+    direction: UP
+    timeout: 30000
+- tapOn: '申請状況を更新'
+- extendedWaitUntil:
+    visible:
+      id: ${'saved-group-' + output.pendingGroups.approvedGroupId}
+    timeout: 30000
+- assertNotVisible:
+    id: ${'pending-' + output.pendingGroups.tokenA}

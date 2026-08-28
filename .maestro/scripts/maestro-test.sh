@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+START_TIME=$(date +%s)
+
 set -euo pipefail
 
 # Run this script from the project root.
@@ -94,6 +96,12 @@ cleanup() {
   echo
   echo "Resetting network mode..."
   reset_network
+
+  END_TIME=$(date +%s)
+  ELAPSED=$((END_TIME - START_TIME))
+  MINUTES=$((ELAPSED / 60))
+  SECONDS=$((ELAPSED % 60))
+  echo "Done in $MINUTES m $SECONDS s"
 }
 
 trap cleanup EXIT

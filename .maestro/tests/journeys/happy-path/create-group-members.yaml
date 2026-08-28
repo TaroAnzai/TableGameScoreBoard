@@ -1,0 +1,40 @@
+appId: ${APP_ID}
+---
+# 承認直後の空のグループに、通常のUIから4人を追加する。
+- tapOn: 'メンバー一覧'
+
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: primaryInput
+- inputText: ${'東 Happy ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'東 Happy ' + output.pendingGroups.runId}
+    timeout: 30000
+
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: primaryInput
+- inputText: ${'南 Happy ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'南 Happy ' + output.pendingGroups.runId}
+    timeout: 30000
+
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: primaryInput
+- inputText: ${'西 Happy ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'西 Happy ' + output.pendingGroups.runId}
+    timeout: 30000
+
+- tapOn: 'グループメンバー追加'
+- tapOn:
+    id: primaryInput
+- inputText: ${'北 Happy ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'北 Happy ' + output.pendingGroups.runId}
+    timeout: 30000

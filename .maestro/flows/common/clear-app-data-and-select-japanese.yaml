@@ -16,5 +16,11 @@ appId: ${APP_ID}
       - assertVisible: '保存済みページを削除'
       - tapOn: 'OK'
       - waitForAnimationToEnd
+      - tapOn: '保存済み'
+- runFlow:
+    when:
+      notVisible: '保存済みページ'
+    commands:
+      - tapOn: '保存済み'
 - assertVisible: '保存済みの大会・卓はありません'
 - tapOn: '保存済み'

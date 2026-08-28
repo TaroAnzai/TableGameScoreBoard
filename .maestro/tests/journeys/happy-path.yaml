@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+name: Journey - 通常利用のHappy Path
+tags:
+  - journey
+  - happy-path
+onFlowStart:
+  - runScript: ../../scripts/prepare-pending-groups.js
+onFlowComplete:
+  - runScript: ../../fixtures/teardown/delete-group.js
+---
+# 申請から作成したグループで、大会・卓・対局をUIだけで作成してホームへ戻る。
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- runFlow: ../../flows/common/select-japanese.yaml
+- runFlow: happy-path/request-and-approve-group.yaml
+- openLink:
+    link: ${APP_SCHEME}://mahjong/group/${output.pendingGroups.approvedGroupKey}
+- extendedWaitUntil:
+    visible: ${output.pendingGroups.groupAName}
+    timeout: 30000
+- runFlow: happy-path/create-group-members.yaml
+- runFlow: happy-path/create-tournament.yaml
+- runFlow: happy-path/create-table.yaml
+- runFlow: happy-path/save-game.yaml
+- runFlow: happy-path/return-to-home.yaml

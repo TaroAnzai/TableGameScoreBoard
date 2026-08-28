@@ -1,0 +1,37 @@
+appId: ${APP_ID}
+---
+# 前のフローで開いた保存済み一覧から、大会リンクを長押しして削除する。
+- longPressOn:
+    id: saved-link-0
+- assertVisible: '保存済みページを削除'
+- tapOn: 'OK'
+- tapOn: '保存済み'
+- assertVisible: '保存済みの大会・卓はありません'
+- tapOn: '保存済み'
+
+# 同じ大会を直リンクから再度開き、初回の保存確認では保存せず続行する。
+- openLink:
+    link: ${output.fixture.tournamentEditLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存せず続行'
+
+# 画面上の戻るをタップすると再確認され、保存せずルートへ離脱できる。
+- tapOn: '戻る'
+- assertVisible:
+    id: 'unsaved-link-dialog'
+- tapOn: '保存せず続行'
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- assertNotVisible:
+    id: 'unsaved-link-dialog'
+
+# 保存済み一覧に、保存しなかった大会リンクがないことを確認する。
+- tapOn: '保存済み'
+- assertVisible: '保存済みページ'
+- assertNotVisible: '${output.fixture.tournamentName}, ${output.fixture.groupName}, 編集'
+- assertVisible: '保存済みの大会・卓はありません'

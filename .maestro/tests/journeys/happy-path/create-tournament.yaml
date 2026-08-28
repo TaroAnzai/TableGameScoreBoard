@@ -1,0 +1,23 @@
+appId: ${APP_ID}
+---
+# 大会を作成し、グループで作った4人を参加者にする。
+- tapOn: '大会一覧'
+- tapOn: '大会新規作成'
+- tapOn:
+    id: primaryInput
+- inputText: ${'Happy大会 ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'Happy大会 ' + output.pendingGroups.runId}
+    timeout: 30000
+- assertVisible: '大会成績'
+
+- tapOn: '参加者を追加'
+- tapOn: ${'東 Happy ' + output.pendingGroups.runId}
+- tapOn: ${'南 Happy ' + output.pendingGroups.runId}
+- tapOn: ${'西 Happy ' + output.pendingGroups.runId}
+- tapOn: ${'北 Happy ' + output.pendingGroups.runId}
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: ${'北 Happy ' + output.pendingGroups.runId}
+    timeout: 30000
