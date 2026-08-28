@@ -1,0 +1,63 @@
+appId: ${APP_ID}
+name: P0 - 記録表削除後の戻る履歴用グループを開く
+tags:
+  - p0
+  - deletion
+  - navigation
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: deleted-table-back-history
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+# 安全な立ち上げ launchApp 代替
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+# 日本語表示にして、全データを作成したグループのオーナーリンクを開く。
+- runFlow: ../../flows/common/select-japanese.yaml
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+
+# グループ内の大会を開く。未登録グループの離脱確認では登録せずに進む。
+- tapOn: ${output.fixture.tournamentName}
+- assertVisible: 'グループが未登録です'
+- tapOn: '登録せずに離れる'
+- extendedWaitUntil:
+    visible: '記録用紙を新規作成'
+    timeout: 30000
+- assertVisible: ${output.fixture.tournamentName}
+
+# 大会に新しい記録表を作成し、作成された記録表画面を確認する。
+- tapOn: '記録用紙を新規作成'
+- extendedWaitUntil:
+    visible: '卓1 記録表'
+    timeout: 30000
+
+# 記録表を削除すると大会画面へ戻る。
+- tapOn: '記録表削除'
+- assertVisible: '記録表削除'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '記録用紙を新規作成'
+    timeout: 30000
+- assertVisible: ${output.fixture.tournamentName}
+
+# 大会画面の戻るボタンで、親のグループ画面へ戻る。
+- tapOn: '戻る'
+- extendedWaitUntil:
+    visible: '大会一覧'
+    timeout: 30000
+- assertVisible: ${output.fixture.groupName}

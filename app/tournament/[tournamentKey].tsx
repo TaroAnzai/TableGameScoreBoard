@@ -163,6 +163,7 @@ const TournamentPage = () => {
     createTable(
       {
         tournamentKey: tournamentKey,
+        ...(parentGroupKey ? { parentGroupKey } : {}),
         tableCreate: {
           name: newName,
         },

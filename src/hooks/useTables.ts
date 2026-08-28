@@ -59,7 +59,11 @@ export const useCreateTable = ({ navigateOnSuccess = true }: UseCreateTableOptio
   const { showError, showSuccess } = useMutationFeedback();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { tournamentKey: string; tableCreate: TableCreate }) => {
+    mutationFn: (data: {
+      tournamentKey: string;
+      parentGroupKey?: string;
+      tableCreate: TableCreate;
+    }) => {
       return postApiTournamentsTournamentKeyTables(data.tournamentKey, data.tableCreate);
     },
     onSuccess: async (data, variables) => {
@@ -83,6 +87,7 @@ export const useCreateTable = ({ navigateOnSuccess = true }: UseCreateTableOptio
           params: {
             tableKey,
             parentTournamentKey: variables.tournamentKey,
+            ...(variables.parentGroupKey ? { parentGroupKey: variables.parentGroupKey } : {}),
           },
         });
       }

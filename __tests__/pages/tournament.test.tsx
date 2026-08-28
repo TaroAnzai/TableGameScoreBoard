@@ -162,6 +162,36 @@ describe('大会詳細ページ', () => {
     expect(mockUseSavedPage).toHaveBeenCalledWith(expect.objectContaining({ accessLevel: 'EDIT' }));
   });
 
+  it('グループ経由で記録用紙を作成すると親グループキーを引き継ぐ', async () => {
+    await render(<TournamentPage />);
+
+    fireEvent.press(screen.getByRole('button', { name: '記録用紙を新規作成' }));
+
+    expect(mockCreateTable).toHaveBeenCalledWith(
+      {
+        tournamentKey: 'tournament-key',
+        parentGroupKey: 'group-key',
+        tableCreate: { name: '卓2' },
+      },
+      expect.objectContaining({ onSettled: expect.any(Function) }),
+    );
+  });
+
+  it('直リンクの大会で記録用紙を作成すると親グループキーを付与しない', async () => {
+    mockParams.mockReturnValue({ tournamentKey: 'tournament-key' });
+    await render(<TournamentPage />);
+
+    fireEvent.press(screen.getByRole('button', { name: '記録用紙を新規作成' }));
+
+    expect(mockCreateTable).toHaveBeenCalledWith(
+      {
+        tournamentKey: 'tournament-key',
+        tableCreate: { name: '卓2' },
+      },
+      expect.objectContaining({ onSettled: expect.any(Function) }),
+    );
+  });
+
   it('グループから開いた場合は親グループへの戻る操作を表示する', async () => {
     await render(<TournamentPage />);
 

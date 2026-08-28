@@ -73,6 +73,7 @@ describe('useCreateTable', () => {
     await act(async () => {
       await result.current.mutateAsync({
         tournamentKey: 'tournament-owner-key',
+        parentGroupKey: 'group-owner-key',
         tableCreate: { name: '卓1' },
       });
     });
@@ -93,6 +94,28 @@ describe('useCreateTable', () => {
       params: {
         tableKey: 'new-table-owner-key',
         parentTournamentKey: 'tournament-owner-key',
+        parentGroupKey: 'group-owner-key',
+      },
+    });
+    unmount();
+  });
+
+  it('直リンクの大会で作成した記録用紙には親グループキーを付与しない', async () => {
+    mockPostTable.mockResolvedValue({ owner_link: 'new-table-owner-key' });
+    const { result, unmount } = await renderHook(() => useCreateTable(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        tournamentKey: 'direct-tournament-key',
+        tableCreate: { name: '卓1' },
+      });
+    });
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/table/[tableKey]',
+      params: {
+        tableKey: 'new-table-owner-key',
+        parentTournamentKey: 'direct-tournament-key',
       },
     });
     unmount();
