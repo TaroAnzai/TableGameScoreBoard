@@ -1,0 +1,62 @@
+appId: ${APP_ID}
+name: P1 - 主要画面の通信障害と再取得
+tags:
+  - p1
+  - network-recovery
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: main-screen-retry
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../scripts/set-network-mode.js
+      env:
+        MODE: normal
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+# グループを端末に登録し、主要画面の再取得をofflineとHTTP 500で検証する。
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- runFlow: ../../flows/common/select-japanese.yaml
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- runFlow:
+    file: ../../flows/common/save-group-link.yaml
+    env:
+      SAVED_GROUP_NAME: ${output.fixture.groupName}
+- runFlow: ../../flows/common/open-app.yaml
+
+- runFlow:
+    file: main-screen-retry/recover-home-and-group.yaml
+    env:
+      MODE: offline
+      ERROR_MESSAGE: '通信できませんでした。接続を確認して、もう一度お試しください。'
+- runFlow:
+    file: main-screen-retry/recover-tournament-and-table.yaml
+    env:
+      MODE: offline
+      ERROR_MESSAGE: '通信できませんでした。接続を確認して、もう一度お試しください。'
+
+- runFlow: ../../flows/common/open-app.yaml
+- runFlow:
+    file: main-screen-retry/recover-home-and-group.yaml
+    env:
+      MODE: 500
+      ERROR_MESSAGE: 'サーバーで問題が発生しました。時間をおいて、もう一度お試しください。'
+- runFlow:
+    file: main-screen-retry/recover-tournament-and-table.yaml
+    env:
+      MODE: 500
+      ERROR_MESSAGE: 'サーバーで問題が発生しました。時間をおいて、もう一度お試しください。'

@@ -1,0 +1,42 @@
+appId: ${APP_ID}
+---
+# 障害状態で大会を開き、大会画面が再取得で復旧する。
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: ${MODE}
+- tapOn: ${output.fixture.tournamentName}
+- extendedWaitUntil:
+    visible: ${ERROR_MESSAGE}
+    timeout: 30000
+- assertVisible: '再取得'
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: normal
+- tapOn: '再取得'
+- extendedWaitUntil:
+    visible:
+      id: 'score-table-${output.fixture.tableId}'
+    timeout: 30000
+
+# 障害状態で記録表を開き、ゲームデータまで再取得できることを確認する。
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: ${MODE}
+- tapOn:
+    id: 'score-table-${output.fixture.tableId}'
+- extendedWaitUntil:
+    visible: ${ERROR_MESSAGE}
+    timeout: 30000
+- assertVisible: '再取得'
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: normal
+- tapOn: '再取得'
+- extendedWaitUntil:
+    visible:
+      id: 'game-row-${output.fixture.gameId}'
+    timeout: 30000

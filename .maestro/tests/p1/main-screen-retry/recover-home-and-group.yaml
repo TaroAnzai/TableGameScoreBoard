@@ -1,0 +1,43 @@
+appId: ${APP_ID}
+---
+# 障害状態で再起動し、ホームの登録グループ一覧が再取得で復旧する。
+- stopApp
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: ${MODE}
+- runFlow:
+    file: ../../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- extendedWaitUntil:
+    visible: ${ERROR_MESSAGE}
+    timeout: 30000
+- assertVisible: '再取得'
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: normal
+- tapOn: '再取得'
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+
+# 障害状態で登録グループを開き、グループ画面が再取得で復旧する。
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: ${MODE}
+- tapOn: ${output.fixture.groupName}
+- extendedWaitUntil:
+    visible: ${ERROR_MESSAGE}
+    timeout: 30000
+- assertVisible: '再取得'
+- runScript:
+    file: ../../../scripts/set-network-mode.js
+    env:
+      MODE: normal
+- tapOn: '再取得'
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
