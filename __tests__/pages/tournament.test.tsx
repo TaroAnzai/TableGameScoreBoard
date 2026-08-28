@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import TournamentPage from '@/app/tournament/[tournamentKey]';
@@ -15,6 +15,9 @@ const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 const mockCreateTable = jest.fn();
 const mockUseSavedPage = jest.fn();
 let mockIsCreatingTable = false;
+const mockUpdateTournament = jest.fn();
+const mockAddTournamentPlayer = jest.fn();
+const mockDeleteTournamentPlayer = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -32,10 +35,10 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('@/src/hooks/useTournaments', () => ({
   useGetTournamentDashboard: () => mockUseDashboard(),
-  useAddTournamentPlayer: () => ({ mutateAsync: jest.fn() }),
-  useDeleteTounamentsPlayer: () => ({ mutateAsync: jest.fn() }),
+  useAddTournamentPlayer: () => ({ mutateAsync: mockAddTournamentPlayer, isPending: false }),
+  useDeleteTounamentsPlayer: () => ({ mutateAsync: mockDeleteTournamentPlayer, isPending: false }),
   useDeleteTournament: () => ({ mutate: jest.fn() }),
-  useUpdateTournament: () => ({ mutate: jest.fn() }),
+  useUpdateTournament: () => ({ mutateAsync: mockUpdateTournament, isPending: false }),
 }));
 jest.mock('@/src/hooks/useTables', () => ({
   useCreateTable: () => ({ mutate: mockCreateTable, isPending: mockIsCreatingTable }),
@@ -49,10 +52,12 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
   const MockPageTitleBar = ({
     title,
     onTitleClick,
+    onTitleChange,
     parentUrl,
   }: {
     title: string;
     onTitleClick?: () => void;
+    onTitleChange?: (title: string) => void;
     parentUrl?: string | null;
   }) => {
     const { Pressable, Text } = jest.requireActual('react-native');
@@ -63,6 +68,11 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
         {onTitleClick && (
           <Text accessibilityRole="button" onPress={onTitleClick}>
             大会名を編集
+          </Text>
+        )}
+        {onTitleChange && (
+          <Text accessibilityRole="button" onPress={() => onTitleChange('変更後の大会')}>
+            大会名を直接変更
           </Text>
         )}
       </>
@@ -80,9 +90,24 @@ jest.mock('@/components/ScoreTable', () => {
     ),
   };
 });
-jest.mock('@/components/EditTournamentModal', () => () => null);
-jest.mock('@/components/MultiSelectorModal', () => () => null);
-jest.mock('@/components/SelectorModal', () => () => null);
+jest.mock('@/components/EditTournamentModal', () => {
+  const { Pressable } = jest.requireActual('react-native');
+  return ({ onConfirm }: { onConfirm: (updates: unknown) => void }) => (
+    <Pressable accessibilityLabel="大会編集を確定" onPress={() => onConfirm({ name: '編集後の大会' })} />
+  );
+});
+jest.mock('@/components/MultiSelectorModal', () => {
+  const { Pressable } = jest.requireActual('react-native');
+  return ({ onConfirm }: { onConfirm: (players: unknown[]) => void }) => (
+    <Pressable accessibilityLabel="大会参加者追加を確定" onPress={() => onConfirm([{ id: 2, name: '候補者2' }])} />
+  );
+});
+jest.mock('@/components/SelectorModal', () => {
+  const { Pressable } = jest.requireActual('react-native');
+  return ({ items, onSelect }: { items: unknown[]; onSelect: (player: unknown) => void }) => (
+    <Pressable accessibilityLabel="大会参加者削除を確定" onPress={() => onSelect(items[0])} />
+  );
+});
 jest.mock('@/components/SavePagePromptModal', () => ({
   SavePagePromptModal: () => null,
 }));
@@ -140,6 +165,9 @@ describe('大会詳細ページ', () => {
     mockParams.mockReturnValue({ tournamentKey: 'tournament-key', parentGroupKey: 'group-key' });
     mockIsCreatingTable = false;
     mockUseDashboard.mockReturnValue(dashboardState);
+    mockUpdateTournament.mockResolvedValue(undefined);
+    mockAddTournamentPlayer.mockResolvedValue(undefined);
+    mockDeleteTournamentPlayer.mockResolvedValue(undefined);
   });
 
   it('全Query成功時にスコア表を表示して卓へ遷移する', async () => {
@@ -160,6 +188,45 @@ describe('大会詳細ページ', () => {
     await render(<TournamentPage />);
 
     expect(mockUseSavedPage).toHaveBeenCalledWith(expect.objectContaining({ accessLevel: 'EDIT' }));
+  });
+
+  it('EDIT権限で大会名を更新できる', async () => {
+    await render(<TournamentPage />);
+    await fireEvent.press(screen.getByText('大会名を直接変更'));
+    expect(mockUpdateTournament).toHaveBeenCalledWith({
+      tournamentKey: 'tournament-key', groupKey: 'group-key',
+      tournament: { name: '変更後の大会' },
+    });
+  });
+
+  it('大会編集modalから更新し、失敗時もmodalを維持する', async () => {
+    mockUpdateTournament.mockRejectedValue(new Error('update failed'));
+    await render(<TournamentPage />);
+    await fireEvent.press(screen.getByText('大会名を編集'));
+    await fireEvent.press(screen.getByLabelText('大会編集を確定'));
+    await waitFor(() => expect(mockUpdateTournament).toHaveBeenCalled());
+    expect(screen.getByLabelText('大会編集を確定')).toBeTruthy();
+  });
+
+  it('参加者を追加できる', async () => {
+    await render(<TournamentPage />);
+    await fireEvent.press(screen.getByRole('button', { name: '参加者を追加' }));
+    await fireEvent.press(screen.getByLabelText('大会参加者追加を確定'));
+    expect(mockAddTournamentPlayer).toHaveBeenCalledWith({
+      tournamentKey: 'tournament-key', players: [{ id: 2, name: '候補者2' }],
+    });
+  });
+
+  it('参加者削除のCancelではAPIを呼ばず、OKでは削除する', async () => {
+    mockAlertDialog.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    await render(<TournamentPage />);
+    await fireEvent.press(screen.getByRole('button', { name: '参加者を削除' }));
+    await fireEvent.press(screen.getByLabelText('大会参加者削除を確定'));
+    expect(mockDeleteTournamentPlayer).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByLabelText('大会参加者削除を確定'));
+    expect(mockDeleteTournamentPlayer).toHaveBeenCalledWith({
+      tournamentKey: 'tournament-key', playerId: 1,
+    });
   });
 
   it('グループ経由で記録用紙を作成すると親グループキーを引き継ぐ', async () => {

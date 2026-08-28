@@ -3,7 +3,14 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
 import { ApiError } from '@/src/api/apiError';
-import { useCreateGroup, useCreateGroupRequest, useGroupQueries } from '@/src/hooks/useGroups';
+import {
+  getKeyType,
+  useCreateGroup,
+  useCreateGroupRequest,
+  useGetGroupDashboard,
+  useGroupQueries,
+  useUpdateGroup,
+} from '@/src/hooks/useGroups';
 
 const mockPostApiGroups = jest.fn();
 const mockPostGroupRequest = jest.fn();
@@ -14,12 +21,22 @@ const mockRemoveGroupKey = jest.fn();
 const mockAlertDialog = jest.fn();
 const mockShowSuccess = jest.fn();
 const mockShowError = jest.fn();
+const mockGetGroupDashboard = jest.fn();
+const mockPutGroup = jest.fn();
+const mockSetPendingGroups = jest.fn();
+const mockToastShow = jest.fn();
 let mockStoredGroupKeys: string[] = [];
+let mockStoredPendingGroups: { token: string; groupName: string; email: string; expiresAt: Date }[] = [];
 
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   postApiGroups: (...args: unknown[]) => mockPostApiGroups(...args),
   postApiGroupsRequestLink: (...args: unknown[]) => mockPostGroupRequest(...args),
   postApiV2GroupsbatchGet: (...args: unknown[]) => mockBatchGetGroups(...args),
+  getApiV2GroupsGroupKeyDashboard: (...args: unknown[]) => mockGetGroupDashboard(...args),
+  getGetApiV2GroupsGroupKeyDashboardQueryKey: (key: string) => [
+    `/api/v2/groups/${key}/dashboard`,
+  ],
+  putApiGroupsGroupKey: (...args: unknown[]) => mockPutGroup(...args),
   getGetApiGroupsGroupKeyQueryKey: (key: string) => [`/api/groups/${key}`],
   getGetApiGroupsGroupKeyQueryOptions: (key: string) => ({
     queryKey: [`/api/groups/${key}`],
@@ -39,12 +56,16 @@ jest.mock('@/src/storage/appStorage', () => ({
     addGroupKey: (...args: unknown[]) => mockAddGroupKey(...args),
     addPendingGroupKey: (...args: unknown[]) => mockAddPendingGroupKey(...args),
     getGroupKeys: () => Promise.resolve(mockStoredGroupKeys),
-    getPendingGroups: () => Promise.resolve([]),
+    getPendingGroups: () => Promise.resolve(mockStoredPendingGroups),
+    setPendingGroups: (...args: unknown[]) => mockSetPendingGroups(...args),
     removeGroupKey: (key: string) => {
       mockStoredGroupKeys = mockStoredGroupKeys.filter((storedKey) => storedKey !== key);
       return mockRemoveGroupKey(key);
     },
   },
+}));
+jest.mock('react-native-toast-message', () => ({
+  show: (...args: unknown[]) => mockToastShow(...args),
 }));
 jest.mock('@/src/utils/groupSync', () => ({
   syncPendingGroups: () => Promise.resolve(false),
@@ -92,6 +113,93 @@ describe('useCreateGroup', () => {
     expect(mutationCompleted).toBe(true);
     expect(onAfterCreate).toHaveBeenCalledTimes(1);
     queryClient.clear();
+  });
+
+  it('作成失敗時はエラーを通知し、設定により通知を抑止できる', async () => {
+    const error = new Error('create failed');
+    mockPostApiGroups.mockRejectedValue(error);
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const shown = await renderHook(() => useCreateGroup(undefined, true), { wrapper });
+    await act(async () => {
+      await expect(shown.result.current.mutateAsync({ token: 'token' })).rejects.toBe(error);
+    });
+    expect(mockShowError).toHaveBeenCalledWith(expect.objectContaining({ error }));
+    await shown.unmount();
+
+    mockShowError.mockClear();
+    const hidden = await renderHook(() => useCreateGroup(undefined, false), { wrapper });
+    await act(async () => {
+      await expect(hidden.result.current.mutateAsync({ token: 'token' })).rejects.toBe(error);
+    });
+    expect(mockShowError).not.toHaveBeenCalled();
+    await hidden.unmount();
+    queryClient.clear();
+  });
+});
+
+describe('グループ取得・更新と権限判定', () => {
+  it('dashboard取得成功・失敗を返す', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    mockGetGroupDashboard.mockResolvedValueOnce({ group: { id: 1, name: 'グループ1' } });
+    const success = await renderHook(() => useGetGroupDashboard('group-key'), { wrapper });
+    await waitFor(() => expect(success.result.current.data).toEqual({ id: 1, name: 'グループ1' }));
+    await success.unmount();
+
+    const error = new Error('load failed');
+    mockGetGroupDashboard.mockRejectedValueOnce(error);
+    const failed = await renderHook(() => useGetGroupDashboard('failed-key'), { wrapper });
+    await waitFor(() => expect(failed.result.current.error).toBe(error));
+    await failed.unmount();
+    queryClient.clear();
+  });
+
+  it('グループ更新成功時にcallbackを呼び、失敗時は通知する', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const onAfterUpdate = jest.fn();
+    mockPutGroup.mockResolvedValueOnce({ id: 1, name: '更新後' });
+    const success = await renderHook(() => useUpdateGroup(onAfterUpdate), { wrapper });
+    await act(async () =>
+      success.result.current.mutateAsync({ groupKey: 'key', groupUpdate: { name: '更新後' } }),
+    );
+    expect(mockPutGroup).toHaveBeenCalledWith('key', { name: '更新後' });
+    expect(onAfterUpdate).toHaveBeenCalled();
+    await success.unmount();
+
+    const error = new Error('update failed');
+    mockPutGroup.mockRejectedValueOnce(error);
+    const failed = await renderHook(() => useUpdateGroup(), { wrapper });
+    await act(async () => {
+      await expect(
+        failed.result.current.mutateAsync({ groupKey: 'key', groupUpdate: { name: '失敗' } }),
+      ).rejects.toBe(error);
+    });
+    expect(mockShowError).toHaveBeenCalledWith(expect.objectContaining({ error }));
+    await failed.unmount();
+    queryClient.clear();
+  });
+
+  it.each([
+    [{ owner_link: 'owner' }, 'OWNER'],
+    [{ edit_link: 'edit' }, 'EDIT'],
+    [{ view_link: 'view' }, 'VIEW'],
+    [{}, ''],
+  ])('リンクから権限を判定する', (group, expected) => {
+    expect(getKeyType(group as never)).toBe(expected);
   });
 });
 
@@ -248,6 +356,8 @@ describe('useGroupQueries', () => {
         { client_id: '1', status: 'not_found' },
       ],
     });
+    mockStoredPendingGroups = [];
+    mockSetPendingGroups.mockResolvedValue(undefined);
   });
 
   it('404になったキーをすべて削除してから1つのダイアログにまとめて表示する', async () => {
@@ -328,5 +438,46 @@ describe('useGroupQueries', () => {
     unmount();
     queryClient.clear();
     consoleError.mockRestore();
+  });
+
+  it('期限切れpending groupを除外してストレージを更新する', async () => {
+    mockStoredGroupKeys = [];
+    const valid = {
+      token: 'valid', groupName: '有効', email: 'valid@example.com', expiresAt: new Date('2099-01-01'),
+    };
+    const expired = {
+      token: 'expired', groupName: '期限切れ', email: 'old@example.com', expiresAt: new Date('2020-01-01'),
+    };
+    mockStoredPendingGroups = [valid, expired];
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result, unmount } = await renderHook(() => useGroupQueries(), { wrapper });
+    await waitFor(() => expect(result.current.pendingGroups).toEqual([valid]));
+    expect(mockSetPendingGroups).toHaveBeenCalledWith([valid]);
+    expect(mockToastShow).toHaveBeenCalledWith(expect.objectContaining({ text2: '期限切れ' }));
+    await unmount();
+    queryClient.clear();
+  });
+
+  it('refreshはstorageとbatch queryを無効化し、完了後にrefresh状態を戻す', async () => {
+    mockStoredGroupKeys = [];
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { gcTime: Infinity, retry: false } },
+    });
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result, unmount } = await renderHook(() => useGroupQueries(), { wrapper });
+    await act(async () => result.current.refresh());
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['groupKeysAndPendingGroups'] });
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['groupsBatch'] });
+    expect(result.current.isRefreshing).toBe(false);
+    await unmount();
+    queryClient.clear();
   });
 });
