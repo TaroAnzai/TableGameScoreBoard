@@ -2,7 +2,7 @@
 
 このドキュメントは、[`design-system-v1.md`](./design-system-v1.md)で定義したデザイン基準を、React Native / Expo / NativeWind 4へ実装するためのトークン定義と実装順序をまとめたものです。
 
-> 対象環境: Expo SDK 56 / React Native 0.85 / React 19.2.3 / NativeWind 4
+> 対象環境: Expo SDK 57 / React Native 0.86 / React 19.2.3 / NativeWind 4
 >
 > 方針: ライトモードを優先し、ダークモードへ拡張できるtoken構造を採用します。
 
@@ -11,9 +11,9 @@
 - デザイントークンの実値は、`src/lib/theme/`を正本として管理する。
 - NativeWind設定とCSS variablesは、トークンをutility classへ接続し、light / darkを適用する層として扱う。
 - コンポーネント内に同じ色・余白・角丸・文字サイズ・コンポーネント寸法を重複定義しない。
-- NativeWind 4での具体的な接続方法は、既存の`global.css`、Tailwind設定、Metro/Babel設定を確認したうえで決定する。
+- `ThemeProvider` が `src/lib/theme/nativewind.ts` の `vars()` を使って semantic color を NativeWind へ接続する。
 
-## 2. 推奨ファイル構成
+## 2. 現在のファイル構成
 
 ```text
 src/lib/theme/
@@ -130,10 +130,10 @@ const componentSize = {
 
 ```ts
 const mahjong = {
-  scoreCellWidth: 88,
-  scoreCellMinWidth: 80,
-  gameColumnWidth: 80,
-  playerColumnWidth: 104,
+  scoreCellWidth: 80,
+  scoreCellMinWidth: 70,
+  gameColumnWidth: 70,
+  playerColumnWidth: 85,
   totalColumnWidth: 104,
   tableHeaderHeight: 44,
   scoreInputHeight: 40,
@@ -144,12 +144,14 @@ const mahjong = {
 
 ---
 
-## E. 実装順序の推奨
+## E. 現在の実装状態と今後の順序
+
+Phase 1 の token 基盤、NativeWind 接続、ThemeProvider、基本的な light / dark theme は実装済みです。以下は未実装 TODO の一覧ではなく、コンポーネントや画面を追加・変更するときの適用順序です。
 
 ### Phase 1: トークン基盤
 
 1. `colors`, `spacing`, `radius`, `typography` を定義する。
-2. NativeWind / CSS variables / `lib/theme.ts` のどこを single source of truth にするか決める。
+2. `src/lib/theme/` を single source of truth として維持する。
 3. light / dark の token structure を用意する。
 4. 既存の HSL 変数を v1 color roles に置き換える計画を作る。
 

@@ -16,11 +16,11 @@
 
 | 分類 | 採用技術 |
 | --- | --- |
-| アプリ基盤 | Expo SDK 57 / React Native 0.86 / React 19 |
+| アプリ基盤 | Expo SDK 57 / React Native 0.86 / React 19.2.3 |
 | ルーティング | Expo Router |
 | データ取得・キャッシュ | TanStack Query |
-| API クライアント | Orval で OpenAPI から生成、fetch ラッパー |
-| UI | React Native Reusables、NativeWind、Lucide |
+| API クライアント | Orval で OpenAPI から生成、共通 fetch ラッパー |
+| UI | `@rn-primitives` / `@expo/ui`、NativeWind、Lucide |
 | 多言語化 | i18next / react-i18next |
 | ローカル保存 | AsyncStorage / SecureStore |
 | テスト | Jest、React Native Testing Library、Maestro |
@@ -28,7 +28,7 @@
 
 ## 必要環境
 
-- Node.js と npm
+- Node.js 22.13.x 以上と npm（Expo SDK 57 の最小要件）
 - Android 開発では Android Studio / Android SDK
 - iOS 開発では macOS、Xcode、CocoaPods
 - API サーバー（ローカル開発時の既定値は `http://localhost:6080`）
@@ -93,6 +93,8 @@ npm run android
 npm run ios
 ```
 
+現在の `ios` script は `APP_VARIANT` を設定しないため、`app.json` の production 名・scheme・bundle identifier を使用します。Android のような別 application ID の開発 variant は定義されていません。
+
 ## API クライアントの生成
 
 OpenAPI 定義から TanStack Query 用のクライアントを生成します。生成先は `src/api/generated/` です。
@@ -109,6 +111,14 @@ npm run generate:api
 npm test
 npm run lint
 ```
+
+Coverage は `app/`、`components/`、`src/`、`lib/` を明示的に収集対象とします。自動生成コードと低レベル UI primitive は除外し、全体 100% ではなく重要ファイルの Branches / Functions と未テスト処理を重視します。
+
+```bash
+npm test -- --coverage
+```
+
+詳細は [Jest Coverage 運用方針](docs/jest-coverage-roule.md) を参照してください。
 
 Maestro の E2E フローは `.maestro/` にあります。Android 開発ビルドと Metro を起動し、対象のアプリ ID を指定して実行します。
 
@@ -129,9 +139,11 @@ npx eas-cli@latest build --platform android --profile development
 # 社内配布用 APK
 npx eas-cli@latest build --platform android --profile preview
 
-# ストア提出用
+# production build（ストア提出用）
 npx eas-cli@latest build --platform android --profile production
 ```
+
+`--platform ios` または `--platform all` も利用できます。`development` は development client、`preview` は内部配布（Android は APK）、`production` はストア向けのプロファイルです。
 
 初回は Expo へログインし、必要に応じて EAS を設定してください。
 
@@ -147,6 +159,7 @@ npx eas-cli@latest build:configure
 | `/` | グループ一覧・作成申請 |
 | `/group/create` | グループ作成 |
 | `/group/[groupKey]` | グループ、プレイヤー、大会の管理 |
+| `/group/stats/[groupKey]` | グループ統計 |
 | `/tournament/[tournamentKey]` | 大会、参加者、卓、集計 |
 | `/table/[tableKey]` | 卓と半荘スコアの管理 |
 | `/stats` | 統計 |
@@ -171,7 +184,9 @@ assets/              アプリアイコンなどの画像
 
 ## 関連ドキュメント
 
-- [ナビゲーション設計](docs/Navigation.md)
 - [API v2 移行](docs/v2-api-migration.md)
 - [API エラー表示](docs/api-error-presentation.md)
+- [Jest Coverage 運用方針](docs/jest-coverage-roule.md)
+- [Maestro E2E 運用](.maestro/README.md)
 - [デザインシステム](docs/design-system/design-system-v1.md)
+- [保存ページとナビゲーション](docs/Navigation.md)

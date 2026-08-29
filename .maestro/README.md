@@ -1,61 +1,73 @@
-# Maestro E2E tests
+# Maestro E2E テスト
 
-Run every Maestro test through `scripts/maestro-test.sh` from the project root. It loads the root `.env` first, then passes non-secret Maestro settings from `config.yaml`, and always restores the local network-mode controller on exit.
+Maestro は Android 開発ビルドを対象に、ユーザー操作を通した回帰を確認します。すべてのテストはリポジトリルートから `.maestro/scripts/maestro-test.sh` 経由で実行してください。
+
+## 構成
 
 ```text
 .maestro/
 ├── config.yaml
-├── tests/               # independently runnable test cases
-│   ├── p0/              # critical permissions, score, and saved-link tests
-│   ├── p1/              # deletion, pending-group, and statistics tests
-│   ├── p2/              # settings, navigation, and invalid-link tests
-│   └── journeys/        # reserved for non-duplicated long journeys (currently empty)
-├── flows/common/        # small reusable UI operations only
-├── fixtures/setup/      # API-backed server-data setup scripts
-├── fixtures/teardown/   # API-backed cleanup scripts
-└── scripts/             # test runner, GUI launcher, and network-mode control
+├── tests/
+│   ├── p0/          # 権限、点数、保存リンク、離脱、削除後遷移
+│   ├── p1/          # 削除、通信再試行、作成待ち、統計期間
+│   ├── p2/          # 設定画面のナビゲーション
+│   └── journeys/    # グループ作成からスコア保存までの Happy Path
+├── flows/common/    # 複数テストで共有する短い UI 操作
+├── fixtures/
+│   ├── setup/       # API を使ったテストデータ作成
+│   └── teardown/    # 作成したグループの削除
+└── scripts/         # runner、GUI、fixture 補助、通信モード制御
 ```
 
-`config.yaml` contains only Maestro settings such as `APP_ID`, fixture naming prefixes, and fixed UI calendar values. API URLs and administrator credentials remain only in the root `.env`; do not copy them into `config.yaml` or print them. The runner keeps the existing local names: `MAESTRO_DEV_API_URL`, `MAESTRO_DEV_ADMIN`, and `MAESTRO_DEV_ADMIN_PASSWORD`.
+親テストは優先度ディレクトリ直下の YAML です。同名サブディレクトリ内の YAML は親から `runFlow` されるテスト固有 subflow で、単独テストとして実行しません。共有可能な操作だけを `flows/common/` に置きます。
 
-## Fixtures and cleanup
+## 前提と環境変数
 
-Tests that need server data call `fixtures/setup/create-test-data.js` in `onFlowStart`. Each call declares the graph directly with `FIXTURE_GROUP_COUNT`, `FIXTURE_PLAYER_COUNT`, `FIXTURE_CREATE_GAME`, `FIXTURE_CREATE_EXTRA_TABLE`, and `FIXTURE_ADD_INVALID_LINK`, so the created data can be understood from the test YAML alone. `FIXTURE_LABEL` is used only for unique names. The script assigns `output.fixture.groupKey` immediately after creating the first group and records every created group in `output.fixture.groupKeys`; all UI values are returned under `output.fixture.*`.
+開発ビルド、Metro、開発 API を起動してから実行します。標準対象は `config.yaml` の app ID `com.anzaihome.mahjongapp.dev`、scheme `mahjongapp-dev` です。
 
-The setup options mean:
+`.maestro/config.yaml` は app ID、fixture 名の prefix、統計テストの日付など、秘密でない設定の正本です。runner はこの `env` の単純な scalar を Maestro へ渡します。API URL と管理者資格情報はルート `.env` に置き、`config.yaml` やログへコピーしません。
 
-- `FIXTURE_GROUP_COUNT`: number of groups. Every group receives one tournament and one normal table.
-- `FIXTURE_PLAYER_COUNT`: players created in the first group and registered with its tournament and table.
-- `FIXTURE_SECOND_GROUP_PLAYER_COUNT`: player count for the second group when two groups are requested.
-- `FIXTURE_CREATE_GAME`: creates one game with four scores in every requested group; therefore each group must have four players.
-- `FIXTURE_CREATE_EXTRA_TABLE`: creates an additional empty table for direct-deletion checks.
-- `FIXTURE_ADD_INVALID_LINK`: exposes a nonexistent table link and its expected error label under `output.fixture`.
+```dotenv
+MAESTRO_DEV_API_URL=http://localhost:6080
+MAESTRO_DEV_ADMIN=...
+MAESTRO_DEV_ADMIN_PASSWORD=...
+```
 
-When two groups are requested, the first graph is exposed through the existing unqualified fields such as `groupOwnerLink`, `tournamentOwnerLink`, `tableEditLink`, and `gameId`. The second graph uses the `groupB*`, `tournamentB*`, `tableB*`, and `gameBId` fields. Resource IDs are included so Maestro can target stable component IDs such as `game-row-${output.fixture.gameId}`, `select-${output.fixture.gameId}`, and `score-table-${output.fixture.tableBId}` instead of relying on repeated score or row text.
+実際のキー名と必須条件は fixture script を正としてください。
 
-`SelectorModal` callers can opt into resource-based selectors with `getItemTestId`; callers that omit it retain the index-based `select-0`, `select-1`, and so on. Persisted score rows use `game-row-{gameId}`, while empty input rows use `empty-game-row-{index}` because deleting the first game still leaves an empty row labelled as the first game.
-
-Those tests call `fixtures/teardown/delete-group.js` from `onFlowComplete`. It logs in using the root `.env` credentials and issues `DELETE /api/admin/groups/{group_key}`. The backend owns cascading logical deletion of tournaments, tables, and games. Missing fixture keys print `cleanup skipped`; a 404 from deletion is treated as already cleaned up. Authentication and other API failures remain visible without exposing credentials.
-
-Do not create a giant shared fixture. A test with no server-data dependency must not add setup or teardown hooks. `flows/common` is only for reusable UI fragments such as language selection, opening the app, dismissing the save prompt, and clearing saved links—not an entire scenario.
-
-## Running tests
+## 実行方法
 
 ```bash
-# P0 / P1 / P2 directories
 .maestro/scripts/maestro-test.sh .maestro/tests/p0
 .maestro/scripts/maestro-test.sh .maestro/tests/p1
 .maestro/scripts/maestro-test.sh .maestro/tests/p2
-
-# One test
+.maestro/scripts/maestro-test.sh .maestro/tests/journeys/happy-path.yaml
 .maestro/scripts/maestro-test.sh .maestro/tests/p0/access-control.yaml
-
-# Tag filtering (Maestro CLI)
 .maestro/scripts/maestro-test.sh .maestro/tests --include-tags=p0
 ```
 
-Start the development build, Metro, API, and (when needed) the local network controller before running. The score-input test changes the controller with `scripts/set-network-mode.js`; `maestro-test.sh` resets it to `normal` before and after every run, including interrupt/error exits.
+runner はルート `.env`、`.maestro/config.yaml` の順に設定を読み、開始前と終了時（割り込み・失敗を含む）にローカル通信モードを `normal` へ戻します。引数なしでは実行せず usage を表示します。
 
-`pending-groups.yaml` creates two requests through the app, approves one through the development API, and uses the local mitmproxy controller to expire the other. Start mitmproxy for this flow and route the development build through its API entrypoint. The flow resets expiration overrides on start and completion and removes the approved fixture on completion.
+## fixture と cleanup
 
-Run static validation before relying on a new fixture: check YAML syntax, every `runFlow`/`runScript` path, JavaScript syntax, and all output references. If setup fails after group creation, `onFlowComplete` still uses the early `output.fixture.groupKey` to remove the partial fixture.
+サーバーデータが必要な親フローは `onFlowStart` から `fixtures/setup/create-test-data.js` を呼びます。主な指定は `FIXTURE_GROUP_COUNT`、`FIXTURE_PLAYER_COUNT`、`FIXTURE_SECOND_GROUP_PLAYER_COUNT`、`FIXTURE_CREATE_GAME`、`FIXTURE_CREATE_EXTRA_TABLE`、`FIXTURE_ADD_INVALID_LINK` です。作成結果は `output.fixture.*` から参照します。
+
+`onFlowComplete` は `fixtures/teardown/delete-group.js` でグループを削除します。バックエンドの cascade により大会、卓、ゲームも論理削除されます。setup は最初のグループ作成直後に key を出力するため、途中失敗でも cleanup できます。fixture が不要なテストには setup / teardown を追加しません。
+
+`pending-groups.yaml` はアプリから作成した request を補助 script で準備・承認します。完了時には承認済み fixture を削除し、期限切れ override も解除します。
+
+## ネットワーク障害と mitmproxy
+
+`score-input-validation.yaml`、`main-screen-retry.yaml`、`pending-groups.yaml` は `.maestro/scripts/set-network-mode.js` を通じ、`http://127.0.0.1:9099` の controller を操作します。これらを実行する場合は mitmproxy と controller を起動し、開発ビルドの API 通信を proxy の entrypoint へ向けてください。利用モードは `normal`、`offline`、`500`、`expired`、`pending-reset` です。
+
+## 現在の主要シナリオ
+
+- Happy Path: グループ、大会、卓の作成、参加申請・承認、点数保存、ホーム復帰
+- 権限制御: OWNER / EDIT / VIEW でのグループ・大会・卓操作
+- 点数入力: 不正合計の拒否、正常保存、ネットワーク障害からの復旧
+- 保存リンクと Deep Link: 共有ページの保存、再表示、削除、案内の dismiss
+- 未保存ページからの離脱: キャンセル、保存して離脱、保存せず離脱、卓作成後の離脱
+- 削除後遷移: 直接・ネストしたゲーム、卓、大会、登録の削除と履歴
+- 作成待ち、統計期間・グループ切替、設定画面ナビゲーション
+
+フローを変更したら YAML 構文、全 `runFlow` / `runScript` パス、JavaScript 構文、`output.fixture.*` の参照を確認してください。

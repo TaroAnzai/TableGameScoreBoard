@@ -3,7 +3,7 @@
 このドキュメントは、TableGameScoreBoard の React Native / Expo アプリ全体で利用する新しいデザイン基準です。
 Material Design 3 と Apple Human Interface Guidelines の考え方を参考にしつつ、Android と iOS の両方で自然に見える UI を目指します。
 
-> 対象環境: Expo SDK 56 / React Native 0.85 / React 19.2.3 / NativeWind 4
+> 対象環境: Expo SDK 57 / React Native 0.86 / React 19.2.3 / NativeWind 4
 >
 > 方針: ライトモードを優先し、ダークモードへ拡張できる token 構造を採用します。
 
