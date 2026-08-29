@@ -80,6 +80,12 @@
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
     ],
+    "collectCoverageFrom": [
+      "app/**/*.{ts,tsx}",
+      "components/**/*.{ts,tsx}",
+      "src/**/*.{ts,tsx}",
+      "lib/**/*.{ts,tsx}"
+    ],
     "coveragePathIgnorePatterns": [
       "/node_modules/",
       "/src/api/generated/",

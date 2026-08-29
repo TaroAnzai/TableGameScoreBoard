@@ -42,7 +42,7 @@ describe('EditableTitle', () => {
     await act(async () => {
       fireEvent.changeText(input, '  新しい大会名  ');
     });
-    fireEvent(input, 'submitEditing');
+    await fireEvent(input, 'submitEditing');
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith('新しい大会名'));
     await waitFor(() => expect(screen.queryByDisplayValue('  新しい大会名  ')).toBeNull());
@@ -62,7 +62,7 @@ describe('EditableTitle', () => {
     await act(async () => {
       fireEvent.changeText(input, nextValue);
     });
-    fireEvent(input, 'blur');
+    await fireEvent(input, 'blur');
 
     await waitFor(() => expect(screen.queryByDisplayValue(nextValue)).toBeNull());
     expect(onChange).not.toHaveBeenCalled();

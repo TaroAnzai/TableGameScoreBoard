@@ -128,7 +128,7 @@ describe('EditTournamentModal', () => {
     fireEvent.press(screen.getByLabelText('開始日を選択'));
     fireEvent.press(await screen.findByLabelText('日付を決定'));
     await waitFor(() => expect(screen.getByText('2026-08-29')).toBeTruthy());
-    fireEvent.press(screen.getByRole('button', { name: '保存' }));
+    await fireEvent.press(screen.getByRole('button', { name: '保存' }));
     await waitFor(() =>
       expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ started_at: '2026-08-29T00:00:00.000Z' })),
     );

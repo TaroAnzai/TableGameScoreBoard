@@ -74,11 +74,11 @@ describe('SavePagePromptModal', () => {
     const onSave = jest.fn(() => new Promise<void>((done) => (resolve = done)));
     await render(<SavePagePromptModal {...defaultProps} mode="navigation" onSave={onSave} />);
 
-    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
+    await fireEvent.press(screen.getByRole('button', { name: '保存する' }));
     await waitFor(() => expect(screen.getByRole('button', { name: '保存する' })).toBeDisabled());
     expect(screen.getByText('保存中...')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
-    fireEvent.press(screen.getByRole('button', { name: '保存せず続行' }));
+    await fireEvent.press(screen.getByRole('button', { name: '保存する' }));
+    await fireEvent.press(screen.getByRole('button', { name: '保存せず続行' }));
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(defaultProps.onContinueWithoutSaving).not.toHaveBeenCalled();
     await act(async () => resolve());
@@ -87,7 +87,7 @@ describe('SavePagePromptModal', () => {
   it('保存失敗を内部で処理して再試行可能に戻す', async () => {
     const onSave = jest.fn().mockRejectedValue(new Error('storage failed'));
     await render(<SavePagePromptModal {...defaultProps} onSave={onSave} />);
-    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
+    await fireEvent.press(screen.getByRole('button', { name: '保存する' }));
     await waitFor(() => expect(onSave).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByRole('button', { name: '保存する' })).not.toBeDisabled());
   });

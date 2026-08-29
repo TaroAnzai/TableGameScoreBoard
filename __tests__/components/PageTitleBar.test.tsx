@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
 import PageTitleBar from '@/components/page_parts/PageTitleBar';
@@ -65,7 +65,7 @@ describe('PageTitleBar', () => {
   it('親ページ操作では履歴を追加せず前の画面へ戻る', async () => {
     await render(<PageTitleBar title="大会1" parentUrl="/group/group-key" />);
 
-    fireEvent.press(screen.getByLabelText('戻る'));
+    await fireEvent.press(screen.getByLabelText('戻る'));
 
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockPush).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe('PageTitleBar', () => {
     mockCanGoBack.mockReturnValue(true);
     await render(<PageTitleBar title="大会1" parentUrl={null} />);
 
-    fireEvent.press(screen.getByLabelText('戻る'));
+    await fireEvent.press(screen.getByLabelText('戻る'));
 
     expect(mockBack).toHaveBeenCalledTimes(1);
   });
@@ -89,7 +89,7 @@ describe('PageTitleBar', () => {
   it('親ページ指定も履歴もない場合はトップページへ戻る操作を表示する', async () => {
     await render(<PageTitleBar title="大会1" parentUrl={null} />);
 
-    fireEvent.press(screen.getByLabelText('戻る'));
+    await fireEvent.press(screen.getByLabelText('戻る'));
 
     expect(mockReplace).toHaveBeenCalledWith('/');
   });
@@ -108,10 +108,8 @@ describe('PageTitleBar', () => {
     );
 
     const buttons = screen.getAllByLabelText('戻る');
-    await act(async () => {
-      fireEvent.press(buttons[0]);
-      fireEvent.press(buttons[1]);
-    });
+    await fireEvent.press(buttons[0]);
+    await fireEvent.press(buttons[1]);
     expect(onParentPress).toHaveBeenCalledTimes(1);
     expect(onBackPress).toHaveBeenCalledTimes(1);
     expect(mockBack).not.toHaveBeenCalled();
@@ -129,10 +127,8 @@ describe('PageTitleBar', () => {
     );
 
     const title = screen.getByLabelText('mock-editable-title');
-    await act(async () => {
-      fireEvent.press(title);
-      fireEvent(title, 'longPress');
-    });
+    await fireEvent.press(title);
+    await fireEvent(title, 'longPress');
     expect(onTitleChange).toHaveBeenCalledWith('変更後');
     expect(onTitleLongPress).toHaveBeenCalledTimes(1);
   });
@@ -158,10 +154,8 @@ describe('PageTitleBar', () => {
     );
 
     const title = screen.getByLabelText('custom-title');
-    await act(async () => {
-      fireEvent.press(title);
-      fireEvent(title, 'longPress');
-    });
+    await fireEvent.press(title);
+    await fireEvent(title, 'longPress');
     expect(onTitleClick).toHaveBeenCalledTimes(1);
     expect(onTitleLongPress).toHaveBeenCalledTimes(1);
   });
@@ -174,13 +168,9 @@ describe('PageTitleBar', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.press(screen.getByText('閲覧リンクを共有'));
-    });
+    await fireEvent.press(screen.getByText('閲覧リンクを共有'));
     expect(screen.getByText('http://localhost:3000/tournament/view-short')).toBeTruthy();
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText('share-modal-close'));
-    });
+    await fireEvent.press(screen.getByLabelText('share-modal-close'));
     expect(screen.queryByLabelText('share-modal-close')).toBeNull();
   });
 
@@ -192,9 +182,7 @@ describe('PageTitleBar', () => {
       />,
     );
 
-    await act(async () => {
-      fireEvent.press(screen.getByText('閲覧リンクを共有'));
-    });
+    await fireEvent.press(screen.getByText('閲覧リンクを共有'));
     expect(mockAlertDialog).toHaveBeenCalledWith(expect.objectContaining({ showCancelButton: false }));
   });
 });

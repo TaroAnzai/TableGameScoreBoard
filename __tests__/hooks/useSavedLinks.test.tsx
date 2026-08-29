@@ -57,6 +57,7 @@ const renderSavedLinksHook = async (initialLinks: SavedLink[] = []) => {
 describe('useSavedLinks', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSavedLinkStorage.getSavedLinks.mockResolvedValue([]);
   });
 
   it('保存成功後に新規リンクをキャッシュへ即時追加する', async () => {
@@ -246,7 +247,7 @@ describe('useSavedLinks', () => {
       });
     });
 
-    expect(queryClient.getQueryData(SAVED_LINKS_QUERY_KEY)).toBeUndefined();
+    await waitFor(() => expect(queryClient.getQueryData(SAVED_LINKS_QUERY_KEY)).toEqual([]));
     unmount();
     queryClient.clear();
   });

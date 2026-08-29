@@ -504,7 +504,7 @@ describe('卓詳細ページ', () => {
     await render(<TablePage />);
     fireEvent.press(screen.getByText('対局データを削除'));
     await waitFor(() => expect(screen.getByLabelText('削除するゲームを選択を確定')).toBeTruthy());
-    fireEvent.press(screen.getByLabelText('削除するゲームを選択を確定'));
+    await fireEvent.press(screen.getByLabelText('削除するゲームを選択を確定'));
     await waitFor(() =>
       expect(mockDeleteGame).toHaveBeenCalledWith({
         tableKey: 'table-key',

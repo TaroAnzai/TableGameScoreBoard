@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 import { Text } from 'react-native';
 
@@ -28,10 +28,8 @@ describe('MahjongListItem', () => {
     expect(screen.getByText('補足node')).toBeTruthy();
     expect(screen.getByText('先頭')).toBeTruthy();
     expect(screen.getByText('末尾')).toBeTruthy();
-    await act(async () => {
-      fireEvent.press(screen.getByTestId('item'));
-      fireEvent(screen.getByTestId('item'), 'longPress');
-    });
+    await fireEvent.press(screen.getByTestId('item'));
+    await fireEvent(screen.getByTestId('item'), 'longPress');
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onLongPress).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('item').props.accessibilityState.selected).toBe(true);

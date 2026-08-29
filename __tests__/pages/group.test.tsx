@@ -539,7 +539,7 @@ describe('グループ詳細ページ', () => {
     mockGetGroupKeys.mockResolvedValue([]);
     mockAlertDialog.mockResolvedValue(true);
     await render(<GroupPage />);
-    fireEvent.press(await screen.findByText('アプリに登録'));
+    await fireEvent.press(await screen.findByText('アプリに登録'));
     await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('group-key'));
     expect(mockPush).toHaveBeenCalledWith('/');
   });
@@ -556,7 +556,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
     fireEvent.press(screen.getByLabelText('グループメンバー追加'));
     await waitFor(() => expect(screen.getByLabelText('グループメンバー追加を確定')).toBeTruthy());
-    fireEvent.press(screen.getByLabelText('グループメンバー追加を確定'));
+    await fireEvent.press(screen.getByLabelText('グループメンバー追加を確定'));
     await waitFor(() =>
       expect(mockCreatePlayer).toHaveBeenCalledWith({
         groupKey: 'group-key',
@@ -580,7 +580,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
     fireEvent.press(screen.getByLabelText('大会新規作成'));
     await waitFor(() => expect(screen.getByLabelText('大会新規作成を確定')).toBeTruthy());
-    fireEvent.press(screen.getByLabelText('大会新規作成を確定'));
+    await fireEvent.press(screen.getByLabelText('大会新規作成を確定'));
     await waitFor(() => expect(mockCreateTournament).toHaveBeenCalled());
     expect(mockCreateTournament).toHaveBeenCalledWith({
       groupKey: 'group-key',
