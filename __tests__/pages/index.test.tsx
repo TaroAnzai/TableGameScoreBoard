@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
+import { AppState } from 'react-native';
 
 import Index from '@/app/index';
 import { ApiError } from '@/src/api/apiError';
@@ -13,6 +14,7 @@ const mockUseGroupQueries = jest.fn();
 const mockAlertDialog = jest.fn();
 const mockUseFocusEffect = jest.fn();
 const mockRemoveGroupKey = jest.fn();
+const mockRetryPendingGroupStorage = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -133,6 +135,9 @@ describe('ホームページ', () => {
     mockUseCreateGroupRequest.mockReturnValue({
       mutateAsync: mockCreateGroup,
       isPending: false,
+      pendingGroupStorageRetry: false,
+      retryPendingGroupStorage: mockRetryPendingGroupStorage,
+      isRetryingPendingGroupStorage: false,
     });
     mockCreateGroup.mockResolvedValue(undefined);
     mockAlertDialog.mockResolvedValue(true);
@@ -351,5 +356,49 @@ describe('ホームページ', () => {
     const callback = mockUseFocusEffect.mock.calls.at(-1)?.[0] as () => void;
     callback();
     await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
+  });
+
+  it('バックグラウンドから復帰した時だけ再取得し、監視を解除する', async () => {
+    let appStateListener: ((state: 'active' | 'background' | 'inactive') => void) | undefined;
+    const remove = jest.fn();
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_, listener: any) => {
+      appStateListener = listener;
+      return { remove } as any;
+    });
+
+    const ui = await render(<Index />);
+    appStateListener?.('background');
+    appStateListener?.('active');
+    await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
+
+    appStateListener?.('active');
+    expect(mockRefetch).toHaveBeenCalledTimes(1);
+    await ui.unmount();
+    expect(remove).toHaveBeenCalledTimes(1);
+  });
+
+  it('グループ作成に失敗した場合は入力モーダルを開いたままにする', async () => {
+    mockCreateGroup.mockRejectedValueOnce(new Error('create failed'));
+    await render(<Index />);
+
+    await fireEvent.press(screen.getByText('新しいグループを作成'));
+    await fireEvent.press(screen.getByLabelText('グループ作成を決定'));
+
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledTimes(1));
+    expect(screen.getByLabelText('グループ作成を決定')).toBeTruthy();
+  });
+
+  it('保存できなかった申請情報を再保存する', async () => {
+    mockUseCreateGroupRequest.mockReturnValue({
+      mutateAsync: mockCreateGroup,
+      isPending: false,
+      pendingGroupStorageRetry: true,
+      retryPendingGroupStorage: mockRetryPendingGroupStorage,
+      isRetryingPendingGroupStorage: false,
+    });
+    await render(<Index />);
+
+    fireEvent.press(screen.getByText('保存を再試行'));
+    expect(mockRetryPendingGroupStorage).toHaveBeenCalledTimes(1);
   });
 });

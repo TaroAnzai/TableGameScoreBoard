@@ -1,4 +1,4 @@
-import { render, screen, userEvent, waitFor } from '@testing-library/react-native';
+import { act, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import MultiSelectorModal from '@/components/MultiSelectorModal';
@@ -117,5 +117,53 @@ describe('MultiSelectorModal', () => {
     expect(screen.getByRole('button', { name: '追加中...' }).props.accessibilityState).toEqual(
       expect.objectContaining({ disabled: true }),
     );
+  });
+
+  it('未選択では確定できず、空一覧では指定したメッセージを表示する', async () => {
+    const { rerender } = await render(
+      <MultiSelectorModal
+        title="選択"
+        open
+        items={items}
+        onConfirm={jest.fn()}
+        onClose={jest.fn()}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'OK' })).toBeDisabled();
+
+    await rerender(
+      <MultiSelectorModal
+        title="選択"
+        open
+        items={[]}
+        emptyMessage="候補なし"
+        onConfirm={jest.fn()}
+        onClose={jest.fn()}
+      />,
+    );
+    expect(screen.getByText('候補なし')).toBeTruthy();
+  });
+
+  it('非同期の確定処理中は二重送信を防ぎ、完了後に操作可能へ戻る', async () => {
+    let resolve!: () => void;
+    const onConfirm = jest.fn(() => new Promise<void>((done) => (resolve = done)));
+    const user = userEvent.setup();
+    await render(
+      <MultiSelectorModal
+        title="選択"
+        open
+        items={items}
+        initialSelectedIds={[1]}
+        onConfirm={onConfirm}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await user.press(screen.getByText('OK'));
+    await waitFor(() => expect(screen.getByRole('button', { name: '処理中...' })).toBeDisabled());
+    await user.press(screen.getByRole('button', { name: '処理中...' }));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    await act(async () => resolve());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'OK' })).not.toBeDisabled());
   });
 });

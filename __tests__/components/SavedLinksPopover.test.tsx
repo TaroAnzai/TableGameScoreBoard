@@ -9,6 +9,7 @@ const mockTouch = jest.fn();
 const mockRemove = jest.fn();
 const mockClosePopover = jest.fn();
 const mockAlertDialog = jest.fn(() => Promise.resolve(true));
+let mockPathname = '/';
 let mockSavedLinksState: {
   savedLinks: {
     type: 'tournament' | 'table';
@@ -27,7 +28,7 @@ let mockSavedLinksState: {
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
-  usePathname: () => '/',
+  usePathname: () => mockPathname,
 }));
 jest.mock('@/src/hooks/useSavedLinks', () => ({
   useSavedLinks: () => ({
@@ -60,6 +61,7 @@ jest.mock('@/components/ui/popover', () => {
 describe('SavedLinksPopover', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPathname = '/';
     mockTouch.mockResolvedValue(undefined);
     mockRemove.mockResolvedValue(undefined);
     mockSavedLinksState = {
@@ -175,5 +177,48 @@ describe('SavedLinksPopover', () => {
     await render(<SavedLinksPopover trigger={<View />} />);
 
     expect(screen.getByText('保存済みの大会・卓はありません')).toBeTruthy();
+  });
+
+  it('現在表示中の項目は遷移や更新をせずポップオーバーだけ閉じる', async () => {
+    mockPathname = '/table/newer-table';
+    await render(<SavedLinksPopover trigger={<View />} />);
+    fireEvent.press(screen.getByText('新しい卓'));
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockTouch).not.toHaveBeenCalled();
+    expect(mockClosePopover).toHaveBeenCalledTimes(1);
+  });
+
+  it('大会項目は大会ページへ遷移する', async () => {
+    await render(<SavedLinksPopover trigger={<View />} />);
+    fireEvent.press(screen.getByText('古い大会'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/tournament/[tournamentKey]',
+      params: { tournamentKey: 'older-tournament', openedFromSavedLinks: 'true' },
+    });
+  });
+
+  it('削除確認をキャンセルした場合は項目を削除しない', async () => {
+    mockAlertDialog.mockResolvedValueOnce(false);
+    await render(<SavedLinksPopover trigger={<View />} />);
+    fireEvent(screen.getByText('古い大会'), 'longPress');
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalled());
+    expect(mockRemove).not.toHaveBeenCalled();
+    expect(screen.getByText('古い大会')).toBeTruthy();
+  });
+
+  it.each([
+    ['読み込み中', { isLoading: true, isError: false }, '読み込み中...', true],
+    [
+      '読み込み失敗',
+      { isLoading: false, isError: true },
+      'データを取得できませんでした。通信状態を確認して再取得してください。',
+      false,
+    ],
+  ])('%sの状態を表示する', async (_, state, expected, isAccessibilityLabel) => {
+    mockSavedLinksState = { ...mockSavedLinksState, ...state };
+    await render(<SavedLinksPopover trigger={<View />} />);
+    expect(
+      isAccessibilityLabel ? screen.getByLabelText(expected) : screen.getByText(expected),
+    ).toBeTruthy();
   });
 });

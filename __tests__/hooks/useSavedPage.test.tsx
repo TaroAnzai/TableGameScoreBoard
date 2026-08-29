@@ -79,7 +79,9 @@ describe('useSavedPage', () => {
         isDirectView: true,
       }),
     );
-    const beforeRemove = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const beforeRemove = mockAddListener.mock.calls.find(
+      ([event]) => event === 'beforeRemove',
+    )?.[1];
     const preventDefault = jest.fn();
     const action = { type: 'RESET', payload: { index: 1 } };
 
@@ -113,7 +115,9 @@ describe('useSavedPage', () => {
         isDirectView: true,
       }),
     );
-    const beforeRemove = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
+    const beforeRemove = mockAddListener.mock.calls.find(
+      ([event]) => event === 'beforeRemove',
+    )?.[1];
     const action = { type: 'GO_BACK' };
 
     await act(async () => {
@@ -232,5 +236,58 @@ describe('useSavedPage', () => {
       parentTournamentName: '大会名',
     });
     expect(mockRemove).toHaveBeenCalledWith({ type: 'table', key: 'table-key' });
+  });
+
+  it('現在ページの表示日時を更新する', async () => {
+    mockTouch.mockResolvedValue(undefined);
+    const { result } = await renderHook(() =>
+      useSavedPage({ type: 'table', key: 'table-key', name: '卓名', isDirectView: false }),
+    );
+    await act(async () => result.current.touch());
+    expect(mockTouch).toHaveBeenCalledWith({ type: 'table', key: 'table-key' });
+  });
+
+  it('キーがない場合は削除と表示日時更新を行わず、保存は明示的に失敗する', async () => {
+    const { result } = await renderHook(() =>
+      useSavedPage({ type: 'table', name: '卓名', isDirectView: true }),
+    );
+    await act(async () => {
+      await result.current.remove();
+      await result.current.touch();
+    });
+    await expect(result.current.save()).rejects.toThrow('A saved page requires a key and name.');
+    expect(mockRemove).not.toHaveBeenCalled();
+    expect(mockTouch).not.toHaveBeenCalled();
+    expect(mockSave).not.toHaveBeenCalled();
+  });
+
+  it('保存完了後に保留中の遷移を再開し、その直後のbeforeRemoveは通過させる', async () => {
+    const { result } = await renderHook(() =>
+      useSavedPage({ type: 'tournament', key: 'key', name: '大会', isDirectView: true }),
+    );
+    const beforeRemove = mockAddListener.mock.calls.find(
+      ([event]) => event === 'beforeRemove',
+    )?.[1];
+    const action = { type: 'GO_BACK' };
+    const firstPreventDefault = jest.fn();
+    await act(async () => beforeRemove({ preventDefault: firstPreventDefault, data: { action } }));
+    await act(async () => result.current.completeSavePrompt());
+    expect(mockDispatch).toHaveBeenCalledWith(action);
+
+    const secondPreventDefault = jest.fn();
+    await act(async () => beforeRemove({ preventDefault: secondPreventDefault, data: { action } }));
+    expect(secondPreventDefault).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['保存情報の読み込み中', { isLoading: true }],
+    ['保存情報の読み込み失敗', { isError: true, error: new Error('load failed') }],
+  ])('%sは保存案内を表示しない', async (_, state) => {
+    mockSavedLinksState = { ...mockSavedLinksState, ...state };
+    const { result } = await renderHook(() =>
+      useSavedPage({ type: 'table', key: 'key', name: '卓', isDirectView: true }),
+    );
+    expect(result.current.shouldPromptSave).toBe(false);
+    expect(mockAddListener).not.toHaveBeenCalled();
   });
 });

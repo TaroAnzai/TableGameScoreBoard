@@ -21,7 +21,9 @@ const players = [
   { id: 4, name: 'D', group_id: 1 },
 ];
 
-const renderModal = async (props: Partial<React.ComponentProps<typeof TableScoreInputModal>> = {}) => {
+const renderModal = async (
+  props: Partial<React.ComponentProps<typeof TableScoreInputModal>> = {},
+) => {
   const onConfirm = jest.fn();
   const ui = await render(
     <TableScoreInputModal
@@ -69,7 +71,34 @@ describe('TableScoreInputModal', () => {
   it('保存中は入力・確定・キャンセルを無効化する', async () => {
     const ui = await renderModal({ isSaving: true });
     expect(ui.getByTestId('score-input-1').props.editable).toBe(false);
-    expect(ui.getByRole('button', { name: '保存中…' }).props.accessibilityState.disabled).toBe(true);
-    expect(ui.getByRole('button', { name: 'キャンセル' }).props.accessibilityState.disabled).toBe(true);
+    expect(ui.getByRole('button', { name: '保存中…' }).props.accessibilityState.disabled).toBe(
+      true,
+    );
+    expect(ui.getByRole('button', { name: 'キャンセル' }).props.accessibilityState.disabled).toBe(
+      true,
+    );
+  });
+
+  it('不正な文字列は入力へ反映しない', async () => {
+    const ui = await renderModal();
+    fireEvent.changeText(ui.getByTestId('score-input-1'), '12abc');
+    expect(ui.getByTestId('score-input-1').props.value).toBe('');
+  });
+
+  it('既存スコアを初期表示し、負のIDの補完プレイヤーは入力対象にしない', async () => {
+    const ui = await renderModal({
+      players: [...players, { id: -1, name: '', group_id: 0 }],
+      game: { id: 9, table_id: 1, game_index: 0, scores: [{ player_id: 1, score: 250 }] },
+    });
+    expect(ui.getByTestId('score-input-1').props.value).toBe('250');
+    expect(ui.queryByTestId('score-input--1')).toBeNull();
+  });
+
+  it('CHIP卓では合計が0でなくても入力済みスコアを確定できる', async () => {
+    const { onConfirm, ...ui } = await renderModal({ tableType: 'CHIP' });
+    await fireEvent.changeText(ui.getByTestId('score-input-1'), '300');
+    await fireEvent.press(ui.getByRole('button', { name: '確定' }));
+    expect(onConfirm).toHaveBeenCalledWith([{ player_id: 1, score: 300 }]);
+    expect(ui.queryByText('通常卓の合計は0にしてください')).toBeNull();
   });
 });
