@@ -116,4 +116,62 @@ describe('appStorage', () => {
     await expect(appStorage.getPendingGroups()).resolves.toEqual([]);
     expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('pendingGroupKeys', '[]');
   });
+
+  it('Group Key一覧を設定し、存在するキーの重複追加を避ける', async () => {
+    await appStorage.setGroupKeys(['existing-key']);
+    jest.clearAllMocks();
+
+    await appStorage.addGroupKey('existing-key');
+
+    await expect(appStorage.getGroupKeys()).resolves.toEqual(['existing-key']);
+    expect(mockSecureStore.setItemAsync).not.toHaveBeenCalled();
+  });
+
+  it('Pending Group一覧とtoken一覧を設定できる', async () => {
+    await appStorage.setPendingGroups([createPendingGroup('first')]);
+    await expect(appStorage.getPendingGroups()).resolves.toEqual([createPendingGroup('first')]);
+
+    await appStorage.setPendingGroupTokens(['token-only']);
+    const groups = await appStorage.getPendingGroups();
+    expect(groups).toEqual([
+      expect.objectContaining({ token: 'token-only', groupName: '', email: '' }),
+    ]);
+    expect(groups[0].expiresAt).toBeInstanceOf(Date);
+  });
+
+  it.each([
+    ['配列以外', JSON.stringify({ token: 'invalid' })],
+    ['null要素', JSON.stringify([null])],
+    ['必須項目の型が不正', JSON.stringify([{ token: 1, groupName: '', expiresAt: '' }])],
+  ])('%sのPending Groupを空配列へ修復する', async (_label, storedValue) => {
+    asyncStoredValues.set('pendingGroupKeys', storedValue);
+
+    await expect(appStorage.getPendingGroups()).resolves.toEqual([]);
+    expect(mockAsyncStorage.setItem).toHaveBeenCalledWith('pendingGroupKeys', '[]');
+  });
+
+  it('email欠損を空文字へ補正し、有効な申請を残す', async () => {
+    asyncStoredValues.set(
+      'pendingGroupKeys',
+      JSON.stringify([{ token: 'valid', groupName: 'group', expiresAt: '2026-08-29T00:00:00Z' }]),
+    );
+
+    await expect(appStorage.getPendingGroups()).resolves.toEqual([
+      {
+        token: 'valid',
+        groupName: 'group',
+        email: '',
+        expiresAt: new Date('2026-08-29T00:00:00Z'),
+      },
+    ]);
+  });
+
+  it('重複するPending Groupは追加しない', async () => {
+    await appStorage.setPendingGroups([createPendingGroup('existing')]);
+    jest.clearAllMocks();
+
+    await appStorage.addPendingGroupKey(createPendingGroup('existing'));
+
+    expect(mockAsyncStorage.setItem).not.toHaveBeenCalled();
+  });
 });

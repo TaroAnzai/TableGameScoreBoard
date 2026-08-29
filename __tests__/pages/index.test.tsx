@@ -11,6 +11,8 @@ const mockCreateGroup = jest.fn();
 const mockUseCreateGroupRequest = jest.fn();
 const mockUseGroupQueries = jest.fn();
 const mockAlertDialog = jest.fn();
+const mockUseFocusEffect = jest.fn();
+const mockRemoveGroupKey = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -24,7 +26,7 @@ const createApiError = (kind: 'network' | 'http', status?: number) =>
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
-  useFocusEffect: jest.fn(),
+  useFocusEffect: (callback: unknown) => mockUseFocusEffect(callback),
 }));
 jest.mock('@/src/hooks/useGroups', () => ({
   useGroupQueries: () => mockUseGroupQueries(),
@@ -33,7 +35,16 @@ jest.mock('@/src/hooks/useGroups', () => ({
 jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
-jest.mock('@/components/SelectorModal', () => () => null);
+jest.mock('@/components/SelectorModal', () => {
+  const { Pressable } = jest.requireActual('react-native');
+  return ({ open, items, onSelect, onClose }: any) =>
+    open ? (
+      <>
+        <Pressable accessibilityLabel="登録グループ削除を確定" onPress={() => onSelect(items[0])} />
+        <Pressable accessibilityLabel="登録グループ削除を閉じる" onPress={onClose} />
+      </>
+    ) : null;
+});
 jest.mock('@/components/TextInputModal', () => {
   const { ActivityIndicator, Pressable, Text, View } = jest.requireActual('react-native');
   return {
@@ -92,7 +103,7 @@ jest.mock('@/components/MahjongListItem', () => {
   };
 });
 jest.mock('@/src/storage/appStorage', () => ({
-  appStorage: { removeGroupKey: jest.fn() },
+  appStorage: { removeGroupKey: (...args: unknown[]) => mockRemoveGroupKey(...args) },
 }));
 
 const defaultState = {
@@ -125,6 +136,7 @@ describe('ホームページ', () => {
     });
     mockCreateGroup.mockResolvedValue(undefined);
     mockAlertDialog.mockResolvedValue(true);
+    mockRemoveGroupKey.mockResolvedValue(undefined);
   });
 
   it('正常取得したグループを表示して詳細へ遷移する', async () => {
@@ -301,5 +313,43 @@ describe('ホームページ', () => {
     expect(screen.getByText('pending@example.com')).toBeTruthy();
     fireEvent.press(screen.getByText('申請状況を更新'));
     expect(mockRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('設定ボタンから設定画面へ進む', async () => {
+    await render(<Index />);
+    fireEvent.press(screen.getByLabelText('設定を開く'));
+    expect(mockPush).toHaveBeenCalledWith('/settings');
+  });
+
+  it('登録グループを確認後に削除して再取得する', async () => {
+    await render(<Index />);
+    fireEvent.press(screen.getByLabelText('登録グループを削除'));
+    await waitFor(() => expect(screen.getByLabelText('登録グループ削除を確定')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('登録グループ削除を確定'));
+    await waitFor(() => expect(mockRemoveGroupKey).toHaveBeenCalledWith('group-edit-key'));
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('登録グループ削除をキャンセルした場合はstorageを変更しない', async () => {
+    mockAlertDialog.mockResolvedValueOnce(false);
+    await render(<Index />);
+    fireEvent.press(screen.getByLabelText('登録グループを削除'));
+    fireEvent.press(await screen.findByLabelText('登録グループ削除を確定'));
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalled());
+    expect(mockRemoveGroupKey).not.toHaveBeenCalled();
+  });
+
+  it('登録グループ削除selectorを閉じられる', async () => {
+    await render(<Index />);
+    fireEvent.press(screen.getByLabelText('登録グループを削除'));
+    fireEvent.press(await screen.findByLabelText('登録グループ削除を閉じる'));
+    await waitFor(() => expect(screen.queryByLabelText('登録グループ削除を確定')).toBeNull());
+  });
+
+  it('画面focus時に安全な再取得を実行する', async () => {
+    await render(<Index />);
+    const callback = mockUseFocusEffect.mock.calls.at(-1)?.[0] as () => void;
+    callback();
+    await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
   });
 });

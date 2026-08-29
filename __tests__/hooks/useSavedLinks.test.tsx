@@ -201,4 +201,53 @@ describe('useSavedLinks', () => {
     unmount();
     queryClient.clear();
   });
+
+  it('refreshで保存リンクqueryを再取得対象にする', async () => {
+    const { result, queryClient, unmount } = await renderSavedLinksHook();
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
+
+    await act(async () => result.current.refresh());
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: SAVED_LINKS_QUERY_KEY });
+    unmount();
+    queryClient.clear();
+  });
+
+  it('キャッシュ未作成でも保存成功時に新しい配列を作る', async () => {
+    const savedLink = createLink();
+    mockSavedLinkStorage.upsertSavedLink.mockResolvedValue(savedLink);
+    const { result, queryClient, unmount } = await renderSavedLinksHook();
+    queryClient.removeQueries({ queryKey: SAVED_LINKS_QUERY_KEY });
+
+    await act(async () => {
+      await result.current.save({ type: savedLink.type, key: savedLink.key, name: savedLink.name });
+    });
+
+    expect(queryClient.getQueryData(SAVED_LINKS_QUERY_KEY)).toEqual([savedLink]);
+    unmount();
+    queryClient.clear();
+  });
+
+  it('キャッシュ未作成での削除・touch・名称更新を安全に扱う', async () => {
+    const savedLink = createLink();
+    mockSavedLinkStorage.removeSavedLink.mockResolvedValue(undefined);
+    mockSavedLinkStorage.touchSavedLink.mockResolvedValue(savedLink);
+    mockSavedLinkStorage.updateSavedLinkName.mockResolvedValue(savedLink);
+    const { result, queryClient, unmount } = await renderSavedLinksHook();
+    queryClient.removeQueries({ queryKey: SAVED_LINKS_QUERY_KEY });
+
+    await act(async () => {
+      await result.current.remove({ type: savedLink.type, key: savedLink.key });
+      await result.current.touch({ type: savedLink.type, key: savedLink.key });
+      await result.current.updateName({
+        type: savedLink.type,
+        key: savedLink.key,
+        name: 'new name',
+      });
+    });
+
+    expect(queryClient.getQueryData(SAVED_LINKS_QUERY_KEY)).toBeUndefined();
+    unmount();
+    queryClient.clear();
+  });
 });

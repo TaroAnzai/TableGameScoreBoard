@@ -1,18 +1,26 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import { PlayerStatsTable } from '@/components/PlayerStatsTable';
 
 jest.mock('@/components/PlayerStatsModal', () => {
-  const { Text } = jest.requireActual('react-native');
+  const { Pressable, Text } = jest.requireActual('react-native');
   return {
     PlayerStatsModal: ({
       open,
       playerStats,
+      onClose,
     }: {
       open: boolean;
       playerStats: { player_name: string };
-    }) => (open ? <Text>{playerStats.player_name}さんの成績</Text> : null),
+      onClose: () => void;
+    }) =>
+      open ? (
+        <>
+          <Text>{playerStats.player_name}さんの成績</Text>
+          <Pressable accessibilityLabel="詳細を閉じる" onPress={onClose} />
+        </>
+      ) : null,
   };
 });
 
@@ -39,5 +47,18 @@ describe('PlayerStatsTable', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'プレイヤー1さんの詳細を表示' }));
     expect(screen.getByText('プレイヤー1さんの成績')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('詳細を閉じる'));
+    await waitFor(() => expect(screen.queryByText('プレイヤー1さんの成績')).toBeNull());
+  });
+
+  it('集計値がnullの場合は0として表示する', async () => {
+    await render(
+      <PlayerStatsTable
+        playerStatsList={[
+          { ...player, tournament_count: null, total_score: null, total_balance: null },
+        ]}
+      />,
+    );
+    expect(screen.getAllByText('0')).toHaveLength(3);
   });
 });

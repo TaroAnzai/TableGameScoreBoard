@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import EditableTitle from '@/components/page_parts/EditableTitle';
@@ -29,5 +29,84 @@ describe('EditableTitle', () => {
 
     expect(onLongPress).toHaveBeenCalledTimes(1);
     expect(screen.queryByDisplayValue('保存対象の大会')).toBeNull();
+  });
+
+  it('前後の空白を除いて変更を保存し、編集を終了する', async () => {
+    const onChange = jest.fn().mockResolvedValue(undefined);
+    await render(<EditableTitle value="大会名" onChange={onChange} />);
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole('button'));
+    });
+    const input = screen.getByDisplayValue('大会名');
+    await act(async () => {
+      fireEvent.changeText(input, '  新しい大会名  ');
+    });
+    fireEvent(input, 'submitEditing');
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith('新しい大会名'));
+    await waitFor(() => expect(screen.queryByDisplayValue('  新しい大会名  ')).toBeNull());
+  });
+
+  it.each([
+    ['空文字', '   '],
+    ['変更なし', ' 大会名 '],
+  ])('%sではonChangeを呼ばず編集を終了する', async (_label, nextValue) => {
+    const onChange = jest.fn();
+    await render(<EditableTitle value="大会名" onChange={onChange} />);
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole('button'));
+    });
+    const input = screen.getByDisplayValue('大会名');
+    await act(async () => {
+      fireEvent.changeText(input, nextValue);
+    });
+    fireEvent(input, 'blur');
+
+    await waitFor(() => expect(screen.queryByDisplayValue(nextValue)).toBeNull());
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('保存失敗時は入力内容を保って再試行できる', async () => {
+    const onChange = jest.fn().mockRejectedValue(new Error('save failed'));
+    await render(<EditableTitle value="大会名" onChange={onChange} />);
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole('button'));
+    });
+    const input = screen.getByDisplayValue('大会名');
+    await act(async () => {
+      fireEvent.changeText(input, '再試行する名称');
+    });
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+    });
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith('再試行する名称'));
+    expect(screen.getByDisplayValue('再試行する名称')).toBeTruthy();
+  });
+
+  it('保存中のblurとsubmitの重複発火では一度だけ保存する', async () => {
+    let resolveSave!: () => void;
+    const onChange = jest.fn(
+      () => new Promise<void>((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+    await render(<EditableTitle value="大会名" onChange={onChange} />);
+    await act(async () => {
+      fireEvent.press(screen.getByRole('button'));
+    });
+    const input = screen.getByDisplayValue('大会名');
+    await act(async () => {
+      fireEvent.changeText(input, '保存中の名称');
+    });
+    fireEvent(input, 'submitEditing');
+
+    await waitFor(() => expect(screen.getByLabelText(/処理中/)).toBeTruthy());
+    fireEvent(input, 'blur');
+    expect(onChange).toHaveBeenCalledTimes(1);
+    await act(async () => resolveSave());
   });
 });

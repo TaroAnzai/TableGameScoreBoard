@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import GroupPage from '@/app/group/[groupKey]';
@@ -28,6 +28,7 @@ const mockCreateChipTable = jest.fn();
 const mockPlayerMutations = jest.fn();
 const mockTournamentMutations = jest.fn();
 const mockRemoveSavedLink = jest.fn(() => Promise.resolve());
+const mockUpdateGroup = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -68,7 +69,7 @@ jest.mock('@/src/hooks/useTournaments', () => ({
 }));
 jest.mock('@/src/hooks/useGroups', () => ({
   useGetGroupDashboard: () => mockUseGroup(),
-  useUpdateGroup: () => ({ mutate: jest.fn() }),
+  useUpdateGroup: () => ({ mutateAsync: mockUpdateGroup }),
 }));
 jest.mock('@/src/hooks/useTables', () => ({
   useCreateTable: () => ({ mutateAsync: mockCreateChipTable, isPending: false }),
@@ -100,7 +101,9 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
       <View>
         <Text>{title}</Text>
         <Pressable accessibilityLabel="親ページに戻る" onPress={onParentPress} />
-        {onTitleChange && <Pressable accessibilityLabel="タイトルを編集" />}
+        {onTitleChange && (
+          <Pressable accessibilityLabel="タイトルを編集" onPress={() => onTitleChange('変更後')} />
+        )}
       </View>
     );
   };
@@ -111,12 +114,14 @@ jest.mock('@/components/SelectorModal', () => {
     open,
     items,
     onSelect,
+    onClose,
     pendingText,
   }: {
     open: boolean;
     items?: { id: string | number; name: string }[];
     onSelect: (item: { id: string | number; name: string }) => void;
     pendingText?: string;
+    onClose?: () => void;
   }) {
     if (!open) return null;
     return (
@@ -129,11 +134,23 @@ jest.mock('@/components/SelectorModal', () => {
             onPress={() => onSelect(item)}
           />
         ))}
+        <Pressable accessibilityLabel="選択モーダルを閉じる" onPress={onClose} />
       </View>
     );
   };
 });
-jest.mock('@/components/TextInputModal', () => ({ TextInputModal: () => null }));
+jest.mock('@/components/TextInputModal', () => {
+  const { Pressable } = jest.requireActual('react-native');
+  return {
+    TextInputModal: ({ open, title, onComfirm, onClose }: any) =>
+      open ? (
+        <>
+          <Pressable accessibilityLabel={`${title}を確定`} onPress={() => onComfirm('新規名称')} />
+          <Pressable accessibilityLabel={`${title}を閉じる`} onPress={onClose} />
+        </>
+      ) : null,
+  };
+});
 jest.mock('@/components/MahjongListItem', () => {
   const { Text } = jest.requireActual('react-native');
   return {
@@ -199,9 +216,10 @@ describe('グループ詳細ページ', () => {
     });
     mockCreatePlayer.mockResolvedValue(undefined);
     mockDeletePlayer.mockResolvedValue(undefined);
-    mockCreateTournament.mockResolvedValue({ edit_link: 'new-tournament-key' });
+    mockCreateTournament.mockResolvedValue({ tournament: { edit_link: 'new-tournament-key' } });
     mockDeleteTournament.mockResolvedValue(undefined);
     mockCreateChipTable.mockResolvedValue(undefined);
+    mockUpdateGroup.mockResolvedValue(undefined);
     mockGetGroupKeys.mockResolvedValue(['group-key']);
     mockAlertDialog.mockResolvedValue(false);
   });
@@ -503,5 +521,104 @@ describe('グループ詳細ページ', () => {
 
     await screen.findByText('アプリに登録');
     expect(mockDispatch).toHaveBeenCalledWith(action);
+  });
+
+  it('OWNERはグループタイトルを更新できる', async () => {
+    await render(<GroupPage />);
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('タイトルを編集'));
+      await Promise.resolve();
+    });
+    expect(mockUpdateGroup).toHaveBeenCalledWith({
+      groupKey: 'group-key',
+      groupUpdate: { name: '変更後' },
+    });
+  });
+
+  it('未登録グループを確認後に保存してホームへ進む', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    mockAlertDialog.mockResolvedValue(true);
+    await render(<GroupPage />);
+    fireEvent.press(await screen.findByText('アプリに登録'));
+    await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('group-key'));
+    expect(mockPush).toHaveBeenCalledWith('/');
+  });
+
+  it('未登録グループの保存をキャンセルする', async () => {
+    mockGetGroupKeys.mockResolvedValue([]);
+    await render(<GroupPage />);
+    fireEvent.press(await screen.findByText('アプリに登録'));
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalled());
+    expect(mockAddGroupKey).not.toHaveBeenCalled();
+  });
+
+  it('メンバーを作成し、成功後に入力modalを閉じる', async () => {
+    await render(<GroupPage />);
+    fireEvent.press(screen.getByLabelText('グループメンバー追加'));
+    await waitFor(() => expect(screen.getByLabelText('グループメンバー追加を確定')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('グループメンバー追加を確定'));
+    await waitFor(() =>
+      expect(mockCreatePlayer).toHaveBeenCalledWith({
+        groupKey: 'group-key',
+        player: { name: '新規名称' },
+      }),
+    );
+    await waitFor(() => expect(screen.queryByLabelText('グループメンバー追加を確定')).toBeNull());
+  });
+
+  it('メンバー作成失敗時は入力modalを維持する', async () => {
+    mockCreatePlayer.mockRejectedValueOnce(new Error('create failed'));
+    await render(<GroupPage />);
+    fireEvent.press(screen.getByLabelText('グループメンバー追加'));
+    await waitFor(() => expect(screen.getByLabelText('グループメンバー追加を確定')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('グループメンバー追加を確定'));
+    await waitFor(() => expect(mockCreatePlayer).toHaveBeenCalled());
+    expect(screen.getByLabelText('グループメンバー追加を確定')).toBeTruthy();
+  });
+
+  it('大会をチップ卓付きで作成して詳細へ進む', async () => {
+    await render(<GroupPage />);
+    fireEvent.press(screen.getByLabelText('大会新規作成'));
+    await waitFor(() => expect(screen.getByLabelText('大会新規作成を確定')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('大会新規作成を確定'));
+    await waitFor(() => expect(mockCreateTournament).toHaveBeenCalled());
+    expect(mockCreateTournament).toHaveBeenCalledWith({
+      groupKey: 'group-key',
+      tournament: {
+        name: '新規名称',
+        initial_tables: [{ client_id: 'chip', name: 'チップ', type: 'CHIP' }],
+      },
+    });
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/tournament/[tournamentKey]',
+        params: { tournamentKey: 'new-tournament-key', parentGroupKey: 'group-key' },
+      }),
+    );
+  });
+
+  it('大会作成失敗時は入力modalを維持する', async () => {
+    mockCreateTournament.mockRejectedValueOnce(new Error('create failed'));
+    await render(<GroupPage />);
+    fireEvent.press(screen.getByLabelText('大会新規作成'));
+    await waitFor(() => expect(screen.getByLabelText('大会新規作成を確定')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('大会新規作成を確定'));
+    await waitFor(() => expect(mockCreateTournament).toHaveBeenCalled());
+    expect(screen.getByLabelText('大会新規作成を確定')).toBeTruthy();
+  });
+
+  it('削除確認キャンセル・API失敗では大会selectorを維持する', async () => {
+    await render(<GroupPage />);
+    fireEvent.press(screen.getByLabelText('大会削除'));
+    await waitFor(() => expect(screen.getByLabelText('大会1を選択')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('大会1を選択'));
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalled());
+    expect(mockDeleteTournament).not.toHaveBeenCalled();
+
+    mockAlertDialog.mockResolvedValueOnce(true);
+    mockDeleteTournament.mockRejectedValueOnce(new Error('delete failed'));
+    fireEvent.press(screen.getByLabelText('大会1を選択'));
+    await waitFor(() => expect(mockDeleteTournament).toHaveBeenCalled());
+    expect(screen.getByLabelText('選択モーダル')).toBeTruthy();
   });
 });

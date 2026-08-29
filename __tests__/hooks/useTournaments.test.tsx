@@ -284,6 +284,25 @@ describe('useUpdateTournament', () => {
     await unmount();
     consoleError.mockRestore();
   });
+
+  it('親グループキーがない更新では大会関連だけを無効化する', async () => {
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
+    mockPutTournament.mockResolvedValue({ name: '変更後' });
+    const { result, unmount } = await renderHook(() => useUpdateTournament(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        tournamentKey: 'tournament-key',
+        tournament: { name: '変更後' },
+      });
+    });
+
+    expect(invalidateQueries).toHaveBeenCalledTimes(3);
+    expect(invalidateQueries).not.toHaveBeenCalledWith({
+      queryKey: expect.arrayContaining(['/api/v2/groups/']),
+    });
+    await unmount();
+  });
 });
 
 describe('大会削除・参加者mutation', () => {
@@ -341,6 +360,66 @@ describe('大会削除・参加者mutation', () => {
     expect(invalidateQueries).not.toHaveBeenCalled();
     expect(mockShowError).toHaveBeenCalledWith(expect.objectContaining({ error }));
     expect(consoleError).toHaveBeenCalledWith('Error adding player:', error);
+    await unmount();
+    queryClient.clear();
+    consoleError.mockRestore();
+  });
+
+  it('参加者が未指定ならAPIを呼ばず入力エラーを通知する', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { queryClient, wrapper } = createWrapper();
+    const { result, unmount } = await renderHook(() => useAddTournamentPlayer(), { wrapper });
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ tournamentKey: 'key', players: null } as never),
+      ).rejects.toThrow('Player ID is required');
+    });
+
+    expect(mockAddPlayers).not.toHaveBeenCalled();
+    expect(mockShowError).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.objectContaining({ message: 'Player ID is required' }) }),
+    );
+    await unmount();
+    queryClient.clear();
+    consoleError.mockRestore();
+  });
+
+  it('大会削除失敗時にエラーを通知する', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { queryClient, wrapper } = createWrapper();
+    const error = new Error('delete failed');
+    mockDeleteTournament.mockRejectedValue(error);
+    const { result, unmount } = await renderHook(() => useDeleteTournament(), { wrapper });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync({ tournamentKey: 'key' })).rejects.toBe(error);
+    });
+
+    expect(mockShowError).toHaveBeenCalledWith(expect.objectContaining({ error }));
+    expect(consoleError).toHaveBeenCalledWith('Error deleting tournament:', error);
+    await unmount();
+    queryClient.clear();
+    consoleError.mockRestore();
+  });
+
+  it('参加者削除失敗時に関連queryを無効化せずエラーを通知する', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { queryClient, wrapper } = createWrapper();
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
+    const error = new Error('delete player failed');
+    mockDeletePlayer.mockRejectedValue(error);
+    const { result, unmount } = await renderHook(() => useDeleteTounamentsPlayer(), { wrapper });
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ tournamentKey: 'key', playerId: 7 }),
+      ).rejects.toBe(error);
+    });
+
+    expect(invalidateQueries).not.toHaveBeenCalled();
+    expect(mockShowError).toHaveBeenCalledWith(expect.objectContaining({ error }));
+    expect(consoleError).toHaveBeenCalledWith('Error deleting player from tournament:', error);
     await unmount();
     queryClient.clear();
     consoleError.mockRestore();

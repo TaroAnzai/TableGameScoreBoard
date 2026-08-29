@@ -1,4 +1,4 @@
-import { render, screen, userEvent } from '@testing-library/react-native';
+import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import { TextInputModal } from '@/components/TextInputModal';
@@ -117,4 +117,69 @@ describe('TextInputModal', () => {
       expect.objectContaining({ disabled: true }),
     );
   });
+
+  it('不正なメールアドレスはエラー表示して確定しない', async () => {
+    const onConfirm = jest.fn();
+    await render(
+      <TextInputModal
+        open
+        onComfirm={onConfirm}
+        onClose={jest.fn()}
+        value="invalid"
+        title="入力"
+        inputType="email"
+      />,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'OK' }));
+    await waitFor(() => expect(screen.getByText('正しい形式のメールアドレスを入力してください。')).toBeTruthy());
+    expect(onConfirm).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByTestId('primaryInput'), 'valid@example.com');
+    await waitFor(() =>
+      expect(screen.queryByText('正しい形式のメールアドレスを入力してください。')).toBeNull(),
+    );
+  });
+
+  it('第2入力のメール形式も検証する', async () => {
+    const onConfirm = jest.fn();
+    await render(
+      <TextInputModal
+        open
+        onComfirm={onConfirm}
+        onClose={jest.fn()}
+        value="グループ"
+        twoInput
+        twoValue="invalid"
+        twoInputType="email"
+        title="入力"
+      />,
+    );
+    fireEvent.press(screen.getByRole('button', { name: 'OK' }));
+    await waitFor(() =>
+      expect(screen.getByText('正しい形式のメールアドレスを入力してください。')).toBeTruthy(),
+    );
+    expect(onConfirm).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByTestId('twoInput'), 'valid@example.com');
+    await waitFor(() =>
+      expect(screen.queryByText('正しい形式のメールアドレスを入力してください。')).toBeNull(),
+    );
+  });
+
+  it('入力種別に応じたkeyboardとsecure設定を使う', async () => {
+    await render(
+      <TextInputModal
+        open
+        onComfirm={jest.fn()}
+        onClose={jest.fn()}
+        value="1"
+        inputType="number"
+        twoInput
+        twoValue="secret"
+        twoInputType="password"
+        title="入力"
+      />,
+    );
+    expect(screen.getByTestId('primaryInput').props.keyboardType).toBe('numeric');
+    expect(screen.getByTestId('twoInput').props.secureTextEntry).toBe(true);
+  });
+
 });

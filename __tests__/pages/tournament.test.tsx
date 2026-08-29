@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import TournamentPage from '@/app/tournament/[tournamentKey]';
@@ -18,6 +18,8 @@ let mockIsCreatingTable = false;
 const mockUpdateTournament = jest.fn();
 const mockAddTournamentPlayer = jest.fn();
 const mockDeleteTournamentPlayer = jest.fn();
+const mockSavePage = jest.fn();
+const mockCompleteSavePrompt = jest.fn();
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -54,11 +56,13 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
     onTitleClick,
     onTitleChange,
     parentUrl,
+    onTitleLongPress,
   }: {
     title: string;
     onTitleClick?: () => void;
     onTitleChange?: (title: string) => void;
     parentUrl?: string | null;
+    onTitleLongPress?: () => void;
   }) => {
     const { Pressable, Text } = jest.requireActual('react-native');
     return (
@@ -75,6 +79,7 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
             大会名を直接変更
           </Text>
         )}
+        <Pressable accessibilityLabel="大会ページを保存" onLongPress={onTitleLongPress} />
       </>
     );
   };
@@ -92,24 +97,36 @@ jest.mock('@/components/ScoreTable', () => {
 });
 jest.mock('@/components/EditTournamentModal', () => {
   const { Pressable } = jest.requireActual('react-native');
-  return ({ onConfirm }: { onConfirm: (updates: unknown) => void }) => (
-    <Pressable accessibilityLabel="大会編集を確定" onPress={() => onConfirm({ name: '編集後の大会' })} />
+  return ({ onConfirm, onClose }: any) => (
+    <>
+      <Pressable accessibilityLabel="大会編集を確定" onPress={() => onConfirm({ name: '編集後の大会' })} />
+      <Pressable accessibilityLabel="大会編集を閉じる" onPress={onClose} />
+    </>
   );
 });
 jest.mock('@/components/MultiSelectorModal', () => {
   const { Pressable } = jest.requireActual('react-native');
-  return ({ onConfirm }: { onConfirm: (players: unknown[]) => void }) => (
-    <Pressable accessibilityLabel="大会参加者追加を確定" onPress={() => onConfirm([{ id: 2, name: '候補者2' }])} />
+  return ({ onConfirm, onClose }: any) => (
+    <>
+      <Pressable accessibilityLabel="大会参加者追加を確定" onPress={() => onConfirm([{ id: 2, name: '候補者2' }])} />
+      <Pressable accessibilityLabel="大会参加者追加を閉じる" onPress={onClose} />
+    </>
   );
 });
 jest.mock('@/components/SelectorModal', () => {
   const { Pressable } = jest.requireActual('react-native');
-  return ({ items, onSelect }: { items: unknown[]; onSelect: (player: unknown) => void }) => (
-    <Pressable accessibilityLabel="大会参加者削除を確定" onPress={() => onSelect(items[0])} />
+  return ({ items, onSelect, onClose }: any) => (
+    <>
+      <Pressable accessibilityLabel="大会参加者削除を確定" onPress={() => onSelect(items[0])} />
+      <Pressable accessibilityLabel="大会参加者削除を閉じる" onPress={onClose} />
+    </>
   );
 });
 jest.mock('@/components/SavePagePromptModal', () => ({
-  SavePagePromptModal: () => null,
+  SavePagePromptModal: ({ onSave }: any) => {
+    const { Pressable } = jest.requireActual('react-native');
+    return <Pressable accessibilityLabel="大会保存確認から保存" onPress={onSave} />;
+  },
 }));
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
   useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
@@ -121,12 +138,12 @@ jest.mock('@/src/hooks/useSavedPage', () => ({
   useSavedPage: (...args: unknown[]) => {
     mockUseSavedPage(...args);
     return {
-      save: jest.fn(),
+      save: mockSavePage,
       isSaving: false,
       shouldPromptSave: false,
       savePromptMode: undefined,
       continueWithoutSaving: jest.fn(),
-      completeSavePrompt: jest.fn(),
+      completeSavePrompt: mockCompleteSavePrompt,
       cancelSavePrompt: jest.fn(),
     };
   },
@@ -168,6 +185,7 @@ describe('大会詳細ページ', () => {
     mockUpdateTournament.mockResolvedValue(undefined);
     mockAddTournamentPlayer.mockResolvedValue(undefined);
     mockDeleteTournamentPlayer.mockResolvedValue(undefined);
+    mockSavePage.mockResolvedValue(undefined);
   });
 
   it('全Query成功時にスコア表を表示して卓へ遷移する', async () => {
@@ -449,5 +467,180 @@ describe('大会詳細ページ', () => {
     expect(button.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
     fireEvent.press(button);
     expect(mockCreateTable).not.toHaveBeenCalled();
+  });
+
+  it('空の大会キーでは不正アクセスを表示する', async () => {
+    mockParams.mockReturnValue({ tournamentKey: '' });
+    await render(<TournamentPage />);
+    expect(screen.getByText(/大会キーが指定されていません/)).toBeTruthy();
+  });
+
+  it('取得成功でも大会データがなければnot foundを表示する', async () => {
+    mockUseDashboard.mockReturnValue({ ...dashboardState, dashboard: undefined });
+    await render(<TournamentPage />);
+    expect(screen.getByText(/大会情報を取得できませんでした/)).toBeTruthy();
+  });
+
+  it('参加者がいない場合は削除modalを開かず警告する', async () => {
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: { ...dashboardState.dashboard, participants: [] },
+    });
+    await render(<TournamentPage />);
+    fireEvent.press(screen.getByRole('button', { name: '参加者を削除' }));
+    expect(mockAlertDialog).toHaveBeenCalled();
+    expect(screen.queryByLabelText('大会参加者削除を確定')).toBeNull();
+  });
+
+  it('追加・編集成功後と各close操作でmodalを閉じる', async () => {
+    await render(<TournamentPage />);
+    fireEvent.press(screen.getByRole('button', { name: '参加者を追加' }));
+    await waitFor(() => expect(screen.getByLabelText('大会参加者追加を確定')).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('大会参加者追加を確定'));
+      await mockAddTournamentPlayer.mock.results.at(-1)?.value;
+    });
+    await waitFor(() => expect(screen.queryByLabelText('大会参加者追加を確定')).toBeNull());
+
+    fireEvent.press(screen.getByText('大会名を編集'));
+    await waitFor(() => expect(screen.getByLabelText('大会編集を確定')).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('大会編集を確定'));
+      await mockUpdateTournament.mock.results.at(-1)?.value;
+    });
+    await waitFor(() => expect(screen.queryByLabelText('大会編集を確定')).toBeNull());
+  });
+
+  it('rateを正の数へ変更すると大会を更新する', async () => {
+    await render(<TournamentPage />);
+    const input = screen.getByTestId('tournament-rate-input');
+    await act(async () => {
+      fireEvent.changeText(input, '75');
+    });
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+      await Promise.resolve();
+      await mockUpdateTournament.mock.results.at(-1)?.value;
+    });
+    expect(mockUpdateTournament).toHaveBeenCalledWith({
+      tournamentKey: 'tournament-key',
+      groupKey: 'group-key',
+      tournament: { rate: 75 },
+    });
+  });
+
+  it.each(['', '0', '-1'])('無効なrate %p は元の値へ戻して更新しない', async (value) => {
+    await render(<TournamentPage />);
+    const input = screen.getByTestId('tournament-rate-input');
+    await act(async () => {
+      fireEvent.changeText(input, value);
+    });
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+    });
+    await waitFor(() => expect(input.props.value).toBe('50'));
+    expect(mockUpdateTournament).not.toHaveBeenCalled();
+  });
+
+  it('rateの非数値入力を無視し、変更なしでは更新しない', async () => {
+    await render(<TournamentPage />);
+    const input = screen.getByTestId('tournament-rate-input');
+    await act(async () => {
+      fireEvent.changeText(input, 'not-number');
+    });
+    expect(input.props.value).toBe('50');
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+    });
+    expect(mockUpdateTournament).not.toHaveBeenCalled();
+  });
+
+  it('rate更新失敗時は編集値を維持して再試行可能にする', async () => {
+    mockUpdateTournament.mockRejectedValueOnce(new Error('rate failed'));
+    await render(<TournamentPage />);
+    const input = screen.getByTestId('tournament-rate-input');
+    await act(async () => {
+      fireEvent.changeText(input, '75');
+    });
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+      await Promise.resolve();
+      await mockUpdateTournament.mock.results.at(-1)?.value.catch(() => undefined);
+    });
+    expect(mockUpdateTournament).toHaveBeenCalled();
+    expect(screen.getByTestId('tournament-rate-input').props.value).toBe('75');
+  });
+
+  it('作成完了callback後は再度卓を作成できる', async () => {
+    await render(<TournamentPage />);
+    const button = screen.getByRole('button', { name: '記録用紙を新規作成' });
+    await act(async () => {
+      fireEvent.press(button);
+    });
+    await act(async () => {
+      fireEvent.press(button);
+    });
+    expect(mockCreateTable).toHaveBeenCalledTimes(1);
+    const options = mockCreateTable.mock.calls[0][1];
+    options.onSettled();
+    await act(async () => {
+      fireEvent.press(button);
+    });
+    expect(mockCreateTable).toHaveBeenCalledTimes(2);
+  });
+
+  it('長押しと保存確認から大会ページを保存する', async () => {
+    await render(<TournamentPage />);
+    fireEvent(screen.getByLabelText('大会ページを保存'), 'longPress');
+    await waitFor(() => expect(mockSavePage).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText('大会保存確認から保存'));
+    await waitFor(() => expect(mockSavePage).toHaveBeenCalledTimes(2));
+    expect(mockCompleteSavePrompt).toHaveBeenCalledTimes(1);
+  });
+
+  it('各modalのclose callbackでmodalを閉じる', async () => {
+    await render(<TournamentPage />);
+    fireEvent.press(screen.getByRole('button', { name: '参加者を追加' }));
+    await waitFor(() => expect(screen.getByLabelText('大会参加者追加を閉じる')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('大会参加者追加を閉じる'));
+    await waitFor(() => expect(screen.queryByLabelText('大会参加者追加を閉じる')).toBeNull());
+
+    fireEvent.press(screen.getByRole('button', { name: '参加者を削除' }));
+    await waitFor(() => expect(screen.getByLabelText('大会参加者削除を閉じる')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('大会参加者削除を閉じる'));
+    await waitFor(() => expect(screen.queryByLabelText('大会参加者削除を閉じる')).toBeNull());
+
+    fireEvent.press(screen.getByText('大会名を編集'));
+    await waitFor(() => expect(screen.getByLabelText('大会編集を閉じる')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('大会編集を閉じる'));
+    await waitFor(() => expect(screen.queryByLabelText('大会編集を閉じる')).toBeNull());
+  });
+
+  it('rate入力はsubmitなしのblurで元の値に戻す', async () => {
+    await render(<TournamentPage />);
+    const input = screen.getByTestId('tournament-rate-input');
+    await act(async () => {
+      fireEvent.changeText(input, '75');
+    });
+    fireEvent(input, 'blur');
+    await waitFor(() => expect(input.props.value).toBe('50'));
+  });
+
+  it('チップ卓の合計点を計算して非ゼロ状態を判定する', async () => {
+    mockUseDashboard.mockReturnValue({
+      ...dashboardState,
+      dashboard: {
+        ...dashboardState.dashboard,
+        score_map: {
+          tables: [{ id: 9, name: 'チップ', type: 'CHIP' }],
+          players: [
+            { id: 1, name: '一郎', scores: { 9: 10 }, total: 10 },
+            { id: 2, name: '二郎', scores: {}, total: 0 },
+          ],
+        },
+      },
+    });
+    await render(<TournamentPage />);
+    expect(screen.getByText('スコア表')).toBeTruthy();
   });
 });

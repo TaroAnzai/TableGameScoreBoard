@@ -7,6 +7,8 @@ import { useCreateGame, useDeleteGame, useUpdateGame } from '@/src/hooks/useGame
 const mockCreateGame = jest.fn();
 const mockUpdateGame = jest.fn();
 const mockDeleteGame = jest.fn();
+const mockShowError = jest.fn();
+const mockShowSuccess = jest.fn();
 
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   postApiTablesTableKeyGames: (...args: unknown[]) => mockCreateGame(...args),
@@ -26,7 +28,7 @@ jest.mock('@/src/api/generated/mahjongApi', () => ({
   ],
 }));
 jest.mock('@/src/hooks/useMutationFeedback', () => ({
-  useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
+  useMutationFeedback: () => ({ showError: mockShowError, showSuccess: mockShowSuccess }),
 }));
 
 describe('対局変更後のキャッシュ更新', () => {
@@ -97,6 +99,53 @@ describe('対局変更後のキャッシュ更新', () => {
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: ['/api/tournaments/tournament-key/score_map'],
     });
+    unmount();
+  });
+
+  it.each([
+    ['作成', useCreateGame, mockCreateGame, { tableKey: 'table-key', gameCreate: { scores: [] } }],
+    [
+      '更新',
+      useUpdateGame,
+      mockUpdateGame,
+      { tableKey: 'table-key', gameId: 1, gameUpdate: { scores: [] } },
+    ],
+    ['削除', useDeleteGame, mockDeleteGame, { tableKey: 'table-key', gameId: 1 }],
+  ])('%s後、大会キーがなければ卓の2キャッシュだけを無効化する', async (_, hook, api, variables) => {
+    api.mockResolvedValueOnce(undefined);
+    const { result, unmount } = await renderHook(() => hook(), { wrapper });
+
+    await act(async () => result.current.mutateAsync(variables as never));
+
+    expect(invalidateQueries).toHaveBeenCalledTimes(2);
+    expect(mockShowSuccess).toHaveBeenCalled();
+    unmount();
+  });
+
+  it.each([
+    ['作成', useCreateGame, mockCreateGame, 'Error creating game:'],
+    ['更新', useUpdateGame, mockUpdateGame, 'Error updating game:'],
+    ['削除', useDeleteGame, mockDeleteGame, 'Error deleting game:'],
+  ])('%s失敗時にエラーを通知してキャッシュを無効化しない', async (_, hook, api, log) => {
+    const error = new Error('request failed');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    api.mockRejectedValueOnce(error);
+    const { result, unmount } = await renderHook(() => hook(), { wrapper });
+    const variables =
+      hook === useCreateGame
+        ? { tableKey: 'key', gameCreate: { scores: [] } }
+        : hook === useUpdateGame
+          ? { tableKey: 'key', gameId: 1, gameUpdate: { scores: [] } }
+          : { tableKey: 'key', gameId: 1 };
+
+    await act(async () => {
+      await expect(result.current.mutateAsync(variables as never)).rejects.toBe(error);
+    });
+
+    expect(mockShowError).toHaveBeenCalledWith(expect.objectContaining({ error }));
+    expect(invalidateQueries).not.toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith(log, error);
+    consoleError.mockRestore();
     unmount();
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import { SavePagePromptModal } from '@/components/SavePagePromptModal';
@@ -67,5 +67,36 @@ describe('SavePagePromptModal', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'キャンセル' }));
 
     expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('保存中は二重送信と他の操作を無効化する', async () => {
+    let resolve!: () => void;
+    const onSave = jest.fn(() => new Promise<void>((done) => (resolve = done)));
+    await render(<SavePagePromptModal {...defaultProps} mode="navigation" onSave={onSave} />);
+
+    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '保存する' })).toBeDisabled());
+    expect(screen.getByText('保存中...')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
+    fireEvent.press(screen.getByRole('button', { name: '保存せず続行' }));
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onContinueWithoutSaving).not.toHaveBeenCalled();
+    await act(async () => resolve());
+  });
+
+  it('保存失敗を内部で処理して再試行可能に戻す', async () => {
+    const onSave = jest.fn().mockRejectedValue(new Error('storage failed'));
+    await render(<SavePagePromptModal {...defaultProps} onSave={onSave} />);
+    fireEvent.press(screen.getByRole('button', { name: '保存する' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByRole('button', { name: '保存する' })).not.toBeDisabled());
+  });
+
+  it('外部保存中は保存中表示にして全操作を無効化する', async () => {
+    await render(<SavePagePromptModal {...defaultProps} mode="navigation" isSaving />);
+    expect(screen.getByRole('button', { name: '保存する' })).toBeDisabled();
+    expect(screen.getByText('保存中...')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '保存せず続行' })).toBeDisabled();
   });
 });
