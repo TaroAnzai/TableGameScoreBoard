@@ -11,7 +11,11 @@ describe('redirectSystemPath', () => {
     expect(redirectSystemPath({ path, initial: true })).toBe(expected);
   });
 
-  it.each(['mahjongapp://create?token=token', 'mahjongapp-dev://create?token=token'])(
+  it.each([
+    'mahjongapp://create?token=token',
+    'mahjongapp-dev://create?token=token',
+    'https://anzai-home.com/mahjong/group/create?token=token',
+  ])(
     'preserves the create token for %s',
     (path) => {
       expect(redirectSystemPath({ path, initial: true })).toBe('/group/create?token=token');
@@ -23,6 +27,10 @@ describe('redirectSystemPath', () => {
     [
       'https://anzai-home.com/mahjong/tournament/tournament-key?view=summary',
       '/tournament/tournament-key?view=summary',
+    ],
+    [
+      'https://anzai-home.com/mahjong/group/create?token=token',
+      '/group/create?token=token',
     ],
   ])('marks a warm-start external link: %s', (path, expectedPrefix) => {
     expect(redirectSystemPath({ path, initial: false })).toMatch(

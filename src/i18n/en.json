@@ -338,6 +338,7 @@
     "creating": "Registering group",
     "cannotGoBack": "Please stay on this screen until registration is complete.",
     "createErrorTitle": "Could not register the group",
+    "groupKeySaveError": "The group was created, but its registration could not be saved on this device. Retry saving without creating the group again.",
     "unknownError": "Check your connection and try again.",
     "retry": "Retry",
     "backHome": "Back to home",

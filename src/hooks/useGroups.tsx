@@ -1,10 +1,6 @@
 // src/hooks/useGroups.tsx
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
@@ -18,6 +14,7 @@ import type {
   GroupResponse,
   GroupUpdate,
 } from '@/src/api/generated/mahjongApi.schemas';
+import { GroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
 import { useMutationFeedback } from '@/src/hooks/useMutationFeedback';
 import type { PendingGroup } from '@/src/storage/appStorage';
 import { appStorage } from '@/src/storage/appStorage';
@@ -36,8 +33,7 @@ import { formatLocalDateTime, toLocalDate } from '../utils/date_utils';
 export const useGetGroupDashboard = (groupKey: string) =>
   useQuery({
     queryKey: getGetApiV2GroupsGroupKeyDashboardQueryKey(groupKey),
-    queryFn: () =>
-      getApiV2GroupsGroupKeyDashboard(groupKey),
+    queryFn: () => getApiV2GroupsGroupKeyDashboard(groupKey),
     enabled: !!groupKey,
     select: (dashboard) => dashboard.group,
   });
@@ -164,7 +160,11 @@ export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = tru
     onSuccess: async (data: Group) => {
       showSuccess(t('hooks.group.createSuccess'));
       if (data.owner_link) {
-        await appStorage.addGroupKey(data.owner_link);
+        try {
+          await appStorage.addGroupKey(data.owner_link);
+        } catch (cause) {
+          throw new GroupKeyStorageError(data.owner_link, cause);
+        }
       }
       onAfterCreate?.();
     },
