@@ -1,6 +1,14 @@
 import { postApiV2GroupsRequestLinkStatusbatch } from '@/src/api/generated/mahjongApi';
 import { appStorage } from '@/src/storage/appStorage';
 
+export const getGroupCreationStatus = async (token: string) => {
+  const response = await postApiV2GroupsRequestLinkStatusbatch({
+    items: [{ client_id: '0', token }],
+  });
+
+  return response.results.find((result) => result.client_id === '0');
+};
+
 export const syncPendingGroups = async (): Promise<boolean> => {
   const pendingGroups = await appStorage.getPendingGroups();
 

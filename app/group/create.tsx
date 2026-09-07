@@ -12,7 +12,12 @@ import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { isGroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
 import { useCreateGroup } from '@/src/hooks/useGroups';
 import { appStorage } from '@/src/storage/appStorage';
-import { getOrStartGroupCreationAttempt } from '@/src/utils/groupCreationAttempt';
+import {
+  completeGroupCreationAttempt,
+  getOrStartGroupCreationAttempt,
+  isGroupCreationOutcomeUncertain,
+} from '@/src/utils/groupCreationAttempt';
+import { getGroupCreationStatus } from '@/src/utils/groupSync';
 
 type PageState = 'creating' | 'error';
 
@@ -28,7 +33,36 @@ const GroupCreatePage = () => {
   const isSubmitting = useRef(false);
   const isMounted = useRef(true);
   const [pendingGroupKey, setPendingGroupKey] = useState<string | null>(null);
+  const [mustCheckStatus, setMustCheckStatus] = useState(false);
   const allowNavigation = useRef(false);
+
+  const recoverUncertainCreation = useCallback(async (): Promise<
+    'recovered' | 'retry' | 'invalid'
+  > => {
+    if (!invitationToken) return 'recovered';
+
+    const status = await getGroupCreationStatus(invitationToken);
+    if (status?.status === 'ready' && status.owner_link) {
+      try {
+        await appStorage.addGroupKey(status.owner_link);
+      } catch (cause) {
+        throw new GroupKeyStorageError(status.owner_link, cause);
+      }
+      completeGroupCreationAttempt(invitationToken);
+      if (isMounted.current) {
+        allowNavigation.current = true;
+        router.replace(`/group/${status.owner_link}`);
+      }
+      return 'recovered';
+    }
+
+    if (status?.status === 'pending') {
+      completeGroupCreationAttempt(invitationToken);
+      return 'retry';
+    }
+
+    return 'invalid';
+  }, [invitationToken]);
 
   const createGroup = useCallback(async () => {
     if (isSubmitting.current) return;
@@ -44,6 +78,7 @@ const GroupCreatePage = () => {
     setErrorMessage('');
     setCanRetry(false);
     setPendingGroupKey(null);
+    setMustCheckStatus(false);
     setPageState('creating');
 
     try {
@@ -64,6 +99,28 @@ const GroupCreatePage = () => {
           return;
         }
 
+        if (isGroupCreationOutcomeUncertain(error)) {
+          try {
+            const outcome = await recoverUncertainCreation();
+            if (outcome === 'recovered') return;
+            if (outcome === 'invalid') {
+              setErrorMessage(t('groupCreatePage.invalidTokenDescription'));
+              setCanRetry(false);
+              setPageState('error');
+              return;
+            }
+          } catch (recoveryError) {
+            if (isGroupKeyStorageError(recoveryError)) {
+              setPendingGroupKey(recoveryError.groupKey);
+              setErrorMessage(t('groupCreatePage.groupKeySaveError'));
+              setCanRetry(true);
+              setPageState('error');
+              return;
+            }
+            setMustCheckStatus(true);
+          }
+        }
+
         const presentation = getUserFacingApiError(error, {
           messageOverrides: {
             notFound: t('groupCreatePage.invalidTokenDescription'),
@@ -78,7 +135,44 @@ const GroupCreatePage = () => {
     } finally {
       isSubmitting.current = false;
     }
-  }, [createGroupFromToken, invitationToken, t]);
+  }, [createGroupFromToken, invitationToken, recoverUncertainCreation, t]);
+
+  const retryStatusRecovery = useCallback(async () => {
+    if (isSubmitting.current) return;
+    isSubmitting.current = true;
+    setCanRetry(false);
+    setPageState('creating');
+
+    try {
+      const outcome = await recoverUncertainCreation();
+      if (outcome === 'invalid') {
+        setErrorMessage(t('groupCreatePage.invalidTokenDescription'));
+        setCanRetry(false);
+        setPageState('error');
+      } else if (outcome === 'retry') {
+        setMustCheckStatus(false);
+        isSubmitting.current = false;
+        await createGroup();
+      }
+    } catch (error) {
+      if (isMounted.current) {
+        if (isGroupKeyStorageError(error)) {
+          setPendingGroupKey(error.groupKey);
+          setErrorMessage(t('groupCreatePage.groupKeySaveError'));
+        } else {
+          setErrorMessage(
+            getUserFacingApiError(error, {
+              unknownMessage: t('groupCreatePage.unknownError'),
+            }).message,
+          );
+        }
+        setCanRetry(true);
+        setPageState('error');
+      }
+    } finally {
+      isSubmitting.current = false;
+    }
+  }, [createGroup, recoverUncertainCreation, t]);
 
   const retryGroupKeyStorage = useCallback(async () => {
     if (!pendingGroupKey || isSubmitting.current) return;
@@ -89,6 +183,7 @@ const GroupCreatePage = () => {
 
     try {
       await appStorage.addGroupKey(pendingGroupKey);
+      if (invitationToken) completeGroupCreationAttempt(invitationToken);
       if (isMounted.current) {
         allowNavigation.current = true;
         router.replace(`/group/${pendingGroupKey}`);
@@ -102,7 +197,7 @@ const GroupCreatePage = () => {
     } finally {
       isSubmitting.current = false;
     }
-  }, [pendingGroupKey, t]);
+  }, [invitationToken, pendingGroupKey, t]);
 
   useEffect(() => {
     void Promise.resolve().then(createGroup);
@@ -154,7 +249,13 @@ const GroupCreatePage = () => {
         <View className="w-full max-w-sm gap-3">
           <Button
             disabled={!invitationToken || !canRetry}
-            onPress={() => void (pendingGroupKey ? retryGroupKeyStorage() : createGroup())}
+            onPress={() =>
+              void (pendingGroupKey
+                ? retryGroupKeyStorage()
+                : mustCheckStatus
+                  ? retryStatusRecovery()
+                  : createGroup())
+            }
           >
             <Text>{t('groupCreatePage.retry')}</Text>
           </Button>
