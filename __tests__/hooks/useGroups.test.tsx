@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React, { type PropsWithChildren } from 'react';
 
 import { ApiError } from '@/src/api/apiError';
+import { GroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
 import {
   getKeyType,
   useCreateGroup,
@@ -26,16 +27,19 @@ const mockPutGroup = jest.fn();
 const mockSetPendingGroups = jest.fn();
 const mockToastShow = jest.fn();
 let mockStoredGroupKeys: string[] = [];
-let mockStoredPendingGroups: { token: string; groupName: string; email: string; expiresAt: Date }[] = [];
+let mockStoredPendingGroups: {
+  token: string;
+  groupName: string;
+  email: string;
+  expiresAt: Date;
+}[] = [];
 
 jest.mock('@/src/api/generated/mahjongApi', () => ({
   postApiGroups: (...args: unknown[]) => mockPostApiGroups(...args),
   postApiGroupsRequestLink: (...args: unknown[]) => mockPostGroupRequest(...args),
   postApiV2GroupsbatchGet: (...args: unknown[]) => mockBatchGetGroups(...args),
   getApiV2GroupsGroupKeyDashboard: (...args: unknown[]) => mockGetGroupDashboard(...args),
-  getGetApiV2GroupsGroupKeyDashboardQueryKey: (key: string) => [
-    `/api/v2/groups/${key}/dashboard`,
-  ],
+  getGetApiV2GroupsGroupKeyDashboardQueryKey: (key: string) => [`/api/v2/groups/${key}/dashboard`],
   putApiGroupsGroupKey: (...args: unknown[]) => mockPutGroup(...args),
   getGetApiGroupsGroupKeyQueryKey: (key: string) => [`/api/groups/${key}`],
   getGetApiGroupsGroupKeyQueryOptions: (key: string) => ({
@@ -112,6 +116,35 @@ describe('useCreateGroup', () => {
 
     expect(mutationCompleted).toBe(true);
     expect(onAfterCreate).toHaveBeenCalledTimes(1);
+    queryClient.clear();
+  });
+
+  it('API成功後のGroup Key保存失敗をAPIエラーと区別する', async () => {
+    const storageError = new Error('secure storage unavailable');
+    mockPostApiGroups.mockResolvedValue({ name: 'テストグループ', owner_link: 'owner-key' });
+    mockAddGroupKey.mockRejectedValue(storageError);
+    const onAfterCreate = jest.fn();
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { gcTime: Infinity, retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result, unmount } = await renderHook(() => useCreateGroup(onAfterCreate, false), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await expect(result.current.mutateAsync({ token: 'token' })).rejects.toMatchObject({
+        name: 'GroupKeyStorageError',
+        groupKey: 'owner-key',
+        cause: storageError,
+      } satisfies Partial<GroupKeyStorageError>);
+    });
+
+    expect(mockPostApiGroups).toHaveBeenCalledTimes(1);
+    expect(onAfterCreate).not.toHaveBeenCalled();
+    unmount();
     queryClient.clear();
   });
 
@@ -443,10 +476,16 @@ describe('useGroupQueries', () => {
   it('期限切れpending groupを除外してストレージを更新する', async () => {
     mockStoredGroupKeys = [];
     const valid = {
-      token: 'valid', groupName: '有効', email: 'valid@example.com', expiresAt: new Date('2099-01-01'),
+      token: 'valid',
+      groupName: '有効',
+      email: 'valid@example.com',
+      expiresAt: new Date('2099-01-01'),
     };
     const expired = {
-      token: 'expired', groupName: '期限切れ', email: 'old@example.com', expiresAt: new Date('2020-01-01'),
+      token: 'expired',
+      groupName: '期限切れ',
+      email: 'old@example.com',
+      expiresAt: new Date('2020-01-01'),
     };
     mockStoredPendingGroups = [valid, expired];
     const queryClient = new QueryClient({

@@ -2,10 +2,20 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import React from 'react';
 
 import GroupCreatePage from '@/app/group/create';
+import { postApiV2GroupsRequestLinkStatusbatch } from '@/src/api/generated/mahjongApi';
 import { ApiError } from '@/src/api/apiError';
+import {
+  clearGroupCreationAttempts,
+  getOrStartGroupCreationAttempt,
+} from '@/src/utils/groupCreationAttempt';
+import { GroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
 
 const mockReplace = jest.fn();
+const mockStatus = postApiV2GroupsRequestLinkStatusbatch as jest.MockedFunction<
+  typeof postApiV2GroupsRequestLinkStatusbatch
+>;
 const mockParams = jest.fn(() => ({ token: 'valid-token' }));
+const mockAddGroupKey = jest.fn();
 const mockCreateGroup = jest.fn();
 const mockAddListener = jest.fn(
   (_event: string, _listener: (event: { preventDefault: () => void }) => void) => jest.fn(),
@@ -16,15 +26,28 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams(),
   useNavigation: () => ({ addListener: mockAddListener }),
 }));
+jest.mock('@/src/api/generated/mahjongApi', () => ({
+  postApiV2GroupsRequestLinkStatusbatch: jest.fn(),
+}));
 jest.mock('@/src/hooks/useGroups', () => ({
   useCreateGroup: () => ({ mutateAsync: mockCreateGroup }),
+}));
+jest.mock('@/src/storage/appStorage', () => ({
+  appStorage: {
+    addGroupKey: (...args: unknown[]) => mockAddGroupKey(...args),
+  },
 }));
 
 describe('招待グループ作成ページ', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearGroupCreationAttempts();
     mockParams.mockReturnValue({ token: 'valid-token' });
     mockCreateGroup.mockResolvedValue({ owner_link: 'owner-key' });
+    mockAddGroupKey.mockResolvedValue(undefined);
+    mockStatus.mockResolvedValue({
+      results: [{ client_id: '0', status: 'pending' }],
+    } as never);
   });
 
   it('中央に登録中表示を出し、作成したグループへ履歴を残さず遷移する', async () => {
@@ -47,6 +70,27 @@ describe('招待グループ作成ページ', () => {
     await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledTimes(1));
 
     resolveRequest({ owner_link: 'owner-key' });
+  });
+
+  it('外部navigation resetで再マウントされても同じtokenのAPIを1回だけ実行する', async () => {
+    let resolveRequest: (value: { owner_link: string }) => void = () => undefined;
+    mockCreateGroup.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+    const firstMount = await render(<GroupCreatePage />);
+
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledTimes(1));
+    await firstMount.unmount();
+    await render(<GroupCreatePage />);
+
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+    resolveRequest({ owner_link: 'owner-key' });
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/group/owner-key'));
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
   });
 
   it('登録中の戻る操作を抑止する', async () => {
@@ -102,6 +146,54 @@ describe('招待グループ作成ページ', () => {
     expect(mockReplace).toHaveBeenCalledWith('/group/owner-key');
   });
 
+  it('通信結果が不明でもstatusがreadyならPOSTせず作成済みグループを復旧する', async () => {
+    mockCreateGroup.mockRejectedValueOnce(
+      new ApiError({
+        kind: 'timeout',
+        message: 'Request timeout',
+        url: 'https://example.com/api/groups',
+        method: 'POST',
+        retryable: true,
+      }),
+    );
+    mockStatus.mockResolvedValueOnce({
+      results: [{ client_id: '0', status: 'ready', owner_link: 'recovered-key' }],
+    } as never);
+
+    await render(<GroupCreatePage />);
+
+    await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('recovered-key'));
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith('/group/recovered-key');
+    expect(mockStatus).toHaveBeenCalledWith({
+      items: [{ client_id: '0', token: 'valid-token' }],
+    });
+  });
+
+  it('status確認も失敗した場合は再試行時にもPOSTせずstatusだけを再確認する', async () => {
+    mockCreateGroup.mockRejectedValueOnce(
+      new ApiError({
+        kind: 'network',
+        message: 'offline',
+        url: 'https://example.com/api/groups',
+        method: 'POST',
+        retryable: true,
+      }),
+    );
+    mockStatus.mockRejectedValueOnce(new Error('status offline')).mockResolvedValueOnce({
+      results: [{ client_id: '0', status: 'ready', owner_link: 'recovered-key' }],
+    } as never);
+
+    await render(<GroupCreatePage />);
+    expect(await screen.findByText(/通信できませんでした/)).toBeTruthy();
+
+    fireEvent.press(screen.getByText('再試行'));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/group/recovered-key'));
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+    expect(mockStatus).toHaveBeenCalledTimes(2);
+  });
+
   it('期限切れの招待リンクでは文脈固有の案内を表示して再試行を無効化する', async () => {
     mockCreateGroup.mockRejectedValueOnce(
       new ApiError({
@@ -119,5 +211,49 @@ describe('招待グループ作成ページ', () => {
     expect(await screen.findByText(/招待リンクが無効です/)).toBeTruthy();
     expect(screen.getByText('再試行')).toBeDisabled();
     expect(screen.queryByText(/internal invitation detail/)).toBeNull();
+  });
+
+  it('API成功後の端末保存失敗ではAPIを再送せず保存だけを再試行する', async () => {
+    mockCreateGroup.mockRejectedValueOnce(
+      new GroupKeyStorageError('owner-key', new Error('secure storage unavailable')),
+    );
+    await render(<GroupCreatePage />);
+
+    expect(
+      await screen.findByText(
+        /グループの作成は完了しましたが、この端末に登録情報を保存できませんでした/,
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('再試行')).toBeEnabled();
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+
+    fireEvent.press(screen.getByText('再試行'));
+
+    await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('owner-key'));
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith('/group/owner-key');
+
+    const nextAttempt = jest.fn().mockResolvedValue({ owner_link: 'next-owner-key' });
+    await expect(getOrStartGroupCreationAttempt('valid-token', nextAttempt)).resolves.toEqual({
+      owner_link: 'next-owner-key',
+    });
+    expect(nextAttempt).toHaveBeenCalledTimes(1);
+  });
+
+  it('API成功レスポンスの解析失敗は保存失敗と区別し、再試行を無効化する', async () => {
+    mockCreateGroup.mockRejectedValueOnce(
+      new ApiError({
+        kind: 'parse',
+        message: 'Failed to parse JSON response',
+        url: 'https://example.com/api/groups',
+        method: 'POST',
+        retryable: false,
+      }),
+    );
+    await render(<GroupCreatePage />);
+
+    expect(await screen.findByText(/受信したデータを読み込めませんでした/)).toBeTruthy();
+    expect(screen.getByText('再試行')).toBeDisabled();
+    expect(mockAddGroupKey).not.toHaveBeenCalled();
   });
 });
