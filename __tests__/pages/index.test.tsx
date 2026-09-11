@@ -335,6 +335,27 @@ describe('ホームページ', () => {
     expect(mockRefetch).toHaveBeenCalled();
   });
 
+  it('登録グループの端末削除に失敗した場合は再試行を案内する', async () => {
+    const error = new Error('storage unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockRemoveGroupKey.mockRejectedValueOnce(error);
+    await render(<Index />);
+
+    fireEvent.press(screen.getByLabelText('登録グループを削除'));
+    fireEvent.press(await screen.findByLabelText('登録グループ削除を確定'));
+
+    await waitFor(() =>
+      expect(mockAlertDialog).toHaveBeenLastCalledWith({
+        title: '登録グループを削除できませんでした',
+        description: 'この端末の登録情報を更新できませんでした。もう一度お試しください。',
+        showCancelButton: false,
+      }),
+    );
+    expect(mockRefetch).not.toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith('Error removing registered group:', error);
+    consoleError.mockRestore();
+  });
+
   it('登録グループ削除をキャンセルした場合はstorageを変更しない', async () => {
     mockAlertDialog.mockResolvedValueOnce(false);
     await render(<Index />);

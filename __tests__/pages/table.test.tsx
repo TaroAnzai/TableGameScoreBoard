@@ -336,7 +336,11 @@ describe('卓詳細ページ', () => {
     });
     await render(<TablePage />);
 
-    expect(screen.getByText('卓が見つかりませんでした')).toBeTruthy();
+    expect(
+      screen.getByText(
+        '記録表が見つかりませんでした。削除されたか、URLが正しくない可能性があります。',
+      ),
+    ).toBeTruthy();
     expect(screen.queryByText('再取得')).toBeNull();
   });
 
@@ -474,13 +478,17 @@ describe('卓詳細ページ', () => {
   it('不正な空キーでは専用エラーを表示する', async () => {
     mockParams.mockReturnValue({ tableKey: '' });
     await render(<TablePage />);
-    expect(screen.getByText(/卓キーが指定されていません/)).toBeTruthy();
+    expect(screen.getByText('記録表を開けませんでした。URLを確認してください。')).toBeTruthy();
   });
 
   it('取得成功でも卓データがなければnot foundを表示する', async () => {
     mockUseDashboard.mockReturnValue({ ...dashboardState, dashboard: undefined });
     await render(<TablePage />);
-    expect(screen.getByText('卓が見つかりませんでした')).toBeTruthy();
+    expect(
+      screen.getByText(
+        '記録表が見つかりませんでした。削除されたか、URLが正しくない可能性があります。',
+      ),
+    ).toBeTruthy();
   });
 
   it('長押しと保存確認からページを保存できる', async () => {

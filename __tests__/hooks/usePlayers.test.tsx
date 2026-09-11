@@ -109,7 +109,10 @@ describe('usePlayers', () => {
 
     await waitFor(() =>
       expect(mockShowError).toHaveBeenCalledWith(
-        expect.objectContaining({ error, fallback: '不明なエラー' }),
+        expect.objectContaining({
+          error,
+          fallback: '処理を完了できませんでした。もう一度お試しください。',
+        }),
       ),
     );
     expect(consoleError).toHaveBeenCalledWith(expect.any(String), error);

@@ -369,8 +369,8 @@ describe('useCreateGroupRequest', () => {
     ).rejects.toBeInstanceOf(ApiError);
 
     expect(mockShowError).toHaveBeenCalledWith({
-      title: 'グループ作成時にエラーが発生しました',
-      fallback: '不明なエラー',
+      title: 'グループ作成用メールを送信できませんでした',
+      fallback: 'グループ作成用メールを送信できませんでした。もう一度お試しください。',
       message: '不正なメールアドレスです。',
     });
     expect(JSON.stringify(mockShowError.mock.calls)).not.toContain('internal validation detail');
@@ -411,10 +411,8 @@ describe('useGroupQueries', () => {
     expect(mockRemoveGroupKey).toHaveBeenNthCalledWith(1, 'missing-owner-key');
     expect(mockRemoveGroupKey).toHaveBeenNthCalledWith(2, 'missing-view-key');
     expect(mockAlertDialog).toHaveBeenCalledWith({
-      title: 'グループ取得エラー',
-      description:
-        'サーバーから、以下のキーのデータが削除されているためアプリからグループ取得キーを削除しました。',
-      text1: '- missing-owner-key\n- missing-view-key',
+      title: '登録グループを開けませんでした',
+      description: '削除済みのグループを、この端末の登録一覧から削除しました。',
       showCancelButton: false,
     });
 
@@ -437,9 +435,9 @@ describe('useGroupQueries', () => {
 
     await waitFor(() =>
       expect(mockShowError).toHaveBeenCalledWith({
-        title: 'グループ取得エラー',
+        title: '登録グループを開けませんでした',
         error,
-        fallback: '不明なエラー',
+        fallback: '処理を完了できませんでした。もう一度お試しください。',
       }),
     );
     expect(consoleError).toHaveBeenCalledWith('Error removing invalid group keys:', error);
@@ -464,9 +462,9 @@ describe('useGroupQueries', () => {
 
     await waitFor(() =>
       expect(mockShowError).toHaveBeenCalledWith({
-        title: 'グループ取得エラー',
+        title: '登録グループを開けませんでした',
         error,
-        fallback: '不明なエラー',
+        fallback: '処理を完了できませんでした。もう一度お試しください。',
       }),
     );
     expect(consoleError).toHaveBeenCalledWith('Error showing invalid group keys dialog:', error);
@@ -500,7 +498,11 @@ describe('useGroupQueries', () => {
     const { result, unmount } = await renderHook(() => useGroupQueries(), { wrapper });
     await waitFor(() => expect(result.current.pendingGroups).toEqual([valid]));
     expect(mockSetPendingGroups).toHaveBeenCalledWith([valid]);
-    expect(mockToastShow).toHaveBeenCalledWith(expect.objectContaining({ text2: '期限切れ' }));
+    expect(mockToastShow).toHaveBeenCalledWith({
+      type: 'info',
+      text1: '期限切れのグループ作成申請を削除しました',
+      text2: '期限切れ。必要な場合は、もう一度グループを作成してください。',
+    });
     await unmount();
     queryClient.clear();
   });

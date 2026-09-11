@@ -131,7 +131,7 @@ describe('SavedLinksPopover', () => {
     expect(mockClosePopover).toHaveBeenCalledTimes(1);
   });
 
-  it('最終表示日時の更新に失敗した場合はエラーを表示する', async () => {
+  it('最終表示日時の更新に失敗してもページ遷移を妨げない', async () => {
     const error = new Error('storage unavailable');
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockTouch.mockRejectedValueOnce(error);
@@ -140,13 +140,13 @@ describe('SavedLinksPopover', () => {
     fireEvent.press(screen.getByText('新しい卓'));
 
     await waitFor(() =>
-      expect(mockAlertDialog).toHaveBeenCalledWith({
-        title: '保存済みページを更新できませんでした',
-        description: '保存済みページの更新に失敗しました。もう一度お試しください。',
-        showCancelButton: false,
-      }),
+      expect(consoleError).toHaveBeenCalledWith(
+        'Error updating saved link last opened time:',
+        error,
+      ),
     );
-    expect(consoleError).toHaveBeenCalledWith('Error updating saved link:', error);
+    expect(mockAlertDialog).not.toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalled();
     expect(screen.getByText('古い大会')).toBeTruthy();
     consoleError.mockRestore();
   });
@@ -163,12 +163,12 @@ describe('SavedLinksPopover', () => {
 
     await waitFor(() =>
       expect(mockAlertDialog).toHaveBeenLastCalledWith({
-        title: '保存済みページを更新できませんでした',
-        description: '保存済みページの更新に失敗しました。もう一度お試しください。',
+        title: '保存済みページを削除できませんでした',
+        description: '端末の保存済みページ一覧を更新できませんでした。もう一度お試しください。',
         showCancelButton: false,
       }),
     );
-    expect(consoleError).toHaveBeenCalledWith('Error updating saved link:', error);
+    expect(consoleError).toHaveBeenCalledWith('Error removing saved link:', error);
     consoleError.mockRestore();
   });
 

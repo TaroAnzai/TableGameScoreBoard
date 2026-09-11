@@ -158,10 +158,19 @@ const GroupPage = () => {
       showCancelButton: true,
     });
     if (!res) return;
-    await appStorage.addGroupKey(groupKey);
-    allowNavigation.current = true;
-    setIsGroupRegistered(true);
-    router.push('/');
+    try {
+      await appStorage.addGroupKey(groupKey);
+      allowNavigation.current = true;
+      setIsGroupRegistered(true);
+      router.push('/');
+    } catch (error) {
+      console.error('Error saving group on this device:', error);
+      await alertDialog({
+        title: t('groupPage.localSaveErrorTitle'),
+        description: t('groupPage.localSaveErrorDescription'),
+        showCancelButton: false,
+      });
+    }
   };
   const handleAddPlayer = async (name: string) => {
     if (!name) return;

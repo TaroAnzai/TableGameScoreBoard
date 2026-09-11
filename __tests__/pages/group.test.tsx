@@ -323,7 +323,7 @@ describe('グループ詳細ページ', () => {
     });
     await render(<GroupPage />);
 
-    expect(screen.getByText('グループ取得エラー')).toBeTruthy();
+    expect(screen.getByText('登録グループを開けませんでした')).toBeTruthy();
     expect(await screen.findByText('アプリに登録')).toBeDisabled();
     expect(screen.getByText('成績')).toBeDisabled();
   });
@@ -370,7 +370,7 @@ describe('グループ詳細ページ', () => {
       ),
     ).toHaveProp('className', expect.stringContaining('mt-8'));
     expect(
-      screen.getByText('大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択しまます。'),
+      screen.getByText('大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択します。'),
     ).toHaveProp('className', expect.stringContaining('mt-8'));
     expect(screen.getByText('大会を＋ボタンから作成してください。')).toBeTruthy();
     expect(screen.getByText('メンバーを＋ボタンから追加してください。')).toBeTruthy();
@@ -589,6 +589,28 @@ describe('グループ詳細ページ', () => {
     await fireEvent.press(await screen.findByText('アプリに登録'));
     await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('group-key'));
     expect(mockPush).toHaveBeenCalledWith('/');
+  });
+
+  it('未登録グループの端末保存に失敗した場合は再試行を案内して画面に留まる', async () => {
+    const error = new Error('storage unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockGetGroupKeys.mockResolvedValue([]);
+    mockAlertDialog.mockResolvedValue(true);
+    mockAddGroupKey.mockRejectedValueOnce(error);
+    await render(<GroupPage />);
+
+    fireEvent.press(await screen.findByText('アプリに登録'));
+
+    await waitFor(() =>
+      expect(mockAlertDialog).toHaveBeenLastCalledWith({
+        title: 'グループをこの端末に登録できませんでした',
+        description: 'グループ画面を閉じずに、もう一度お試しください。',
+        showCancelButton: false,
+      }),
+    );
+    expect(mockPush).not.toHaveBeenCalledWith('/');
+    expect(consoleError).toHaveBeenCalledWith('Error saving group on this device:', error);
+    consoleError.mockRestore();
   });
 
   it('未登録グループの保存をキャンセルする', async () => {

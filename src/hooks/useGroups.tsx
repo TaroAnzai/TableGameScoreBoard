@@ -260,7 +260,9 @@ export const useGroupQueries = () => {
         Toast.show({
           type: 'info',
           text1: t('hooks.group.expiredPendingGroup'),
-          text2: expiredGroups.map((group) => group.groupName).join(', '),
+          text2: t('hooks.group.expiredPendingGroupDescription', {
+            groupNames: expiredGroups.map((group) => group.groupName).join(', '),
+          }),
         });
       }
 
@@ -315,7 +317,6 @@ export const useGroupQueries = () => {
         void alertDialog({
           title: t('hooks.group.fetchNotFoundTitle'),
           description: t('hooks.group.fetchNotFoundDescription'),
-          text1: invalidGroupKeys.map((key) => `- ${key}`).join('\n'),
           showCancelButton: false,
         }).catch((error) => {
           reportInvalidGroupKeysError('Error showing invalid group keys dialog:', error);

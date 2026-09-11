@@ -41,6 +41,8 @@
     "Email": "メールアドレス",
     "RemoveRegisteredGroup": "登録グループを削除",
     "SelectGroupToRemove": "削除する登録グループを選択",
+    "removeGroupErrorTitle": "登録グループを削除できませんでした",
+    "removeGroupErrorDescription": "この端末の登録情報を更新できませんでした。もう一度お試しください。",
     "createdAt": "作成日: {{date}}",
     "noRegisteredGroups": "「新しいグループを作成」ボタンから新しいグループを作成してください。",
     "pendingGroups": "申請中のグループ",
@@ -95,7 +97,7 @@
     }
   },
   "groupPage": {
-    "groupKeyNotFound": "グループキーが不明です",
+    "groupKeyNotFound": "グループを開けませんでした。URLを確認してください。",
     "groupNotFound": "グループが見つかりませんでした。削除されたか、URLが正しくない可能性があります。",
     "loading": "読み込み中...",
 
@@ -113,7 +115,7 @@
 
     "sectionMemberList": "メンバー一覧",
     "memberInstruction": "グループ内の参加者を登録します。メンバーは複数の大会で共通して利用でき、あとから追加も可能です。成績は参加者ごとに統計で集計されます。",
-    "tournamentInstruction": "大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択しまます。",
+    "tournamentInstruction": "大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択します。",
     "sectionMemberListEmpty": "メンバーを＋ボタンから追加してください。",
     "sectionMemberListEmptyView": "メンバーが登録されていません。",
     "sectionTournamentListEmpty": "大会を＋ボタンから作成してください。",
@@ -130,6 +132,8 @@
 
     "dialogRemoveGroupTitle": "登録グループから削除",
     "dialogRemoveGroupDescription": "登録グループから {{groupName}} を削除してよいですか？\n(グループデータ自体は削除されません。)",
+    "localSaveErrorTitle": "グループをこの端末に登録できませんでした",
+    "localSaveErrorDescription": "グループ画面を閉じずに、もう一度お試しください。",
 
     "modalDeletePlayerTitle": "削除するメンバーを選択",
 
@@ -151,7 +155,7 @@
     "alertDeleteTournamentDescription": "「{{tournamentName}}」を削除してよいですか？"
   },
   "tournamentPage": {
-    "tournamentKeyMissing": "大会キーが指定されていません",
+    "tournamentKeyMissing": "大会を開けませんでした。URLを確認してください。",
     "tournamentNotFound": "大会が見つかりませんでした。削除されたか、URLが正しくない可能性があります。",
     "tournamentLoadError": "大会情報を取得できませんでした。通信状態を確認して再取得してください。",
 
@@ -175,16 +179,16 @@
     "modalDeletePlayerTitle": "削除する参加者を選択",
 
     "alertNoPlayersToAddTitle": "参加者を追加できません",
-    "alertNoPlayersToAdd": "追加可能なグループメンバーがいません。全員が追加済みか、グループにメンバーが登録されていません。",
-    "alertNoPlayersToDelete": "削除対象の参加者がいません",
+    "alertNoPlayersToAdd": "追加できるメンバーがいません。グループにメンバーが未登録の場合は、グループ画面で登録してからもう一度お試しください。",
+    "alertNoPlayersToDelete": "この大会には削除できる参加者がいません。",
 
-    "alertDeletePlayerTitle": "Delete Player",
+    "alertDeletePlayerTitle": "参加者を削除",
     "alertDeletePlayerErrorTitle": "参加者を削除できません",
     "alertDeletePlayerDescription": "{{playerName}} を削除してよいですか？"
   },
   "tablePage": {
-    "errorInvalidTableKey": "不正なアクセスです（卓キーが指定されていません）",
-    "errorTableNotFound": "卓が見つかりませんでした",
+    "errorInvalidTableKey": "記録表を開けませんでした。URLを確認してください。",
+    "errorTableNotFound": "記録表が見つかりませんでした。削除されたか、URLが正しくない可能性があります。",
     "scoreSheetTitle": "{{tableName}} 記録表",
 
     "buttonAddPlayer": "参加者を追加",
@@ -195,9 +199,9 @@
     "modalAddPlayerTitle": "参加者を選択",
     "modalDeletePlayerTitle": "削除する参加者を選択",
     "modalDeleteGameTitle": "削除するゲームを選択",
-    "noPlayersToAdd": "追加できる参加者がいません",
-    "noPlayersToDelete": "削除できる参加者がいません",
-    "noGamesToDelete": "削除できるゲームがありません",
+    "noPlayersToAdd": "追加できる参加者がいません。大会に参加者を追加してから、もう一度お試しください。",
+    "noPlayersToDelete": "この記録表には削除できる参加者がいません。",
+    "noGamesToDelete": "この記録表には削除できる対局がありません。",
 
     "alertDeleteTableTitle": "記録表削除",
     "alertDeleteTableDescription": "この記録表を削除してよいですか？",
@@ -224,7 +228,7 @@
     "tournament": "大会",
     "table": "記録表",
     "undefined": "未定義",
-    "noLink": "{{accessType}}リンクが存在しません",
+    "noLink": "{{accessType}}用URLを共有できません。このページを開き直して、もう一度お試しください。",
     "shareTitle": "{{typeName}}への招待",
     "shareText": "このリンクから{{typeName}}にアクセスできます",
     "shareError": "共有に失敗しました",
@@ -260,8 +264,8 @@
     "saveSuccess": "{{pageType}}を保存しました",
     "saveErrorTitle": "ページを保存できませんでした",
     "saveError": "ページの保存に失敗しました。もう一度お試しください。",
-    "updateErrorTitle": "保存済みページを更新できませんでした",
-    "updateError": "保存済みページの更新に失敗しました。もう一度お試しください。"
+    "removeErrorTitle": "保存済みページを削除できませんでした",
+    "removeError": "端末の保存済みページ一覧を更新できませんでした。もう一度お試しください。"
   },
   "bottomNavigation": {
     "home": "ホーム",
@@ -270,7 +274,7 @@
     "settings": "設定"
   },
   "statsPage": {
-    "errorInvalidGroupKey": "不正なアクセスです（グループキーが指定されていません）",
+    "errorInvalidGroupKey": "グループ成績を開けませんでした。URLを確認してください。",
     "pageTitle": "グループメンバー成績",
     "empty": "統計データがありません。",
     "tableTitle": "プレイヤー統計",
@@ -337,7 +341,7 @@
     "send": "送信する",
     "sending": "送信中...",
     "success": "お問い合わせを受け付けました。通常24時間以内に返信いたします。",
-    "error": "送信に失敗しました。再度お試しください。"
+    "error": "お問い合わせを送信できませんでした。入力内容を確認して、もう一度お試しください。"
   },
   "groupCreatePage": {
     "creating": "グループを登録しています",
@@ -347,7 +351,7 @@
     "unknownError": "通信状況を確認して、もう一度お試しください。",
     "retry": "再試行",
     "backHome": "ホームへ戻る",
-    "invalidTokenTitle": "エラー",
+    "invalidTokenTitle": "招待リンクを確認できませんでした",
     "invalidTokenDescription": "招待リンクが無効です。リンクを確認して、もう一度開いてください。"
   },
   "editTournamentModal": {
@@ -372,7 +376,7 @@
     "saveChanges": "変更を保存"
   },
   "notifications": {
-    "common": { "unknownError": "不明なエラー" },
+    "common": { "unknownError": "処理を完了できませんでした。もう一度お試しください。" },
     "game": {
       "createSuccess": "対局を作成しました",
       "updateSuccess": "対局を更新しました",
@@ -421,19 +425,20 @@
       "emailSentBodyNote": "期限を過ぎると無効になりますので、お早めに手続きをお願いします。",
       "pendingGroupSaveErrorTitle": "申請情報を端末に保存できませんでした",
       "pendingGroupSaveErrorDescription": "メール送信は完了しています。再送せず、申請情報の保存を再試行してください。",
-      "createErrorTitle": "グループ作成時にエラーが発生しました",
+      "createErrorTitle": "グループ作成用メールを送信できませんでした",
       "invalidEmail": "不正なメールアドレスです。",
-      "unknownError": "不明なエラー"
+      "unknownError": "グループ作成用メールを送信できませんでした。もう一度お試しください。"
     },
     "group": {
       "createSuccess": "グループを作成しました",
       "updateSuccess": "グループを更新しました",
-      "createErrorTitle": "グループ作成時にエラーが発生しました",
-      "updateErrorTitle": "グループ更新時にエラーが発生しました",
-      "unknownError": "不明なエラー",
-      "expiredPendingGroup": "申請中グループの有効期限切れ",
-      "fetchNotFoundTitle": "グループ取得エラー",
-      "fetchNotFoundDescription": "サーバーから、以下のキーのデータが削除されているためアプリからグループ取得キーを削除しました。"
+      "createErrorTitle": "グループを作成できませんでした",
+      "updateErrorTitle": "グループを更新できませんでした",
+      "unknownError": "処理を完了できませんでした。もう一度お試しください。",
+      "expiredPendingGroup": "期限切れのグループ作成申請を削除しました",
+      "expiredPendingGroupDescription": "{{groupNames}}。必要な場合は、もう一度グループを作成してください。",
+      "fetchNotFoundTitle": "登録グループを開けませんでした",
+      "fetchNotFoundDescription": "削除済みのグループを、この端末の登録一覧から削除しました。"
     }
   },
   "scoreTable": {

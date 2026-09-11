@@ -95,7 +95,18 @@ export default function Index() {
     });
     if (!confirmed) return;
 
-    await appStorage.removeGroupKey(groupKey);
+    try {
+      await appStorage.removeGroupKey(groupKey);
+    } catch (error) {
+      console.error('Error removing registered group:', error);
+      await alertDialog({
+        title: t('welcomPage.removeGroupErrorTitle'),
+        description: t('welcomPage.removeGroupErrorDescription'),
+        showCancelButton: false,
+      });
+      return;
+    }
+
     await safeRefetch();
   };
 

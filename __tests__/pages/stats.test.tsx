@@ -145,9 +145,11 @@ describe('統計ページ', () => {
     expect(screen.queryByText('再取得')).toBeNull();
   });
 
-  it('グループキーがない場合は不正アクセスを表示する', async () => {
+  it('グループキーがない場合はURLの確認を案内する', async () => {
     mockParams.mockReturnValue({ groupKey: '' });
     await render(<GroupPlayerStatsPage />);
-    expect(screen.getByText(/不正なアクセス/)).toBeTruthy();
+    expect(
+      screen.getByText('グループ成績を開けませんでした。URLを確認してください。'),
+    ).toBeTruthy();
   });
 });

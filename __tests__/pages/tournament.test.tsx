@@ -469,10 +469,10 @@ describe('大会詳細ページ', () => {
     expect(mockCreateTable).not.toHaveBeenCalled();
   });
 
-  it('空の大会キーでは不正アクセスを表示する', async () => {
+  it('空の大会キーではURLの確認を案内する', async () => {
     mockParams.mockReturnValue({ tournamentKey: '' });
     await render(<TournamentPage />);
-    expect(screen.getByText(/大会キーが指定されていません/)).toBeTruthy();
+    expect(screen.getByText('大会を開けませんでした。URLを確認してください。')).toBeTruthy();
   });
 
   it('取得成功でも大会データがなければnot foundを表示する', async () => {

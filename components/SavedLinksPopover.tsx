@@ -48,11 +48,11 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
     }
   };
 
-  const showSavedLinkOperationError = (error: unknown) => {
-    console.error('Error updating saved link:', error);
+  const showSavedLinkRemoveError = (error: unknown) => {
+    console.error('Error removing saved link:', error);
     void alertDialog({
-      title: t('savedLinks.updateErrorTitle'),
-      description: t('savedLinks.updateError'),
+      title: t('savedLinks.removeErrorTitle'),
+      description: t('savedLinks.removeError'),
       showCancelButton: false,
     }).catch((dialogError) => {
       console.error('Error showing saved link error dialog:', dialogError);
@@ -77,7 +77,9 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
       });
     }
 
-    void touch({ type: link.type, key: link.key }).catch(showSavedLinkOperationError);
+    void touch({ type: link.type, key: link.key }).catch((error) => {
+      console.error('Error updating saved link last opened time:', error);
+    });
     closePopover();
   };
 
@@ -91,7 +93,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
         showCancelButton: true,
       });
     } catch (error) {
-      showSavedLinkOperationError(error);
+      showSavedLinkRemoveError(error);
       return;
     }
 
@@ -107,7 +109,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
         next.delete(link);
         return next;
       });
-      showSavedLinkOperationError(error);
+      showSavedLinkRemoveError(error);
     }
   };
 

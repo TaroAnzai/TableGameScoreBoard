@@ -41,6 +41,8 @@
     "Email": "Email",
     "RemoveRegisteredGroup": "Remove a registered group",
     "SelectGroupToRemove": "Select a registered group to remove",
+    "removeGroupErrorTitle": "Unable to remove registered group",
+    "removeGroupErrorDescription": "The saved information on this device could not be updated. Please try again.",
     "createdAt": "Created: {{date}}",
     "noRegisteredGroups": "Create a new group using the \"Create new group\" button.",
     "pendingGroups": "Pending Groups",
@@ -95,7 +97,7 @@
     }
   },
   "groupPage": {
-    "groupKeyNotFound": "Group key is missing",
+    "groupKeyNotFound": "Unable to open the group. Check the URL.",
     "groupNotFound": "Group not found. It may have been deleted, or the URL may be incorrect.",
     "loading": "Loading...",
 
@@ -103,8 +105,8 @@
     "buttonDeletePlayer": "Delete Member",
     "buttonCreateTournament": "Create Tournament",
     "buttonSelectTournament": "Select Tournament",
-    "buttonSaveToBrowser": "Save to Browser",
-    "buttonRemoveFromBrowser": "Remove from Browser",
+    "buttonSaveToBrowser": "Register in App",
+    "buttonRemoveFromBrowser": "Remove from App",
     "buttonStats": "Stats",
 
     "tabTournamentList": "Tournament List",
@@ -115,20 +117,22 @@
     "tournamentInstruction": "Multiple tables can be added to a tournament. After creating it, select the participating members from those registered in the group.",
     "sectionMemberListEmpty": "Add a member using the + button.",
     "sectionMemberListEmptyView": "No members have been added.",
-    "sectionTournamentListEmpty": "No tournaments found.",
+    "sectionTournamentListEmpty": "Create a tournament using the + button.",
     "sectionTournamentListEmptyView": "No tournaments have been created.",
     "rateLabel": "Rate: {{rate}}",
     "createdAt": "Created: {{date}}",
 
-    "dialogAddGroupTitle": "Add Group to Browser",
-    "dialogAddGroupDescription": "Do you want to add {{groupName}} to your registered groups?\n\nIt will be saved in your browser.\nIf you change devices or browsers, it will not be transferred. Please save the URL if you want to keep access.",
+    "dialogAddGroupTitle": "Register Group in App",
+    "dialogAddGroupDescription": "Do you want to add {{groupName}} to your registered groups?\n\nIt will be saved in this app.\nIt will not transfer when you change devices. Save the URL if you want to retain access.",
     "unregisteredLeaveTitle": "Group is not registered",
     "unregisteredLeaveDescription": "This group is not registered in the app. Do you want to leave this screen?\nYou will need the invitation URL to open it again.",
     "unregisteredLeaveConfirm": "Leave without registering",
     "unregisteredLeaveCancel": "Stay on this screen",
 
-    "dialogRemoveGroupTitle": "Remove Group from Browser",
+    "dialogRemoveGroupTitle": "Remove Group from App",
     "dialogRemoveGroupDescription": "Do you want to remove {{groupName}} from your registered groups?\n(The group data itself will not be deleted.)",
+    "localSaveErrorTitle": "Unable to register group on this device",
+    "localSaveErrorDescription": "Keep this group page open and try again.",
 
     "modalDeletePlayerTitle": "Select a Member to Delete",
 
@@ -151,7 +155,7 @@
   },
 
   "tournamentPage": {
-    "tournamentKeyMissing": "Tournament key is not specified",
+    "tournamentKeyMissing": "Unable to open the tournament. Check the URL.",
     "tournamentNotFound": "Tournament not found. It may have been deleted, or the URL may be incorrect.",
     "tournamentLoadError": "Tournament information could not be loaded. Check your connection and try again.",
 
@@ -175,16 +179,16 @@
     "modalDeletePlayerTitle": "Select a Participant to Remove",
 
     "alertNoPlayersToAddTitle": "Cannot add participants",
-    "alertNoPlayersToAdd": "There are no group members available to add. Everyone may already be participating, or the group has no members.",
-    "alertNoPlayersToDelete": "No participants available for deletion",
+    "alertNoPlayersToAdd": "There are no members available to add. If the group has no members, register them on the group page and try again.",
+    "alertNoPlayersToDelete": "This tournament has no participants available to remove.",
 
     "alertDeletePlayerTitle": "Delete Participant",
     "alertDeletePlayerErrorTitle": "Error Deleting Participant",
     "alertDeletePlayerDescription": "Are you sure you want to remove {{playerName}}?"
   },
   "tablePage": {
-    "errorInvalidTableKey": "Invalid access (table key missing).",
-    "errorTableNotFound": "Table not found.",
+    "errorInvalidTableKey": "Unable to open the score sheet. Check the URL.",
+    "errorTableNotFound": "The score sheet could not be found. It may have been deleted, or the URL may be incorrect.",
     "scoreSheetTitle": "{{tableName}} Score Sheet",
 
     "buttonAddPlayer": "Add Player",
@@ -195,9 +199,9 @@
     "modalAddPlayerTitle": "Select Players",
     "modalDeletePlayerTitle": "Select a Player to Remove",
     "modalDeleteGameTitle": "Select a Game to Delete",
-    "noPlayersToAdd": "There are no players available to add.",
-    "noPlayersToDelete": "There are no players available to remove.",
-    "noGamesToDelete": "There are no games available to delete.",
+    "noPlayersToAdd": "No participants are available to add. Add participants to the tournament and try again.",
+    "noPlayersToDelete": "This score sheet has no participants available to remove.",
+    "noGamesToDelete": "This score sheet has no games available to delete.",
 
     "alertDeleteTableTitle": "Delete Table",
     "alertDeleteTableDescription": "Are you sure you want to delete this table?",
@@ -224,7 +228,7 @@
     "tournament": "Tournament",
     "table": "Score Sheet",
     "undefined": "Undefined",
-    "noLink": "No {{accessType}} link available",
+    "noLink": "The {{accessType}} URL cannot be shared. Reopen this page and try again.",
     "shareTitle": "Invite to {{typeName}}",
     "shareText": "You can access {{typeName}} using this link.",
     "shareError": "Failed to share",
@@ -260,8 +264,8 @@
     "saveSuccess": "Saved {{pageType}}",
     "saveErrorTitle": "Unable to save page",
     "saveError": "The page could not be saved. Please try again.",
-    "updateErrorTitle": "Unable to update saved page",
-    "updateError": "The saved page could not be updated. Please try again."
+    "removeErrorTitle": "Unable to remove saved page",
+    "removeError": "The saved pages list on this device could not be updated. Please try again."
   },
   "bottomNavigation": {
     "home": "Home",
@@ -270,7 +274,7 @@
     "settings": "Settings"
   },
   "statsPage": {
-    "errorInvalidGroupKey": "Invalid access (group key is missing).",
+    "errorInvalidGroupKey": "Unable to open group statistics. Check the URL.",
     "pageTitle": "Group Member Statistics",
     "empty": "No statistics are available.",
     "tableTitle": "Player Statistics",
@@ -337,7 +341,7 @@
     "send": "Send",
     "sending": "Sending...",
     "success": "Your message has been sent. We will reply within 24 hours.",
-    "error": "Failed to send your message. Please try again."
+    "error": "Unable to send your inquiry. Check your input and try again."
   },
   "groupCreatePage": {
     "creating": "Registering group",
@@ -347,7 +351,7 @@
     "unknownError": "Check your connection and try again.",
     "retry": "Retry",
     "backHome": "Back to home",
-    "invalidTokenTitle": "Error",
+    "invalidTokenTitle": "Unable to verify invitation link",
     "invalidTokenDescription": "This invitation link is invalid. Check the link and open it again."
   },
   "editTournamentModal": {
@@ -370,7 +374,7 @@
     "saveChanges": "Save changes"
   },
   "notifications": {
-    "common": { "unknownError": "Unknown error" },
+    "common": { "unknownError": "The operation could not be completed. Please try again." },
     "game": {
       "createSuccess": "Game created successfully",
       "updateSuccess": "Game updated successfully",
@@ -419,19 +423,20 @@
       "emailSentBodyNote": "The link will expire after that time, so please complete the process as soon as possible.",
       "pendingGroupSaveErrorTitle": "Could not save the request on this device",
       "pendingGroupSaveErrorDescription": "The email was sent. Do not resend it; retry saving the request instead.",
-      "createErrorTitle": "Error creating group",
+      "createErrorTitle": "Unable to send group creation email",
       "invalidEmail": "Invalid email address.",
-      "unknownError": "Unknown error"
+      "unknownError": "Unable to send the group creation email. Please try again."
     },
     "group": {
       "createSuccess": "Group created successfully",
       "updateSuccess": "Group updated successfully",
-      "createErrorTitle": "Error creating group",
-      "updateErrorTitle": "Error updating group",
-      "unknownError": "Unknown error",
-      "expiredPendingGroup": "Expired pending group",
-      "fetchNotFoundTitle": "Error Loading Groups",
-      "fetchNotFoundDescription": "The data associated with the following keys has been deleted from the server, so the group access keys have been removed from this app."
+      "createErrorTitle": "Unable to create group",
+      "updateErrorTitle": "Unable to update group",
+      "unknownError": "The operation could not be completed. Please try again.",
+      "expiredPendingGroup": "Removed expired group creation request",
+      "expiredPendingGroupDescription": "{{groupNames}}. Create the group again if needed.",
+      "fetchNotFoundTitle": "Unable to open registered group",
+      "fetchNotFoundDescription": "The deleted group was removed from this device's registered groups."
     }
   },
   "scoreTable": {
