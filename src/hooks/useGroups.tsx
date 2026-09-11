@@ -158,7 +158,6 @@ export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = tru
       return postApiGroups(data);
     },
     onSuccess: async (data: Group) => {
-      showSuccess(t('hooks.group.createSuccess'));
       if (data.owner_link) {
         try {
           await appStorage.addGroupKey(data.owner_link);
@@ -166,6 +165,7 @@ export const useCreateGroup = (onAfterCreate?: () => void, showErrorDialog = tru
           throw new GroupKeyStorageError(data.owner_link, cause);
         }
       }
+      showSuccess(t('hooks.group.createSuccess'));
       onAfterCreate?.();
     },
     onError: (error: any) => {

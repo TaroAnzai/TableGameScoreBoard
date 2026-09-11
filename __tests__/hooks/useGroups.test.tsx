@@ -109,12 +109,14 @@ describe('useCreateGroup', () => {
 
     await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('owner-key'));
     expect(mutationCompleted).toBe(false);
+    expect(mockShowSuccess).not.toHaveBeenCalled();
     expect(onAfterCreate).not.toHaveBeenCalled();
 
     resolveStorage();
     await mutationPromise;
 
     expect(mutationCompleted).toBe(true);
+    expect(mockShowSuccess).toHaveBeenCalledWith('グループを作成しました');
     expect(onAfterCreate).toHaveBeenCalledTimes(1);
     queryClient.clear();
   });
@@ -143,6 +145,7 @@ describe('useCreateGroup', () => {
     });
 
     expect(mockPostApiGroups).toHaveBeenCalledTimes(1);
+    expect(mockShowSuccess).not.toHaveBeenCalled();
     expect(onAfterCreate).not.toHaveBeenCalled();
     unmount();
     queryClient.clear();
