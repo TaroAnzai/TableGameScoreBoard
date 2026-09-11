@@ -61,15 +61,40 @@ const EditTournamentModal = ({
 }: EditTournamentModalProps) => {
   const { t } = useTranslation();
   const { alertDialog } = useAlertDialog();
-  const nameRef = useRef(tournament.name || '');
-  const descriptionRef = useRef(tournament.description || '');
+  const initialName = tournament.name || '';
+  const initialDescription = tournament.description || '';
+  const initialStartedAt = tournament.started_at ? tournament.started_at.substring(0, 10) : '';
+  const nameRef = useRef(initialName);
+  const descriptionRef = useRef(initialDescription);
   const [hasName, setHasName] = useState(Boolean(tournament.name?.trim()));
-  const [startedAt, setStartedAt] = useState(
-    tournament.started_at ? tournament.started_at.substring(0, 10) : '',
-  );
+  const [startedAt, setStartedAt] = useState(initialStartedAt);
+  const [isDirty, setIsDirty] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isProcessing = isPending || isSubmitting;
+
+  const updateDirtyState = (name: string, description: string, date: string) => {
+    setIsDirty(
+      name !== initialName || description !== initialDescription || date !== initialStartedAt,
+    );
+  };
+
+  const handleCloseRequest = async () => {
+    if (isProcessing) return;
+    if (!isDirty) {
+      onClose();
+      return;
+    }
+
+    const shouldDiscard = await alertDialog({
+      title: t('Common.discardChangesTitle'),
+      description: t('Common.discardChangesDescription'),
+      confirmText: t('Common.discardChanges'),
+      cancelText: t('Common.continueEditing'),
+      showCancelButton: true,
+    });
+    if (shouldDiscard) onClose();
+  };
 
   const handleSubmit = async () => {
     const startDate = startedAt ? parseDateInput(startedAt) : null;
@@ -97,7 +122,12 @@ const EditTournamentModal = ({
   };
   const { width } = useWindowDimensions();
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && !isProcessing && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) void handleCloseRequest();
+      }}
+    >
       <DialogContent
         className="bg-surface -translate-y-20"
         style={{
@@ -119,6 +149,7 @@ const EditTournamentModal = ({
               onChangeText={(text) => {
                 nameRef.current = text;
                 setHasName(Boolean(text.trim()));
+                updateDirtyState(text, descriptionRef.current, startedAt);
               }}
               className="h-auto min-h-12 rounded-xl bg-surface py-3"
             />
@@ -132,6 +163,7 @@ const EditTournamentModal = ({
               editable={!isProcessing}
               onChangeText={(text) => {
                 descriptionRef.current = text;
+                updateDirtyState(nameRef.current, text, startedAt);
               }}
               multiline
               textAlignVertical="top"
@@ -163,7 +195,9 @@ const EditTournamentModal = ({
                 display="compact"
                 presentation="dialog"
                 onValueChange={(_, date) => {
-                  setStartedAt(formatDateInput(date));
+                  const nextStartedAt = formatDateInput(date);
+                  setStartedAt(nextStartedAt);
+                  updateDirtyState(nameRef.current, descriptionRef.current, nextStartedAt);
                   setIsDatePickerOpen(false);
                 }}
                 onDismiss={() => setIsDatePickerOpen(false)}
@@ -177,7 +211,7 @@ const EditTournamentModal = ({
             className="h-auto min-h-12 rounded-xl py-3"
             variant="outline"
             disabled={isProcessing}
-            onPress={onClose}
+            onPress={() => void handleCloseRequest()}
           >
             <Text>{t('Common.close')}</Text>
           </Button>

@@ -1,12 +1,22 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import TableScoreInputModal from '@/components/TableScoreInputModal';
 
+const mockAlertDialog = jest.fn();
+let mockOnOpenChange: ((open: boolean) => void) | undefined;
+
+jest.mock('@/components/common/AlertDialogProvider', () => ({
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
+}));
+
 jest.mock('@/components/ui/dialog', () => {
   const { Text, View } = jest.requireActual('react-native');
   return {
-    Dialog: View,
+    Dialog: ({ onOpenChange, ...props }: { onOpenChange?: (open: boolean) => void }) => {
+      mockOnOpenChange = onOpenChange;
+      return <View {...props} />;
+    },
     DialogContent: View,
     DialogFooter: View,
     DialogHeader: View,
@@ -41,6 +51,10 @@ const renderModal = async (
 };
 
 describe('TableScoreInputModal', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOnOpenChange = undefined;
+  });
   it('全員未入力では保存できない', async () => {
     const ui = await renderModal();
     expect(ui.getByRole('button', { name: '確定' }).props.accessibilityState.disabled).toBe(true);
@@ -106,5 +120,18 @@ describe('TableScoreInputModal', () => {
     await fireEvent.press(ui.getByRole('button', { name: '確定' }));
     expect(onConfirm).toHaveBeenCalledWith([{ player_id: 1, score: 300 }]);
     expect(ui.queryByText('通常卓の合計は0にしてください')).toBeNull();
+  });
+  it('変更後のAndroid Backでは破棄確認を表示し、選択に応じて閉じる', async () => {
+    const onClose = jest.fn();
+    mockAlertDialog.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    const ui = await renderModal({ onClose });
+    await fireEvent.changeText(ui.getByTestId('score-input-1'), '100');
+
+    await act(async () => mockOnOpenChange?.(false));
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => mockOnOpenChange?.(false));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 });

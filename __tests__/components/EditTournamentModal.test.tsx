@@ -17,14 +17,21 @@ jest.mock('@expo/ui/community/datetime-picker', () => ({
     );
   },
 }));
+const mockAlertDialog = jest.fn();
+let mockOnOpenChange: ((open: boolean) => void) | undefined;
+
 jest.mock('@/components/common/AlertDialogProvider', () => ({
-  useAlertDialog: () => ({ alertDialog: jest.fn() }),
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
 jest.mock('@/components/ui/dialog', () => {
+  const ReactLib = jest.requireActual('react');
   const { Text, View } = jest.requireActual('react-native');
   const MockDialogText = ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>;
   return {
-    Dialog: View,
+    Dialog: ({ onOpenChange, ...props }: { onOpenChange?: (open: boolean) => void }) => {
+      mockOnOpenChange = onOpenChange;
+      return ReactLib.createElement(View, props);
+    },
     DialogContent: View,
     DialogFooter: View,
     DialogHeader: View,
@@ -43,6 +50,10 @@ const tournament = {
 };
 
 describe('EditTournamentModal', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOnOpenChange = undefined;
+  });
   it('日本語IMEの変換を妨げないようテキスト入力をcontrolledにしない', async () => {
     await render(
       <EditTournamentModal
@@ -123,20 +134,32 @@ describe('EditTournamentModal', () => {
   it('日付pickerで選択したローカル日付をUTC日付として保存する', async () => {
     const onConfirm = jest.fn().mockResolvedValue(undefined);
     await render(
-      <EditTournamentModal open tournament={tournament} onConfirm={onConfirm} onClose={jest.fn()} />,
+      <EditTournamentModal
+        open
+        tournament={tournament}
+        onConfirm={onConfirm}
+        onClose={jest.fn()}
+      />,
     );
     fireEvent.press(screen.getByLabelText('開始日を選択'));
     fireEvent.press(await screen.findByLabelText('日付を決定'));
     await waitFor(() => expect(screen.getByText('2026-08-29')).toBeTruthy());
     await fireEvent.press(screen.getByRole('button', { name: '保存' }));
     await waitFor(() =>
-      expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ started_at: '2026-08-29T00:00:00.000Z' })),
+      expect(onConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ started_at: '2026-08-29T00:00:00.000Z' }),
+      ),
     );
   });
 
   it('日付pickerをdismissすると選択せず閉じる', async () => {
     await render(
-      <EditTournamentModal open tournament={tournament} onConfirm={jest.fn()} onClose={jest.fn()} />,
+      <EditTournamentModal
+        open
+        tournament={tournament}
+        onConfirm={jest.fn()}
+        onClose={jest.fn()}
+      />,
     );
     fireEvent.press(screen.getByLabelText('開始日を選択'));
     fireEvent.press(await screen.findByLabelText('日付選択を閉じる'));
@@ -146,7 +169,12 @@ describe('EditTournamentModal', () => {
   it('空白だけの大会名では保存を無効化する', async () => {
     const onConfirm = jest.fn();
     await render(
-      <EditTournamentModal open tournament={tournament} onConfirm={onConfirm} onClose={jest.fn()} />,
+      <EditTournamentModal
+        open
+        tournament={tournament}
+        onConfirm={onConfirm}
+        onClose={jest.fn()}
+      />,
     );
     fireEvent.changeText(screen.getByTestId('tournament-name-input'), '   ');
     await waitFor(() => expect(screen.getByRole('button', { name: '保存' })).toBeDisabled());
@@ -178,12 +206,32 @@ describe('EditTournamentModal', () => {
     let resolve!: () => void;
     const onConfirm = jest.fn(() => new Promise<void>((done) => (resolve = done)));
     await render(
-      <EditTournamentModal open tournament={tournament} onConfirm={onConfirm} onClose={jest.fn()} />,
+      <EditTournamentModal
+        open
+        tournament={tournament}
+        onConfirm={onConfirm}
+        onClose={jest.fn()}
+      />,
     );
     fireEvent.press(screen.getByRole('button', { name: '保存' }));
     await waitFor(() => expect(screen.getByText(/処理中/)).toBeTruthy());
     fireEvent.press(screen.getByRole('button', { name: /処理中/ }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
     await act(async () => resolve());
+  });
+  it('変更後のAndroid Backでは破棄確認を表示し、選択に応じて閉じる', async () => {
+    const onClose = jest.fn();
+    mockAlertDialog.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    await render(
+      <EditTournamentModal open tournament={tournament} onConfirm={jest.fn()} onClose={onClose} />,
+    );
+    await fireEvent.changeText(screen.getByTestId('tournament-description-input'), '変更後');
+
+    await act(async () => mockOnOpenChange?.(false));
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => mockOnOpenChange?.(false));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 });

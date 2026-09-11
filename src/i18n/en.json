@@ -16,6 +16,10 @@
     "editTitle": "Edit {{title}}",
     "ok": "OK",
     "save": "Save",
+    "discardChangesTitle": "Discard changes?",
+    "discardChangesDescription": "Your changes will not be saved.",
+    "discardChanges": "Discard changes",
+    "continueEditing": "Continue editing",
     "accessLevel": { "VIEW": "View", "EDIT": "Edit", "OWNER": "Owner" }
   },
   "apiErrors": {

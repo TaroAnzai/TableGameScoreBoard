@@ -1,13 +1,23 @@
-import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import { TextInputModal } from '@/components/TextInputModal';
+
+const mockAlertDialog = jest.fn();
+let mockOnOpenChange: ((open: boolean) => void) | undefined;
+
+jest.mock('@/components/common/AlertDialogProvider', () => ({
+  useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
+}));
 
 jest.mock('@/components/ui/dialog', () => {
   const { Text, View } = jest.requireActual('react-native');
   const MockDialogText = ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>;
   return {
-    Dialog: View,
+    Dialog: ({ onOpenChange, ...props }: { onOpenChange?: (open: boolean) => void }) => {
+      mockOnOpenChange = onOpenChange;
+      return <View {...props} />;
+    },
     DialogContent: View,
     DialogDescription: MockDialogText,
     DialogFooter: View,
@@ -17,16 +27,14 @@ jest.mock('@/components/ui/dialog', () => {
 });
 
 describe('TextInputModal', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOnOpenChange = undefined;
+  });
   it('日本語IMEの変換を妨げないよう入力値をcontrolledにしない', async () => {
     const user = userEvent.setup();
     await render(
-      <TextInputModal
-        open
-        onComfirm={jest.fn()}
-        onClose={jest.fn()}
-        value="初期値"
-        title="入力"
-      />,
+      <TextInputModal open onComfirm={jest.fn()} onClose={jest.fn()} value="初期値" title="入力" />,
     );
 
     const input = screen.getByTestId('primaryInput');
@@ -131,7 +139,9 @@ describe('TextInputModal', () => {
       />,
     );
     fireEvent.press(screen.getByRole('button', { name: 'OK' }));
-    await waitFor(() => expect(screen.getByText('正しい形式のメールアドレスを入力してください。')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('正しい形式のメールアドレスを入力してください。')).toBeTruthy(),
+    );
     expect(onConfirm).not.toHaveBeenCalled();
     fireEvent.changeText(screen.getByTestId('primaryInput'), 'valid@example.com');
     await waitFor(() =>
@@ -182,4 +192,19 @@ describe('TextInputModal', () => {
     expect(screen.getByTestId('twoInput').props.secureTextEntry).toBe(true);
   });
 
+  it('変更後のAndroid Backでは破棄確認を表示し、選択に応じて閉じる', async () => {
+    const onClose = jest.fn();
+    mockAlertDialog.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    await render(
+      <TextInputModal open onComfirm={jest.fn()} onClose={onClose} value="" title="入力" />,
+    );
+    await fireEvent.changeText(screen.getByTestId('primaryInput'), '入力途中');
+
+    await act(async () => mockOnOpenChange?.(false));
+    await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => mockOnOpenChange?.(false));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
 });

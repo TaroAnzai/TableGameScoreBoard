@@ -16,6 +16,10 @@
     "editTitle": "{{title}}を編集",
     "ok": "OK",
     "save": "保存",
+    "discardChangesTitle": "変更を破棄しますか？",
+    "discardChangesDescription": "入力した変更は保存されません。",
+    "discardChanges": "変更を破棄",
+    "continueEditing": "編集を続ける",
     "accessLevel": { "VIEW": "閲覧", "EDIT": "編集", "OWNER": "所有者" }
   },
   "apiErrors": {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 
+import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -57,6 +58,9 @@ export const TextInputModal = ({
   pendingText,
 }: TextInputModalProps) => {
   const { t } = useTranslation();
+  const { alertDialog } = useAlertDialog();
+  const initialInputText = value || '';
+  const initialInputText2 = twoValue || '';
 
   const inputTextRef = useRef(value || '');
   const inputText2Ref = useRef(twoValue || '');
@@ -65,6 +69,7 @@ export const TextInputModal = ({
   const [inputError, setInputError] = useState(false);
   const [input2Error, setInput2Error] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const isProcessing = isPending || isSubmitting;
   const resetKey = `${open}-${value ?? ''}-${twoValue}`;
   const [previousResetKey, setPreviousResetKey] = useState(resetKey);
@@ -82,9 +87,31 @@ export const TextInputModal = ({
     setHasInput2(Boolean(twoValue.trim()));
     setInputError(false);
     setInput2Error(false);
+    setIsDirty(false);
   } else if (resetKey !== previousResetKey) {
     setPreviousResetKey(resetKey);
   }
+
+  const updateDirtyState = (inputText: string, inputText2: string) => {
+    setIsDirty(inputText !== initialInputText || inputText2 !== initialInputText2);
+  };
+
+  const handleCloseRequest = async () => {
+    if (isProcessing) return;
+    if (!isDirty) {
+      onClose();
+      return;
+    }
+
+    const shouldDiscard = await alertDialog({
+      title: t('Common.discardChangesTitle'),
+      description: t('Common.discardChangesDescription'),
+      confirmText: t('Common.discardChanges'),
+      cancelText: t('Common.continueEditing'),
+      showCancelButton: true,
+    });
+    if (shouldDiscard) onClose();
+  };
 
   const handleConfirm = async () => {
     if (isProcessing) return;
@@ -113,7 +140,7 @@ export const TextInputModal = ({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen && !isProcessing) onClose();
+        if (!nextOpen) void handleCloseRequest();
       }}
     >
       <DialogContent
@@ -134,6 +161,7 @@ export const TextInputModal = ({
               defaultValue={value}
               onChangeText={(text) => {
                 inputTextRef.current = text;
+                updateDirtyState(text, inputText2Ref.current);
                 setHasInput(Boolean(text.trim()));
                 if (inputError) setInputError(false);
               }}
@@ -158,6 +186,7 @@ export const TextInputModal = ({
                   defaultValue={twoValue}
                   onChangeText={(text) => {
                     inputText2Ref.current = text;
+                    updateDirtyState(inputTextRef.current, text);
                     setHasInput2(Boolean(text.trim()));
                     if (input2Error) setInput2Error(false);
                   }}
@@ -180,7 +209,7 @@ export const TextInputModal = ({
             className="h-auto min-h-12 rounded-xl py-3"
             variant="outline"
             disabled={isProcessing}
-            onPress={onClose}
+            onPress={() => void handleCloseRequest()}
           >
             <Text>{t('Common.Cancel')}</Text>
           </Button>

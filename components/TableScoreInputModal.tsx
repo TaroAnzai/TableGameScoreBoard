@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, type LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { useAlertDialog } from '@/components/common/AlertDialogProvider';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -43,15 +44,15 @@ const TableScoreInputModal = ({
   isSaving = false,
 }: TableScoreInputModalProps) => {
   const { t } = useTranslation();
+  const { alertDialog } = useAlertDialog();
   const inputPlayers = players.filter((player) => player.id > 0);
-  const [scores, setScores] = useState<Record<number, string>>(() =>
-    Object.fromEntries(
-      inputPlayers.map((player) => {
-        const score = game?.scores?.find((entry) => entry.player_id === player.id)?.score;
-        return [player.id, score === undefined || score === null ? '' : String(score)];
-      }),
-    ),
+  const initialScores = Object.fromEntries(
+    inputPlayers.map((player) => {
+      const score = game?.scores?.find((entry) => entry.player_id === player.id)?.score;
+      return [player.id, score === undefined || score === null ? '' : String(score)];
+    }),
   );
+  const [scores, setScores] = useState<Record<number, string>>(() => initialScores);
   const [headerHeight, setHeaderHeight] = useState<number>(mahjong.tableHeaderHeight);
 
   const total = useMemo(
@@ -74,6 +75,27 @@ const TableScoreInputModal = ({
     [scores],
   );
 
+  const isDirty = inputPlayers.some(
+    (player) => (scores[player.id] ?? '') !== (initialScores[player.id] ?? ''),
+  );
+
+  const handleCloseRequest = async () => {
+    if (isSaving) return;
+    if (!isDirty) {
+      onClose();
+      return;
+    }
+
+    const shouldDiscard = await alertDialog({
+      title: t('Common.discardChangesTitle'),
+      description: t('Common.discardChangesDescription'),
+      confirmText: t('Common.discardChanges'),
+      cancelText: t('Common.continueEditing'),
+      showCancelButton: true,
+    });
+    if (shouldDiscard) onClose();
+  };
+
   const handleScoreChange = (playerId: number, value: string) => {
     if (value !== '' && !/^-?\d*$/.test(value)) return;
     setScores((current) => ({ ...current, [playerId]: value }));
@@ -87,7 +109,7 @@ const TableScoreInputModal = ({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen && !isSaving) onClose();
+        if (!nextOpen) void handleCloseRequest();
       }}
     >
       <DialogContent
@@ -191,7 +213,7 @@ const TableScoreInputModal = ({
             className="h-auto min-h-12 rounded-xl py-3"
             variant="outline"
             disabled={isSaving}
-            onPress={onClose}
+            onPress={() => void handleCloseRequest()}
           >
             <Text>{t('Common.Cancel')}</Text>
           </Button>
