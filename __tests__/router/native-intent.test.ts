@@ -37,4 +37,13 @@ describe('redirectSystemPath', () => {
       new RegExp(`^${expectedPrefix.replace(/[?]/g, '\\?')}[&?]__externalEntry=\\d+-\\d+$`),
     );
   });
+
+  it('変換できないDeep Linkは無効リンク画面へ送る', () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    expect(redirectSystemPath({ path: 'http://[invalid', initial: true })).toBe('/invalid-link');
+    expect(consoleError).toHaveBeenCalled();
+
+    consoleError.mockRestore();
+  });
 });

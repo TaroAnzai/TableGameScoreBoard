@@ -28,6 +28,6 @@ export const redirectSystemPath = ({ path, initial }: { path: string; initial: b
     return `${normalizedUrl.pathname}${normalizedUrl.search}${normalizedUrl.hash}`;
   } catch (error) {
     console.error('Deep Link変換エラー:', error);
-    return '/';
+    return '/invalid-link';
   }
 };

@@ -126,7 +126,7 @@ export const SavedLinksPopover = ({ trigger }: SavedLinksPopoverProps) => {
             <ActivityIndicator accessibilityLabel={t('Common.loading')} />
           </View>
         ) : isError ? (
-          <Text className="py-4 text-center text-destructive">{t('Common.loadError')}</Text>
+          <Text className="py-4 text-center text-destructive">{t('savedLinks.loadError')}</Text>
         ) : sortedLinks.length === 0 ? (
           <Text className="py-4 text-center text-muted-foreground">{t('savedLinks.empty')}</Text>
         ) : (

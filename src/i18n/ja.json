@@ -248,6 +248,7 @@
   "savedLinks": {
     "title": "保存済みページ",
     "empty": "保存済みの大会・卓はありません",
+    "loadError": "保存済みページを読み込めませんでした。アプリを開き直してください。",
     "open": "{{name}}を開く",
     "remove": "{{name}}を削除",
     "removeConfirmTitle": "保存済みページを削除",
@@ -444,7 +445,8 @@
     "columnConvertedTotal": "換算点"
   },
   "notFound": {
-    "title": "ページが見つかりません",
+    "title": "リンクを開けませんでした",
+    "description": "リンクが無効か、ページが削除されています。URLを確認してください。",
     "path": "パス",
     "query": "クエリ",
     "toHome": "ホームに戻る",

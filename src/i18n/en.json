@@ -248,6 +248,7 @@
   "savedLinks": {
     "title": "Saved pages",
     "empty": "No saved tournaments or tables.",
+    "loadError": "Unable to load saved pages. Close and reopen the app.",
     "open": "Open {{name}}",
     "remove": "Remove {{name}}",
     "removeConfirmTitle": "Remove saved page",
@@ -442,7 +443,8 @@
     "columnConvertedTotal": "Converted"
   },
   "notFound": {
-    "title": "Page not found",
+    "title": "Unable to open link",
+    "description": "The link is invalid or the page has been deleted. Check the URL.",
     "path": "Path",
     "query": "Query",
     "toHome": "Back to Home",

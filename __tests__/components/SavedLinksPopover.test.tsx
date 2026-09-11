@@ -211,7 +211,7 @@ describe('SavedLinksPopover', () => {
     [
       '読み込み失敗',
       { isLoading: false, isError: true },
-      'データを取得できませんでした。通信状態を確認して再取得してください。',
+      '保存済みページを読み込めませんでした。アプリを開き直してください。',
       false,
     ],
   ])('%sの状態を表示する', async (_, state, expected, isAccessibilityLabel) => {
