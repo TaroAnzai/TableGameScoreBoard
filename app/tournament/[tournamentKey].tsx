@@ -281,6 +281,7 @@ const TournamentPage = () => {
   if (!tournamentKey) {
     return (
       <MahjongContainer>
+        <PageTitleBar title={t('titleBar.tournament')} onBackPress={handleBack} showBackButton />
         <View className="flex-1 items-center justify-center">
           <Text>{t('tournamentPage.tournamentKeyMissing')}</Text>
         </View>
@@ -299,6 +300,7 @@ const TournamentPage = () => {
   if (isErrorDashboard || !tournament) {
     return (
       <MahjongContainer>
+        <PageTitleBar title={t('titleBar.tournament')} onBackPress={handleBack} showBackButton />
         <SectionErrorState
           message={tournamentErrorPresentation.message}
           isRetrying={isFetchingDashboard}

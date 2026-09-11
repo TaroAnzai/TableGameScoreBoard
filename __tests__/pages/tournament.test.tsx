@@ -5,6 +5,7 @@ import TournamentPage from '@/app/tournament/[tournamentKey]';
 import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
+const mockHandleBack = jest.fn();
 const mockParams = jest.fn<{ tournamentKey: string; parentGroupKey?: string }, []>(() => ({
   tournamentKey: 'tournament-key',
   parentGroupKey: 'group-key',
@@ -57,17 +58,24 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
     onTitleChange,
     parentUrl,
     onTitleLongPress,
+    onBackPress,
+    showBackButton,
   }: {
     title: string;
     onTitleClick?: () => void;
     onTitleChange?: (title: string) => void;
     parentUrl?: string | null;
     onTitleLongPress?: () => void;
+    onBackPress?: () => void;
+    showBackButton?: boolean;
   }) => {
     const { Pressable, Text } = jest.requireActual('react-native');
     return (
       <>
         <Text>{title}</Text>
+        {showBackButton && (
+          <Pressable accessibilityLabel="大会画面から戻る" onPress={onBackPress} />
+        )}
         {parentUrl && <Pressable accessibilityLabel="親グループに戻る" />}
         {onTitleClick && (
           <Text accessibilityRole="button" onPress={onTitleClick}>
@@ -99,7 +107,10 @@ jest.mock('@/components/EditTournamentModal', () => {
   const { Pressable } = jest.requireActual('react-native');
   return ({ onConfirm, onClose }: any) => (
     <>
-      <Pressable accessibilityLabel="大会編集を確定" onPress={() => onConfirm({ name: '編集後の大会' })} />
+      <Pressable
+        accessibilityLabel="大会編集を確定"
+        onPress={() => onConfirm({ name: '編集後の大会' })}
+      />
       <Pressable accessibilityLabel="大会編集を閉じる" onPress={onClose} />
     </>
   );
@@ -108,7 +119,10 @@ jest.mock('@/components/MultiSelectorModal', () => {
   const { Pressable } = jest.requireActual('react-native');
   return ({ onConfirm, onClose }: any) => (
     <>
-      <Pressable accessibilityLabel="大会参加者追加を確定" onPress={() => onConfirm([{ id: 2, name: '候補者2' }])} />
+      <Pressable
+        accessibilityLabel="大会参加者追加を確定"
+        onPress={() => onConfirm([{ id: 2, name: '候補者2' }])}
+      />
       <Pressable accessibilityLabel="大会参加者追加を閉じる" onPress={onClose} />
     </>
   );
@@ -132,7 +146,7 @@ jest.mock('@/src/hooks/useMutationFeedback', () => ({
   useMutationFeedback: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
 }));
 jest.mock('@/src/hooks/useBackFallback', () => ({
-  useBackFallback: () => jest.fn(),
+  useBackFallback: () => mockHandleBack,
 }));
 jest.mock('@/src/hooks/useSavedPage', () => ({
   useSavedPage: (...args: unknown[]) => {
@@ -212,7 +226,8 @@ describe('大会詳細ページ', () => {
     await render(<TournamentPage />);
     await fireEvent.press(screen.getByText('大会名を直接変更'));
     expect(mockUpdateTournament).toHaveBeenCalledWith({
-      tournamentKey: 'tournament-key', groupKey: 'group-key',
+      tournamentKey: 'tournament-key',
+      groupKey: 'group-key',
       tournament: { name: '変更後の大会' },
     });
   });
@@ -231,7 +246,8 @@ describe('大会詳細ページ', () => {
     await fireEvent.press(screen.getByRole('button', { name: '参加者を追加' }));
     await fireEvent.press(screen.getByLabelText('大会参加者追加を確定'));
     expect(mockAddTournamentPlayer).toHaveBeenCalledWith({
-      tournamentKey: 'tournament-key', players: [{ id: 2, name: '候補者2' }],
+      tournamentKey: 'tournament-key',
+      players: [{ id: 2, name: '候補者2' }],
     });
   });
 
@@ -243,7 +259,8 @@ describe('大会詳細ページ', () => {
     expect(mockDeleteTournamentPlayer).not.toHaveBeenCalled();
     await fireEvent.press(screen.getByLabelText('大会参加者削除を確定'));
     expect(mockDeleteTournamentPlayer).toHaveBeenCalledWith({
-      tournamentKey: 'tournament-key', playerId: 1,
+      tournamentKey: 'tournament-key',
+      playerId: 1,
     });
   });
 
@@ -443,6 +460,8 @@ describe('大会詳細ページ', () => {
 
     expect(screen.getByText(/大会が見つかりませんでした/)).toBeTruthy();
     expect(screen.queryByText('再取得')).toBeNull();
+    fireEvent.press(screen.getByLabelText('大会画面から戻る'));
+    expect(mockHandleBack).toHaveBeenCalledTimes(1);
   });
 
   it('大会本体の一時的な取得エラーでは分類したメッセージと再取得を表示する', async () => {

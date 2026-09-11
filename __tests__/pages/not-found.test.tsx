@@ -2,10 +2,10 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import NotFoundPage from '@/app/+not-found';
 
-const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 
 jest.mock('expo-router', () => ({
-  router: { replace: (...args: unknown[]) => mockReplace(...args) },
+  router: { dismissTo: (...args: unknown[]) => mockDismissTo(...args) },
 }));
 
 describe('NotFoundPage', () => {
@@ -23,6 +23,6 @@ describe('NotFoundPage', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'ホームに戻る' }));
 
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockDismissTo).toHaveBeenCalledWith('/');
   });
 });

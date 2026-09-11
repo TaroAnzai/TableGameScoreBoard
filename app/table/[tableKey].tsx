@@ -109,6 +109,7 @@ export default function TablePage() {
   if (!tableKey) {
     return (
       <MahjongContainer>
+        <PageTitleBar title={t('titleBar.table')} onBackPress={handleBack} showBackButton />
         <Text>{t('tablePage.errorInvalidTableKey')}</Text>
       </MahjongContainer>
     );
@@ -136,6 +137,7 @@ export default function TablePage() {
   if (isErrorDashboard) {
     return (
       <MahjongContainer>
+        <PageTitleBar title={t('titleBar.table')} onBackPress={handleBack} showBackButton />
         <SectionErrorState
           message={tableErrorPresentation.message}
           isRetrying={isFetchingDashboard}
@@ -149,6 +151,7 @@ export default function TablePage() {
   if (!table && !isLoadingDashboard) {
     return (
       <MahjongContainer>
+        <PageTitleBar title={t('titleBar.table')} onBackPress={handleBack} showBackButton />
         <Text>{t('tablePage.errorTableNotFound')}</Text>
       </MahjongContainer>
     );

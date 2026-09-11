@@ -7,6 +7,7 @@ import { ApiError } from '@/src/api/apiError';
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockDismissTo = jest.fn();
+const mockHandleBack = jest.fn();
 const mockAlertDialog = jest.fn(() => Promise.resolve(true));
 const mockRemoveSavedLink = jest.fn(() => Promise.resolve());
 const mockParams = jest.fn(
@@ -70,14 +71,21 @@ jest.mock('@/components/page_parts/PageTitleBar', () => {
     parentUrl,
     onTitleChange,
     onTitleLongPress,
+    onBackPress,
+    showBackButton,
   }: {
     title: string;
     parentUrl?: string | null;
     onTitleChange?: (title: string) => void;
     onTitleLongPress?: () => void;
+    onBackPress?: () => void;
+    showBackButton?: boolean;
   }) => (
     <View>
       <Text>{title}</Text>
+      {showBackButton && (
+        <Pressable accessibilityLabel="記録表画面から戻る" onPress={onBackPress} />
+      )}
       {onTitleChange && (
         <Pressable
           accessibilityLabel="テーブル名を変更"
@@ -114,13 +122,17 @@ jest.mock('@/components/TableScoreBoard', () => {
         accessibilityRole="button"
         accessibilityLabel="新規ゲームを確定"
         disabled={disabled}
-        onPress={() => void onUpdateGame(null, [{ player_id: 1, score: 25000 }]).catch(() => undefined)}
+        onPress={() =>
+          void onUpdateGame(null, [{ player_id: 1, score: 25000 }]).catch(() => undefined)
+        }
       />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="既存ゲームを確定"
         disabled={disabled}
-        onPress={() => void onUpdateGame(1, [{ player_id: 1, score: 26000 }]).catch(() => undefined)}
+        onPress={() =>
+          void onUpdateGame(1, [{ player_id: 1, score: 26000 }]).catch(() => undefined)
+        }
       />
     </View>
   );
@@ -129,7 +141,10 @@ jest.mock('@/components/TableScoreBoard', () => {
 jest.mock('@/components/MultiSelectorModal', () => {
   const { Pressable } = jest.requireActual('react-native');
   return ({ onConfirm }: { onConfirm: (items: unknown[]) => Promise<void> }) => (
-    <Pressable accessibilityLabel="参加者選択を確定" onPress={() => onConfirm([{ id: 2, name: '候補者2' }])} />
+    <Pressable
+      accessibilityLabel="参加者選択を確定"
+      onPress={() => onConfirm([{ id: 2, name: '候補者2' }])}
+    />
   );
 });
 jest.mock('@/components/SelectorModal', () => {
@@ -151,7 +166,7 @@ jest.mock('@/src/hooks/useMutationFeedback', () => ({
   useMutationFeedback: () => ({ showError: mockShowError, showSuccess: mockShowSuccess }),
 }));
 jest.mock('@/src/hooks/useBackFallback', () => ({
-  useBackFallback: () => jest.fn(),
+  useBackFallback: () => mockHandleBack,
 }));
 jest.mock('@/src/hooks/useSavedPage', () => ({
   useSavedPage: (...args: unknown[]) => {
@@ -225,11 +240,14 @@ describe('卓詳細ページ', () => {
     await fireEvent.press(screen.getByLabelText('既存ゲームを確定'));
 
     expect(mockCreateGame).toHaveBeenCalledWith({
-      tableKey: 'table-key', tournamentKey: 'tournament-key',
+      tableKey: 'table-key',
+      tournamentKey: 'tournament-key',
       gameCreate: { scores: [{ player_id: 1, score: 25000 }] },
     });
     expect(mockUpdateGame).toHaveBeenCalledWith({
-      tableKey: 'table-key', tournamentKey: 'tournament-key', gameId: 1,
+      tableKey: 'table-key',
+      tournamentKey: 'tournament-key',
+      gameId: 1,
       gameUpdate: { scores: [{ player_id: 1, score: 26000 }] },
     });
   });
@@ -342,6 +360,8 @@ describe('卓詳細ページ', () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByText('再取得')).toBeNull();
+    fireEvent.press(screen.getByLabelText('記録表画面から戻る'));
+    expect(mockHandleBack).toHaveBeenCalledTimes(1);
   });
 
   it('VIEW権限では編集操作を無効化する', async () => {
@@ -373,7 +393,8 @@ describe('卓詳細ページ', () => {
       await mockAddTablePlayer.mock.results[0].value;
     });
     expect(mockAddTablePlayer).toHaveBeenCalledWith({
-      tableKey: 'table-key', tablePlayersItem: [{ player_id: 2 }],
+      tableKey: 'table-key',
+      tablePlayersItem: [{ player_id: 2 }],
     });
 
     await fireEvent.press(screen.getByLabelText('参加者を削除'));
@@ -382,7 +403,8 @@ describe('卓詳細ページ', () => {
       await mockDeleteTablePlayer.mock.results[0].value;
     });
     expect(mockDeleteTablePlayer).toHaveBeenCalledWith({
-      tableKey: 'table-key', playerId: 1,
+      tableKey: 'table-key',
+      playerId: 1,
     });
   });
 
@@ -542,21 +564,13 @@ describe('卓詳細ページ', () => {
   it('追加・削除selectorを閉じる操作でmodalを非表示にする', async () => {
     await render(<TablePage />);
     fireEvent.press(screen.getByLabelText('参加者を削除'));
-    await waitFor(() =>
-      expect(screen.getByLabelText('削除する参加者を選択を閉じる')).toBeTruthy(),
-    );
+    await waitFor(() => expect(screen.getByLabelText('削除する参加者を選択を閉じる')).toBeTruthy());
     fireEvent.press(screen.getByLabelText('削除する参加者を選択を閉じる'));
-    await waitFor(() =>
-      expect(screen.queryByLabelText('削除する参加者を選択を確定')).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByLabelText('削除する参加者を選択を確定')).toBeNull());
 
     fireEvent.press(screen.getByText('対局データを削除'));
-    await waitFor(() =>
-      expect(screen.getByLabelText('削除するゲームを選択を閉じる')).toBeTruthy(),
-    );
+    await waitFor(() => expect(screen.getByLabelText('削除するゲームを選択を閉じる')).toBeTruthy());
     fireEvent.press(screen.getByLabelText('削除するゲームを選択を閉じる'));
-    await waitFor(() =>
-      expect(screen.queryByLabelText('削除するゲームを選択を確定')).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByLabelText('削除するゲームを選択を確定')).toBeNull());
   });
 });

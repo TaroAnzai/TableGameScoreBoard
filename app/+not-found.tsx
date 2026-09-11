@@ -16,7 +16,7 @@ export default function NotFoundPage() {
           {t('notFound.title')}
         </Text>
         <Text className="text-center text-on-surface-variant">{t('notFound.description')}</Text>
-        <Button className="mt-2" onPress={() => router.replace('/')}>
+        <Button className="mt-2" onPress={() => router.dismissTo('/')}>
           <Text>{t('notFound.toHome')}</Text>
         </Button>
       </View>
