@@ -16,6 +16,7 @@ export const BottomNavigation = () => {
   const isHome = pathname === '/';
   const isStats = pathname === '/stats';
   const isSettings = pathname === '/settings';
+  const isUtilityPage = isStats || isSettings;
 
   return (
     <View
@@ -24,10 +25,11 @@ export const BottomNavigation = () => {
     >
       <Button
         accessibilityLabel={t('bottomNavigation.home')}
-        accessibilityState={{ selected: isHome }}
+        accessibilityState={{ selected: isHome, disabled: isHome }}
         className="h-auto min-h-12 flex-1 flex-col gap-1 rounded-lg py-2"
+        disabled={isHome}
         variant={isHome ? 'secondary' : 'ghost'}
-        onPress={() => router.replace('/')}
+        onPress={() => router.dismissTo('/')}
       >
         <Icon as={House} className="text-on-surface" size={20} />
         <Text className="text-xs">{t('bottomNavigation.home')}</Text>
@@ -47,10 +49,11 @@ export const BottomNavigation = () => {
 
       <Button
         accessibilityLabel={t('bottomNavigation.stats')}
-        accessibilityState={{ selected: isStats }}
+        accessibilityState={{ selected: isStats, disabled: isUtilityPage }}
         className="h-auto min-h-12 flex-1 flex-col gap-1 rounded-lg py-2"
+        disabled={isUtilityPage}
         variant={isStats ? 'secondary' : 'ghost'}
-        onPress={() => router.replace('/stats')}
+        onPress={() => router.push('/stats')}
       >
         <Icon as={BarChart3} className="text-on-surface" size={20} />
         <Text className="text-xs">{t('bottomNavigation.stats')}</Text>
@@ -58,10 +61,11 @@ export const BottomNavigation = () => {
 
       <Button
         accessibilityLabel={t('bottomNavigation.settings')}
-        accessibilityState={{ selected: isSettings }}
+        accessibilityState={{ selected: isSettings, disabled: isUtilityPage }}
         className="h-auto min-h-12 flex-1 flex-col gap-1 rounded-lg py-2"
+        disabled={isUtilityPage}
         variant={isSettings ? 'secondary' : 'ghost'}
-        onPress={() => router.replace('/settings')}
+        onPress={() => router.push('/settings')}
       >
         <Icon as={Settings} className="text-on-surface" size={20} />
         <Text className="text-xs">{t('bottomNavigation.settings')}</Text>
