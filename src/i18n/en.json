@@ -231,7 +231,7 @@
     "shareSuccessTitle": "URL Copied",
     "shareSuccessDescription": "Copied the URL for {{typeName}} to your clipboard:\n{{url}}",
     "shareErrorTitle": "Copy Failed",
-    "shareErrorDescription": "Failed to copy the URL to clipboard.\n{{error}}",
+    "shareErrorDescription": "Failed to share or copy the URL. Please try again.",
     "parentPage": "Go to parent page",
     "back": "Go back",
     "shareMenu": "Open share menu",

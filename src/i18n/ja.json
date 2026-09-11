@@ -231,7 +231,7 @@
     "shareSuccessTitle": "URLをコピーしました",
     "shareSuccessDescription": "{{typeName}}のURLをクリップボードにコピーしました:\n{{url}}",
     "shareErrorTitle": "コピーに失敗しました",
-    "shareErrorDescription": "URLをクリップボードにコピーに失敗しました。\n{{error}}",
+    "shareErrorDescription": "URLの共有とコピーに失敗しました。もう一度お試しください。",
     "parentPage": "上の階層へ移動",
     "back": "戻る",
     "shareMenu": "共有メニューを開く",

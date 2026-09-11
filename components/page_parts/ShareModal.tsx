@@ -44,12 +44,10 @@ const ShareModal = ({ groupName, open, shareUrl, typeName, onClose }: ShareModal
           }),
           showCancelButton: false,
         });
-      } catch (clipboardErr: any) {
+      } catch {
         alertDialog({
           title: t('titleBar.shareErrorTitle'),
-          description: t('titleBar.shareErrorDescription', {
-            error: clipboardErr.message,
-          }),
+          description: t('titleBar.shareErrorDescription'),
           showCancelButton: false,
         });
       }

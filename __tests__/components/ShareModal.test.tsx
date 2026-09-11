@@ -82,7 +82,7 @@ describe('ShareModal', () => {
     );
   });
 
-  it('共有とclipboardの両方が失敗した場合はエラー詳細をdialogへ渡す', async () => {
+  it('共有とclipboardの両方が失敗しても内部エラーを表示しない', async () => {
     jest.spyOn(Share, 'share').mockRejectedValueOnce(new Error('share failed'));
     jest.spyOn(Clipboard, 'setStringAsync').mockRejectedValueOnce(new Error('clipboard failed'));
     await renderModal();
@@ -90,7 +90,9 @@ describe('ShareModal', () => {
 
     await waitFor(() =>
       expect(mockAlertDialog).toHaveBeenCalledWith(
-        expect.objectContaining({ description: expect.stringContaining('clipboard failed') }),
+        expect.objectContaining({
+          description: 'URLの共有とコピーに失敗しました。もう一度お試しください。',
+        }),
       ),
     );
   });
