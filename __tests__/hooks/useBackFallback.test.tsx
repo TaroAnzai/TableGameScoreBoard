@@ -29,10 +29,10 @@ describe('useBackFallback', () => {
     const navigation = { canGoBack: jest.fn(() => true), back: jest.fn(), replace: jest.fn() };
 
     const { result } = await renderHook(() => useBackFallback(navigation));
-    const cleanup = mockFocusEffect?.();
+    const cleanup = mockFocusEffect ? mockFocusEffect() : undefined;
     const hardwareBackHandler = addEventListener.mock.calls[0][1];
 
-    expect(hardwareBackHandler()).toBe(true);
+    expect(hardwareBackHandler({ type: 'hardwareBackPress', timeStamp: 0 })).toBe(true);
     expect(navigation.back).toHaveBeenCalledTimes(1);
     expect(navigation.replace).not.toHaveBeenCalled();
 

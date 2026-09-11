@@ -51,11 +51,16 @@ describe('PlayerStatsTable', () => {
     await waitFor(() => expect(screen.queryByText('プレイヤー1さんの成績')).toBeNull());
   });
 
-  it('集計値がnullの場合は0として表示する', async () => {
+  it('集計値が欠損している場合は0として表示する', async () => {
     await render(
       <PlayerStatsTable
         playerStatsList={[
-          { ...player, tournament_count: null, total_score: null, total_balance: null },
+          {
+            ...player,
+            tournament_count: undefined,
+            total_score: undefined,
+            total_balance: undefined,
+          },
         ]}
       />,
     );

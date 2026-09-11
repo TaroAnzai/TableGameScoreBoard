@@ -42,7 +42,13 @@ describe('legacy modal components', () => {
   it('TextInputModal2は全propsをTextInputModalへ委譲する', async () => {
     const onClose = jest.fn();
     await render(
-      <TextInputModal2 open title="名称変更" value="旧名称" onClose={onClose} onSubmit={jest.fn()} />,
+      <TextInputModal2
+        open
+        title="名称変更"
+        value="旧名称"
+        onClose={onClose}
+        onComfirm={jest.fn()}
+      />,
     );
 
     expect(screen.getByText('名称変更:true')).toBeTruthy();

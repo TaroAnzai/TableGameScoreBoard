@@ -27,7 +27,7 @@ jest.mock('expo-router', () => {
 });
 
 jest.mock('expo-router/react-navigation', () => ({
-  CommonActions: { reset: (...args: unknown[]) => mockReset(...args) },
+  CommonActions: { reset: (state: unknown) => mockReset(state) },
 }));
 
 jest.mock('expo-status-bar', () => {

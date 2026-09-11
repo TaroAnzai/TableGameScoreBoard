@@ -5,7 +5,7 @@ import * as ReactNative from 'react-native';
 
 import { ThemeProvider, useTheme } from '@/src/providers/ThemeProvider';
 
-let mockColorScheme: 'light' | 'dark' | null = 'light';
+let mockColorScheme: 'light' | 'dark' | 'unspecified' = 'light';
 const mockStorage = new Map<string, string>();
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -34,7 +34,7 @@ describe('ThemeProvider', () => {
   it.each([
     ['light', 'light'],
     ['dark', 'dark'],
-    [null, 'light'],
+    ['unspecified', 'light'],
   ] as const)('systemモードで端末配色 %s を %s として解決する', async (scheme, expected) => {
     mockColorScheme = scheme;
     const { result, unmount } = await renderHook(() => useTheme(), { wrapper });

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
-import { isGroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
+import { GroupKeyStorageError, isGroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
 import { useCreateGroup } from '@/src/hooks/useGroups';
 import { appStorage } from '@/src/storage/appStorage';
 import {

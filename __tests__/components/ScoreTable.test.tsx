@@ -64,8 +64,6 @@ describe('ScoreTable', () => {
           id: 10,
           name: '境界選手',
           scores: { 1: 1200, 2: -500, 3: 0 },
-          total: null,
-          converted_total: undefined,
         },
       ],
     } as TournamentScoreMap;

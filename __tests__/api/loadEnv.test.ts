@@ -1,5 +1,5 @@
 describe('loadEnv', () => {
-  const originalDev = globalThis.__DEV__;
+  const originalDev = __DEV__;
   const originalDevUrl = process.env.EXPO_PUBLIC_DEV_API_URL;
   const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 

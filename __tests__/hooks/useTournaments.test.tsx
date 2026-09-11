@@ -325,7 +325,10 @@ describe('大会削除・参加者mutation', () => {
     mockAddPlayers.mockResolvedValue(undefined);
     const { result, unmount } = await renderHook(() => useAddTournamentPlayer(), { wrapper });
     await act(async () =>
-      result.current.mutateAsync({ tournamentKey: 'key', players: [{ id: 7, name: '七郎' }] }),
+      result.current.mutateAsync({
+        tournamentKey: 'key',
+        players: [{ id: 7, group_id: 1, name: '七郎' }],
+      }),
     );
     expect(mockAddPlayers).toHaveBeenCalledWith('key', { participants: [{ player_id: 7 }] });
     expect(invalidateQueries).toHaveBeenCalledTimes(3);
@@ -354,7 +357,10 @@ describe('大会削除・参加者mutation', () => {
     const { result, unmount } = await renderHook(() => useAddTournamentPlayer(), { wrapper });
     await act(async () => {
       await expect(
-        result.current.mutateAsync({ tournamentKey: 'key', players: [{ id: 1, name: '一郎' }] }),
+        result.current.mutateAsync({
+          tournamentKey: 'key',
+          players: [{ id: 1, group_id: 1, name: '一郎' }],
+        }),
       ).rejects.toBe(error);
     });
     expect(invalidateQueries).not.toHaveBeenCalled();

@@ -21,6 +21,9 @@ Android APKを作成
 npx eas-cli@latest build --platform android --profile preview
 
 本番用
+npx tsc --noEmit
+npx expo-doctor
+npm test -- --runInBand
 eas build --platform android --profile production
 
 ローカルでbuildする場合
