@@ -1,6 +1,6 @@
 // src/components/common/AlertDialogProvider.tsx
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -36,33 +36,52 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<AlertDialogOptions>({});
-  const [resolver, setResolver] = useState<(value: boolean) => void>(() => () => {});
+  const resolverRef = useRef<((value: boolean) => void) | null>(null);
+
+  const resolveDialog = useCallback((result: boolean) => {
+    const resolve = resolverRef.current;
+    if (!resolve) return;
+
+    resolverRef.current = null;
+    setIsOpen(false);
+    resolve(result);
+  }, []);
 
   const alertDialog = useCallback((opts: AlertDialogOptions) => {
     setOptions(opts);
     setIsOpen(true);
 
     return new Promise<boolean>((resolve) => {
-      setResolver(() => resolve);
+      resolverRef.current = resolve;
     });
   }, []);
 
   const handleConfirm = () => {
-    setIsOpen(false);
-    resolver(true);
+    resolveDialog(true);
   };
 
   const handleCancel = () => {
-    setIsOpen(false);
-    resolver(false);
+    resolveDialog(false);
   };
+
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setIsOpen(nextOpen);
+      if (nextOpen) return;
+
+      // The primitive closes before its action/cancel onPress handler runs. Defer the
+      // fallback so button handlers can resolve with their explicit result first.
+      void Promise.resolve().then(() => resolveDialog(false));
+    },
+    [resolveDialog],
+  );
   const contextValue = useMemo(() => ({ alertDialog }), [alertDialog]);
 
   return (
     <AlertDialogContext.Provider value={contextValue}>
       {children}
 
-      <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{options.title ?? t('Common.Confirm')}</AlertDialogTitle>

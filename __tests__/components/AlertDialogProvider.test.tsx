@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -7,10 +7,15 @@ import {
   useAlertDialog,
 } from '@/components/common/AlertDialogProvider';
 
+let mockOnOpenChange: ((open: boolean) => void) | undefined;
+
 jest.mock('@/components/ui/alert-dialog', () => {
   const ReactNative = jest.requireActual('react-native');
   return {
-    AlertDialog: ReactNative.View,
+    AlertDialog: ({ onOpenChange, ...props }: { onOpenChange?: (open: boolean) => void }) => {
+      mockOnOpenChange = onOpenChange;
+      return <ReactNative.View {...props} />;
+    },
     AlertDialogContent: ReactNative.View,
     AlertDialogDescription: ReactNative.Text,
     AlertDialogFooter: ReactNative.View,
@@ -56,6 +61,10 @@ const Harness = ({ onResult }: { onResult: (value: boolean) => void }) => {
 };
 
 describe('AlertDialogProvider', () => {
+  beforeEach(() => {
+    mockOnOpenChange = undefined;
+  });
+
   it('確認内容を表示し、キャンセル結果falseを呼出元へ返す', async () => {
     const onResult = jest.fn();
     await render(
@@ -82,8 +91,31 @@ describe('AlertDialogProvider', () => {
     await fireEvent.press(screen.getByLabelText('info-dialog'));
     expect(screen.getByText('確認')).toBeTruthy();
     expect(screen.queryByText('キャンセル')).toBeNull();
-    await fireEvent.press(screen.getByText('OK'));
+    await act(async () => {
+      mockOnOpenChange?.(false);
+      fireEvent.press(screen.getByText('OK'));
+      await Promise.resolve();
+    });
+    expect(onResult).toHaveBeenCalledTimes(1);
     expect(onResult).toHaveBeenCalledWith(true);
+  });
+
+  it('Android Back相当の外部閉鎖をキャンセルとして呼出元へ返す', async () => {
+    const onResult = jest.fn();
+    await render(
+      <AlertDialogProvider>
+        <Harness onResult={onResult} />
+      </AlertDialogProvider>,
+    );
+
+    await fireEvent.press(screen.getByLabelText('custom-dialog'));
+    await act(async () => {
+      mockOnOpenChange?.(false);
+      await Promise.resolve();
+    });
+
+    expect(onResult).toHaveBeenCalledTimes(1);
+    expect(onResult).toHaveBeenCalledWith(false);
   });
 
   it('Provider外の利用を明示的なエラーにする', async () => {
