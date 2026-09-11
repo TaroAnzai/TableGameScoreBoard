@@ -162,7 +162,7 @@ const GroupPage = () => {
       await appStorage.addGroupKey(groupKey);
       allowNavigation.current = true;
       setIsGroupRegistered(true);
-      router.push('/');
+      router.dismissTo('/');
     } catch (error) {
       console.error('Error saving group on this device:', error);
       await alertDialog({
@@ -261,10 +261,10 @@ const GroupPage = () => {
         onParentPress={() => {
           if (isGroupNotFound) {
             allowNavigation.current = true;
-            router.replace('/');
+            router.dismissTo('/');
             return;
           }
-          void navigateAway(() => router.replace('/'));
+          void navigateAway(() => router.dismissTo('/'));
         }}
       />
 

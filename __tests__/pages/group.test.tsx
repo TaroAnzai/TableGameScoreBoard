@@ -6,7 +6,7 @@ import { ApiError } from '@/src/api/apiError';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
-const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 const mockDispatch = jest.fn();
 const mockAddListener = jest.fn((_event: string, _listener: (event: NavigationEvent) => void) =>
   jest.fn(),
@@ -50,7 +50,7 @@ jest.mock('expo-router', () => ({
   router: {
     back: () => mockBack(),
     push: (...args: unknown[]) => mockPush(...args),
-    replace: (...args: unknown[]) => mockReplace(...args),
+    dismissTo: (...args: unknown[]) => mockDismissTo(...args),
   },
   useLocalSearchParams: () => ({ groupKey: 'group-key' }),
   useNavigation: () => ({ addListener: mockAddListener, dispatch: mockDispatch }),
@@ -328,6 +328,15 @@ describe('グループ詳細ページ', () => {
     expect(screen.getByText('成績')).toBeDisabled();
   });
 
+  it('登録済みグループからホームへ戻ると既存のホームまで履歴を破棄する', async () => {
+    await render(<GroupPage />);
+
+    await fireEvent.press(screen.getByLabelText('親ページに戻る'));
+
+    expect(mockAlertDialog).not.toHaveBeenCalled();
+    expect(mockDismissTo).toHaveBeenCalledWith('/');
+  });
+
   it('グループが存在しない場合は離脱警告なしでホームへ戻れる', async () => {
     mockGetGroupKeys.mockResolvedValue([]);
     mockUseGroup.mockReturnValue({
@@ -341,7 +350,7 @@ describe('グループ詳細ページ', () => {
     fireEvent.press(screen.getByLabelText('親ページに戻る'));
 
     expect(mockAlertDialog).not.toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockDismissTo).toHaveBeenCalledWith('/');
   });
 
   it('大会セクションの再取得でグループと大会を取得する', async () => {
@@ -370,7 +379,9 @@ describe('グループ詳細ページ', () => {
       ),
     ).toHaveProp('className', expect.stringContaining('mt-8'));
     expect(
-      screen.getByText('大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択します。'),
+      screen.getByText(
+        '大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択します。',
+      ),
     ).toHaveProp('className', expect.stringContaining('mt-8'));
     expect(screen.getByText('大会を＋ボタンから作成してください。')).toBeTruthy();
     expect(screen.getByText('メンバーを＋ボタンから追加してください。')).toBeTruthy();
@@ -541,7 +552,7 @@ describe('グループ詳細ページ', () => {
     fireEvent.press(screen.getByLabelText('親ページに戻る'));
 
     await waitFor(() => expect(mockAlertDialog).toHaveBeenCalledTimes(1));
-    expect(mockReplace).not.toHaveBeenCalledWith('/');
+    expect(mockDismissTo).not.toHaveBeenCalledWith('/');
     expect(mockBack).not.toHaveBeenCalled();
   });
 
@@ -588,7 +599,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
     await fireEvent.press(await screen.findByText('アプリに登録'));
     await waitFor(() => expect(mockAddGroupKey).toHaveBeenCalledWith('group-key'));
-    expect(mockPush).toHaveBeenCalledWith('/');
+    expect(mockDismissTo).toHaveBeenCalledWith('/');
   });
 
   it('未登録グループの端末保存に失敗した場合は再試行を案内して画面に留まる', async () => {
@@ -608,7 +619,7 @@ describe('グループ詳細ページ', () => {
         showCancelButton: false,
       }),
     );
-    expect(mockPush).not.toHaveBeenCalledWith('/');
+    expect(mockDismissTo).not.toHaveBeenCalledWith('/');
     expect(consoleError).toHaveBeenCalledWith('Error saving group on this device:', error);
     consoleError.mockRestore();
   });
