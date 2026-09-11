@@ -29,6 +29,7 @@ const mockPlayerMutations = jest.fn();
 const mockTournamentMutations = jest.fn();
 const mockRemoveSavedLink = jest.fn(() => Promise.resolve());
 const mockUpdateGroup = jest.fn();
+let mockTabsValue = '';
 
 const createApiError = (kind: 'network' | 'http', status?: number) =>
   new ApiError({
@@ -164,7 +165,10 @@ jest.mock('@/components/MahjongListItem', () => {
 jest.mock('@/components/ui/tabs', () => {
   const { Pressable, View } = jest.requireActual('react-native');
   return {
-    Tabs: ({ children }: React.PropsWithChildren) => <View>{children}</View>,
+    Tabs: ({ children, value }: React.PropsWithChildren<{ value: string }>) => {
+      mockTabsValue = value;
+      return <View>{children}</View>;
+    },
     TabsList: ({ children }: React.PropsWithChildren) => <View>{children}</View>,
     TabsTrigger: ({ children }: React.PropsWithChildren) => <Pressable>{children}</Pressable>,
     TabsContent: ({ children }: React.PropsWithChildren) => <View>{children}</View>,
@@ -359,11 +363,40 @@ describe('グループ詳細ページ', () => {
     mockUseTournaments.mockReturnValue({ ...tournamentsState, tournaments: [] });
     await render(<GroupPage />);
 
+    expect(mockTabsValue).toBe('member');
+    expect(
+      screen.getByText(
+        'グループ内の参加者を登録します。メンバーは複数の大会で共通して利用でき、あとから追加も可能です。成績は参加者ごとに統計で集計されます。',
+      ),
+    ).toHaveProp('className', expect.stringContaining('mt-8'));
+    expect(
+      screen.getByText('大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択しまます。'),
+    ).toHaveProp('className', expect.stringContaining('mt-8'));
     expect(screen.getByText('大会を＋ボタンから作成してください。')).toBeTruthy();
     expect(screen.getByText('メンバーを＋ボタンから追加してください。')).toBeTruthy();
+    expect(screen.queryByLabelText('メンバー追加')).toBeNull();
+    expect(screen.getByLabelText('大会新規作成')).not.toBeDisabled();
   });
 
-  it('VIEW権限では作成・削除操作を表示しない', async () => {
+  it('大会とメンバーが登録されている場合は大会タブを初期表示し、インストラクションを表示しない', async () => {
+    await render(<GroupPage />);
+
+    expect(mockTabsValue).toBe('tournament');
+    expect(
+      screen.queryByText(
+        'グループ内の参加者を登録します。メンバーは複数の大会で共通して利用でき、あとから追加も可能です。成績は参加者ごとに統計で集計されます。',
+      ),
+    ).toBeNull();
+    expect(
+      screen.queryByText(
+        '大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択しまます。',
+      ),
+    ).toBeNull();
+  });
+
+  it('VIEW権限では専用の空状態を表示し、作成・削除操作を表示しない', async () => {
+    mockUsePlayers.mockReturnValue({ ...playersState, players: [] });
+    mockUseTournaments.mockReturnValue({ ...tournamentsState, tournaments: [] });
     mockUseGroup.mockReturnValue({
       ...groupState,
       data: {
@@ -373,6 +406,20 @@ describe('グループ詳細ページ', () => {
     });
     await render(<GroupPage />);
 
+    expect(
+      screen.queryByText(
+        'グループ内の参加者を登録します。メンバーは複数の大会で共通して利用でき、あとから追加も可能です。成績は参加者ごとに統計で集計されます。',
+      ),
+    ).toBeNull();
+    expect(
+      screen.queryByText(
+        '大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択しまます。',
+      ),
+    ).toBeNull();
+    expect(screen.getByText('大会が作成されていません。')).toBeTruthy();
+    expect(screen.getByText('メンバーが登録されていません。')).toBeTruthy();
+    expect(screen.queryByText('大会を＋ボタンから作成してください。')).toBeNull();
+    expect(screen.queryByText('メンバーを＋ボタンから追加してください。')).toBeNull();
     expect(screen.queryByLabelText('大会新規作成')).toBeNull();
     expect(screen.queryByLabelText('グループメンバー追加')).toBeNull();
   });

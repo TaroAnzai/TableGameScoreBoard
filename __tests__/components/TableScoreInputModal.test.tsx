@@ -53,19 +53,25 @@ describe('TableScoreInputModal', () => {
     expect(ui.getByRole('button', { name: '確定' }).props.accessibilityState.disabled).toBe(true);
   });
 
-  it('全員入力かつ合計0なら小数・負数・0をそのまま保存する', async () => {
+  it('正の整数・負の整数・0を入力し、未入力のプレイヤーがいても保存できる', async () => {
     const { onConfirm, ...ui } = await renderModal();
-    for (const [index, score] of ['1.5', '-1.5', '0', '0'].entries()) {
+    for (const [index, score] of ['100', '-100', '0'].entries()) {
       await fireEvent.changeText(ui.getByTestId(`score-input-${index + 1}`), score);
     }
 
     await fireEvent.press(ui.getByRole('button', { name: '確定' }));
     expect(onConfirm).toHaveBeenCalledWith([
-      { player_id: 1, score: 1.5 },
-      { player_id: 2, score: -1.5 },
+      { player_id: 1, score: 100 },
+      { player_id: 2, score: -100 },
       { player_id: 3, score: 0 },
-      { player_id: 4, score: 0 },
     ]);
+  });
+
+  it('小数は入力へ反映せず確定できない', async () => {
+    const ui = await renderModal({ tableType: 'CHIP' });
+    fireEvent.changeText(ui.getByTestId('score-input-1'), '1.5');
+    expect(ui.getByTestId('score-input-1').props.value).toBe('');
+    expect(ui.getByRole('button', { name: '確定' })).toBeDisabled();
   });
 
   it('保存中は入力・確定・キャンセルを無効化する', async () => {

@@ -72,7 +72,8 @@ const GroupPage = () => {
   const [isCreateTournamentModalOpen, setIsCreateTournamentModalOpen] = useState(false);
   const [isCreatePlayerModalOpen, setIsCreatePlayerModalOpen] = useState(false);
   const [isGroupRegistered, setIsGroupRegistered] = useState<boolean | null>(null);
-  const [value, setValue] = useState('tournament');
+  const [value, setValue] = useState<string>();
+  const selectedTab = value ?? (players?.length === 0 ? 'member' : 'tournament');
   const allowNavigation = useRef(false);
   const isLeaveDialogOpen = useRef(false);
   const accessLevel = getAccessLevelstring(group?.group_links);
@@ -258,7 +259,7 @@ const GroupPage = () => {
         }}
       />
 
-      <Tabs value={value} onValueChange={setValue} className="min-h-0 w-full flex-1">
+      <Tabs value={selectedTab} onValueChange={setValue} className="min-h-0 w-full flex-1">
         <TabsList className="h-11">
           <TabsTrigger value="tournament">
             <Text className="text-base">{t('groupPage.tabTournamentList')}</Text>
@@ -316,7 +317,13 @@ const GroupPage = () => {
             />
 
             {tournaments?.length === 0 ? (
-              <Text>{t('groupPage.sectionTournamentListEmpty')}</Text>
+              <Text>
+                {t(
+                  accessLevel === 'VIEW'
+                    ? 'groupPage.sectionTournamentListEmptyView'
+                    : 'groupPage.sectionTournamentListEmpty',
+                )}
+              </Text>
             ) : (
               <MahjongList>
                 {tournaments?.map((tournament) => (
@@ -343,6 +350,12 @@ const GroupPage = () => {
                   />
                 ))}
               </MahjongList>
+            )}
+
+            {accessLevel !== 'VIEW' && tournaments?.length === 0 && (
+              <Text className="mt-8 text-sm text-on-surface-variant">
+                {t('groupPage.tournamentInstruction')}
+              </Text>
             )}
           </MahjongSection>
         </TabsContent>
@@ -392,13 +405,25 @@ const GroupPage = () => {
             />
 
             {players?.length === 0 ? (
-              <Text>{t('groupPage.sectionMemberListEmpty')}</Text>
+              <Text>
+                {t(
+                  accessLevel === 'VIEW'
+                    ? 'groupPage.sectionMemberListEmptyView'
+                    : 'groupPage.sectionMemberListEmpty',
+                )}
+              </Text>
             ) : (
               <MahjongList columns={2}>
                 {players?.map((player) => (
                   <MahjongListItem key={player.id} title={player.name} />
                 ))}
               </MahjongList>
+            )}
+
+            {accessLevel !== 'VIEW' && players?.length === 0 && (
+              <Text className="mt-8 text-sm text-on-surface-variant">
+                {t('groupPage.memberInstruction')}
+              </Text>
             )}
           </MahjongSection>
         </TabsContent>

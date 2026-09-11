@@ -75,7 +75,7 @@ const TableScoreInputModal = ({
   );
 
   const handleScoreChange = (playerId: number, value: string) => {
-    if (value !== '' && !/^-?\d*\.?\d*$/.test(value)) return;
+    if (value !== '' && !/^-?\d*$/.test(value)) return;
     setScores((current) => ({ ...current, [playerId]: value }));
   };
 

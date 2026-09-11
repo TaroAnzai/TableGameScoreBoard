@@ -112,8 +112,12 @@
     "tabMemberList": "メンバー一覧",
 
     "sectionMemberList": "メンバー一覧",
+    "memberInstruction": "グループ内の参加者を登録します。メンバーは複数の大会で共通して利用でき、あとから追加も可能です。成績は参加者ごとに統計で集計されます。",
+    "tournamentInstruction": "大会には複数の卓を登録できます。大会作成後にグループに登録されているメンバーから、大会に参加するメンバーを選択しまます。",
     "sectionMemberListEmpty": "メンバーを＋ボタンから追加してください。",
+    "sectionMemberListEmptyView": "メンバーが登録されていません。",
     "sectionTournamentListEmpty": "大会を＋ボタンから作成してください。",
+    "sectionTournamentListEmptyView": "大会が作成されていません。",
     "rateLabel": "レート: {{rate}}",
     "createdAt": "作成日: {{date}}",
 

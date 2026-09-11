@@ -111,8 +111,12 @@
     "tabMemberList": "Member List",
 
     "sectionMemberList": "Member List",
+    "memberInstruction": "Register participants in the group. Members can be shared across multiple tournaments and added later. Results are aggregated by participant in Stats.",
+    "tournamentInstruction": "Multiple tables can be added to a tournament. After creating it, select the participating members from those registered in the group.",
     "sectionMemberListEmpty": "Add a member using the + button.",
+    "sectionMemberListEmptyView": "No members have been added.",
     "sectionTournamentListEmpty": "No tournaments found.",
+    "sectionTournamentListEmptyView": "No tournaments have been created.",
     "rateLabel": "Rate: {{rate}}",
     "createdAt": "Created: {{date}}",
 
