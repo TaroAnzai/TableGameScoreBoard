@@ -55,9 +55,10 @@ onFlowComplete:
     timeout: 30000
 - assertVisible: ${output.fixture.tournamentName}
 
-# 大会画面の戻るボタンで、親のグループ画面へ戻る。
-- tapOn: '戻る'
+# 大会画面でAndroid Backを押し、削除済みの記録表ではなく親グループへ戻る。
+- pressKey: back
 - extendedWaitUntil:
     visible: '大会一覧'
     timeout: 30000
 - assertVisible: ${output.fixture.groupName}
+- assertNotVisible: '卓1 記録表'

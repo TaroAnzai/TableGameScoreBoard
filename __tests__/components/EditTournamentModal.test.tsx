@@ -234,4 +234,16 @@ describe('EditTournamentModal', () => {
     await act(async () => mockOnOpenChange?.(false));
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
+
+  it('未変更のAndroid Backでは確認せず閉じる', async () => {
+    const onClose = jest.fn();
+    await render(
+      <EditTournamentModal open tournament={tournament} onConfirm={jest.fn()} onClose={onClose} />,
+    );
+
+    await act(async () => mockOnOpenChange?.(false));
+
+    expect(mockAlertDialog).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });

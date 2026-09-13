@@ -1,0 +1,39 @@
+appId: ${APP_ID}
+name: P0 - 未登録グループの離脱確認をAndroid Backで再表示できる
+tags:
+  - p0
+  - navigation
+  - android-back
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: unregistered-group-dialog-back
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '0'
+        FIXTURE_CREATE_GAME: 'false'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- runFlow: ../../flows/common/clear-app-data-and-select-japanese.yaml
+- openLink:
+    link: ${output.fixture.groupViewLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+
+- pressKey: back
+- assertVisible: 'グループが未登録です'
+- pressKey: back
+- assertNotVisible: 'グループが未登録です'
+- assertVisible: ${output.fixture.groupName}
+
+- pressKey: back
+- assertVisible: 'グループが未登録です'

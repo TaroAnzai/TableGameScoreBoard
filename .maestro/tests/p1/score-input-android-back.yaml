@@ -1,0 +1,41 @@
+appId: ${APP_ID}
+name: P1 - 点数入力中のAndroid Backで編集を継続する
+tags:
+  - p1
+  - score
+  - android-back
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: score-input-android-back
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- runFlow: ../../flows/common/select-japanese.yaml
+- openLink:
+    link: ${output.fixture.tableEditLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+
+- tapOn: '${output.fixture.player1}の点数'
+- eraseText
+- inputText: '12345'
+- hideKeyboard
+- pressKey: back
+- assertVisible: '変更を破棄しますか？'
+- tapOn: '編集を続ける'
+- assertVisible: '12345'
+- assertVisible: '確定'

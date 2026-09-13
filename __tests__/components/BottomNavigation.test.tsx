@@ -79,4 +79,19 @@ describe('BottomNavigation', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'ホーム' }));
     expect(mockDismissTo).toHaveBeenCalledWith('/');
   });
+
+  it.each([
+    ['/stats', '統計'],
+    ['/settings', '設定'],
+  ])('%sで同じ下部ナビ項目を連打しても履歴操作を増やさない', async (pathname, label) => {
+    mockPathname = pathname;
+    await render(<BottomNavigation />);
+
+    const button = screen.getByRole('button', { name: label });
+    await fireEvent.press(button);
+    await fireEvent.press(button);
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+  });
 });

@@ -1,0 +1,91 @@
+appId: ${APP_ID}
+name: P1 - 下部ナビ・Deep Link・登録後の戻る履歴
+tags:
+  - p1
+  - navigation
+  - android-back
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: navigation-back-history
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '4'
+        FIXTURE_CREATE_GAME: 'true'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- runFlow: ../../flows/common/clear-app-data-and-select-japanese.yaml
+
+# ホームから卓まで進んでホームを選ぶと、詳細画面の履歴は破棄される。
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- tapOn: 'アプリに登録'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- tapOn: ${output.fixture.groupName}
+- tapOn: ${output.fixture.tournamentName}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- tapOn: ${output.fixture.tableName}
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: 'ホーム'
+- assertVisible: '登録グループ一覧'
+- pressKey: back
+- assertVisible: '登録グループ一覧'
+- assertNotVisible: ${output.fixture.tableName}
+- assertNotVisible: ${output.fixture.tournamentName}
+
+# Deep Linkの卓から設定へ進んだ場合、Backは卓へ戻る。
+- openLink:
+    link: ${output.fixture.tableViewLink}
+- runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: '設定'
+- assertVisible: '設定'
+- pressKey: back
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+
+# グループの画面上の戻るは既存ホームへ戻り、Backでグループを再表示しない。
+- tapOn: 'ホーム'
+- tapOn: ${output.fixture.groupName}
+- tapOn: '戻る'
+- assertVisible: '登録グループ一覧'
+- pressKey: back
+- assertVisible: '登録グループ一覧'
+- assertNotVisible: ${output.fixture.groupName}
+
+# Deep Linkのグループを登録するとホームへ移り、Backで登録直後の画面へ戻らない。
+- runFlow: ../../flows/common/clear-app-data-and-select-japanese.yaml
+- openLink:
+    link: ${output.fixture.groupViewLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- tapOn: 'アプリに登録'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- pressKey: back
+- assertVisible: '登録グループ一覧'
+- assertNotVisible: '大会一覧'
