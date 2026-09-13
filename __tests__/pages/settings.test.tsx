@@ -4,11 +4,13 @@ import React from 'react';
 import SettingsPage from '@/app/settings';
 
 const mockBack = jest.fn();
+const mockCanGoBack = jest.fn(() => true);
+const mockReplace = jest.fn();
 const mockSetThemeMode = jest.fn();
 const mockSetLanguageMode = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack }),
+  useRouter: () => ({ back: mockBack, canGoBack: mockCanGoBack, replace: mockReplace }),
 }));
 jest.mock('@/src/providers/ThemeProvider', () => ({
   useTheme: () => ({ themeMode: 'system', setThemeMode: mockSetThemeMode }),
@@ -18,7 +20,10 @@ jest.mock('@/src/providers/LanguageProvider', () => ({
 }));
 
 describe('設定ページ', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCanGoBack.mockReturnValue(true);
+  });
 
   it('現在のテーマと言語を選択状態で表示する', async () => {
     await render(<SettingsPage />);
@@ -45,5 +50,15 @@ describe('設定ページ', () => {
     await render(<SettingsPage />);
     fireEvent.press(screen.getByLabelText('前の画面に戻る'));
     expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('履歴がない場合は戻るボタンでホームへ移動する', async () => {
+    mockCanGoBack.mockReturnValue(false);
+    await render(<SettingsPage />);
+
+    fireEvent.press(screen.getByLabelText('前の画面に戻る'));
+
+    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockBack).not.toHaveBeenCalled();
   });
 });

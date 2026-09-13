@@ -12,6 +12,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { type LanguageMode, useLanguage } from '@/src/providers/LanguageProvider';
 import { type ThemeMode, useTheme } from '@/src/providers/ThemeProvider';
+import { goBackOrFallback } from '@/src/utils/navigation';
 
 const themeModes: ThemeMode[] = ['system', 'light', 'dark'];
 const languageModes: LanguageMode[] = ['system', 'ja', 'en'];
@@ -50,7 +51,7 @@ export default function SettingsPage() {
               className="absolute left-0 h-12 w-12 rounded-full p-0"
               size="icon"
               variant="ghost"
-              onPress={() => router.back()}
+              onPress={() => goBackOrFallback(router)}
             >
               <Icon as={ChevronLeft} className="text-on-surface" size={24} />
             </Button>
