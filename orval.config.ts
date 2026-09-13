@@ -12,8 +12,9 @@ export default {
       mode: 'split',
       target: 'src/api/generated/mahjongApi.ts', // 生成先を generated に変更
       client: 'react-query',
+      httpClient: 'axios', // axios を使用しないが、httpClient を 'axios' に設定してOrval出力はaxios形式にする。
       clean: true, // generated フォルダをクリーンアップしてから生成
-      prettier: true,
+      formatter: 'prettier',
       override: {
         mutator: {
           path: 'src/api/customFetch.ts', // これは消えない（generated 外だから）
@@ -39,8 +40,9 @@ export default {
       mode: 'split',
       target: 'src/api/generated/adminApi.ts',
       client: 'react-query',
+      httpClient: 'axios', // axios を使用しないが、httpClient を 'axios' に設定してOrval出力はaxios形式にする。
       clean: false,
-      prettier: true,
+      formatter: 'prettier',
       override: {
         mutator: {
           path: 'src/api/customFetchAdmin.ts',
