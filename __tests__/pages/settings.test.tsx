@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
 import SettingsPage from '@/app/settings';
+import i18n from '@/src/i18n/i18n';
 
 const mockBack = jest.fn();
 const mockCanGoBack = jest.fn(() => true);
@@ -20,9 +21,10 @@ jest.mock('@/src/providers/LanguageProvider', () => ({
 }));
 
 describe('設定ページ', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     mockCanGoBack.mockReturnValue(true);
+    await i18n.changeLanguage('ja');
   });
 
   it('現在のテーマと言語を選択状態で表示する', async () => {
@@ -36,14 +38,23 @@ describe('設定ページ', () => {
 
   it('テーマを変更する', async () => {
     await render(<SettingsPage />);
-    fireEvent.press(screen.getByText('ダーク'));
+    await act(async () => {
+      fireEvent.press(screen.getByText('ダーク'));
+    });
     expect(mockSetThemeMode).toHaveBeenCalledWith('dark');
   });
 
   it('言語を変更する', async () => {
     await render(<SettingsPage />);
-    fireEvent.press(screen.getByText('English'));
+    await act(async () => {
+      fireEvent.press(screen.getByText('English'));
+    });
     expect(mockSetLanguageMode).toHaveBeenCalledWith('en');
+
+    await act(async () => {
+      fireEvent.press(screen.getByText('简体中文'));
+    });
+    expect(mockSetLanguageMode).toHaveBeenCalledWith('zh-CN');
   });
 
   it('戻るボタンで前画面へ戻る', async () => {

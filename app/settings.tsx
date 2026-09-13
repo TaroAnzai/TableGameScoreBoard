@@ -15,7 +15,7 @@ import { type ThemeMode, useTheme } from '@/src/providers/ThemeProvider';
 import { goBackOrFallback } from '@/src/utils/navigation';
 
 const themeModes: ThemeMode[] = ['system', 'light', 'dark'];
-const languageModes: LanguageMode[] = ['system', 'ja', 'en'];
+const languageModes: LanguageMode[] = ['system', 'ja', 'en', 'zh-CN'];
 
 export default function SettingsPage() {
   const router = useRouter();

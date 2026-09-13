@@ -24,7 +24,7 @@ const LANGUAGE_MODE_STORAGE_KEY = 'languageMode';
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 const isLanguageMode = (value: string | null): value is LanguageMode => {
-  return value === 'system' || value === 'ja' || value === 'en';
+  return value === 'system' || value === 'ja' || value === 'en' || value === 'zh-CN';
 };
 
 export const LanguageProvider = ({ children }: PropsWithChildren) => {

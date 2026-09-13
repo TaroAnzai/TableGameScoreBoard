@@ -59,6 +59,16 @@ describe('LanguageProvider', () => {
     });
     expect(mockStorage.get('languageMode')).toBe('en');
     expect(result.current.resolvedLanguage).toBe('en');
+
+    await act(async () => {
+      await result.current.setLanguageMode('zh-CN');
+    });
+    expect(mockStorage.get('languageMode')).toBe('zh-CN');
+    expect(result.current.resolvedLanguage).toBe('zh-CN');
+
+    await act(async () => {
+      await result.current.setLanguageMode('en');
+    });
     await unmount();
   });
 

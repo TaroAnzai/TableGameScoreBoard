@@ -90,7 +90,8 @@
       "options": {
         "system": "端末設定に従う",
         "ja": "日本語",
-        "en": "English"
+        "en": "English",
+        "zh-CN": "简体中文"
       }
     },
     "about": {
