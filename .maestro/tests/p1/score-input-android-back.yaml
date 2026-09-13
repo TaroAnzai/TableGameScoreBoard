@@ -29,7 +29,7 @@ onFlowComplete:
 - extendedWaitUntil:
     visible: ${output.fixture.tableName}
     timeout: 30000
-
+- tapOn: "第1局のスコアを編集"
 - tapOn: '${output.fixture.player1}の点数'
 - eraseText
 - inputText: '12345'

@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+---
+# グループの画面上の戻るは既存ホームへ戻り、Backでグループを再表示しない。
+- tapOn: 'ホーム'
+- tapOn: ${output.fixture.groupName}
+- tapOn: '戻る'
+- assertVisible: '登録グループ一覧'
+- pressKey: back #backでバックグランドに戻る
+- assertNotVisible: '登録グループ一覧'
+- launchApp:
+    stopApp: false
+- assertVisible: '登録グループ一覧'

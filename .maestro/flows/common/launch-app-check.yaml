@@ -11,4 +11,10 @@ appId: ${APP_ID}
       visible: 'グループ取得エラー|Error Loading Groups'
     commands:
       - tapOn: 'OK'
+- runFlow:
+    when:
+      visible: '登録グループを開けませんでした'
+    commands:
+      - tapOn: 'OK'
+
 - assertVisible: '麻雀大会 集計|Table Game Scoreboard'

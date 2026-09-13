@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+# Deep Linkのグループを登録するとホームへ移り、Backで登録直後の画面へ戻らない。
+- openLink:
+    link: ${output.fixture.groupViewLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- tapOn: 'アプリに登録'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- pressKey: back #backでバックグランドに戻る
+- assertNotVisible: '登録グループ一覧'
+- launchApp:
+    stopApp: false
+- assertVisible: '登録グループ一覧'
+- assertNotVisible: '大会一覧'

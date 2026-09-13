@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+---
+# ホームから卓まで進んでホームを選ぶと、詳細画面の履歴は破棄される。
+- openLink:
+    link: ${output.fixture.groupOwnerLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+- tapOn: 'アプリに登録'
+- tapOn: 'OK'
+- extendedWaitUntil:
+    visible: '登録グループ一覧'
+    timeout: 30000
+- tapOn: ${output.fixture.groupName}
+- tapOn: ${output.fixture.tournamentName}
+- extendedWaitUntil:
+    visible: ${output.fixture.tournamentName}
+    timeout: 30000
+- tapOn: ${output.fixture.tableName}
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: 'ホーム'
+- assertVisible: '登録グループ一覧'
+- pressKey: back #アプリ終了
+- assertNotVisible: '登録グループ一覧'
+- assertNotVisible: ${output.fixture.tableName}
+- launchApp
+- assertVisible: '登録グループ一覧'

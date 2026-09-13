@@ -1,0 +1,15 @@
+appId: ${APP_ID}
+---
+# Deep Linkの卓から設定へ進んだ場合、Backは卓へ戻る。
+- openLink:
+    link: ${output.fixture.tableViewLink}
+- runFlow: ../../../flows/common/accept-save-page-prompt.yaml
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000
+- tapOn: '設定'
+- assertVisible: '設定'
+- pressKey: back
+- extendedWaitUntil:
+    visible: ${output.fixture.tableName}
+    timeout: 30000

@@ -10,7 +10,7 @@ appId: ${APP_ID}
 - openLink:
     link: ${output.fixture.tableEditLink}
 - extendedWaitUntil:
-    visible: '卓が見つかりませんでした'
+    visible: '記録表が見つかりませんでした。削除されたか、URLが正しくない可能性があります。'
     timeout: 30000
 
 # 大会はグループ画面から削除する。
