@@ -26,5 +26,12 @@ onFlowComplete:
 - runFlow: ../../flows/common/select-japanese.yaml
 - runFlow: access-control/check-tournament-permissions.yaml
 - runFlow: access-control/check-owner-permissions.yaml
+
+- stopApp
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+
 - runFlow: access-control/check-table-permissions.yaml
 # この UI 確認に加え、CI は同じ fixture キーでバックエンドの permission contract test を実行する。

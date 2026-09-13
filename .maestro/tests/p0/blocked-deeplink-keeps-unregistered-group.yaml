@@ -1,0 +1,50 @@
+appId: ${APP_ID}
+name: P0 - 未登録グループの確認中は別Deep Linkを破棄する
+tags:
+  - p0
+  - navigation
+  - deep-link
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/setup/create-test-data.js
+      env:
+        FIXTURE_LABEL: blocked-deeplink-keeps-unregistered-group
+        FIXTURE_GROUP_COUNT: '1'
+        FIXTURE_PLAYER_COUNT: '0'
+        FIXTURE_CREATE_GAME: 'false'
+        FIXTURE_CREATE_EXTRA_TABLE: 'false'
+        FIXTURE_ADD_INVALID_LINK: 'false'
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/teardown/delete-group.js
+---
+- runFlow:
+    file: ../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
+- runFlow: ../../flows/common/clear-app-data-and-select-japanese.yaml
+
+- openLink:
+    link: ${output.fixture.groupViewLink}
+- extendedWaitUntil:
+    visible: ${output.fixture.groupName}
+    timeout: 30000
+
+# 離脱確認を表示したまま別のDeep Linkを受信しても、入口で破棄して状態を維持する。
+- pressKey: back
+- assertVisible: 'グループが未登録です'
+- openLink:
+    link: ${output.fixture.tournamentEditLink}
+- assertVisible: 'グループが未登録です'
+- assertVisible: ${output.fixture.groupName}
+- assertNotVisible: ${output.fixture.tournamentName}
+
+# ブロック後も確認を閉じて通常のホーム遷移を完了できる。
+- tapOn: 'この画面に戻る'
+- tapOn: 'ホーム'
+- assertVisible: 'グループが未登録です'
+- tapOn: '登録せずに離れる'
+- extendedWaitUntil:
+    visible: '麻雀大会 集計'
+    timeout: 30000
+- assertNotVisible: 'グループが未登録です'

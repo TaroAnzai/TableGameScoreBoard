@@ -2,6 +2,7 @@ import { useGlobalSearchParams, useNavigation } from 'expo-router';
 import type { NavigationAction } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useExternalNavigationGuard } from '@/src/hooks/useExternalNavigationGuard';
 import { useSavedLinks } from '@/src/hooks/useSavedLinks';
 import type { SavedLink } from '@/src/types/savedLink';
 import { EXTERNAL_ENTRY_PARAM } from '@/src/utils/externalNavigation';
@@ -45,8 +46,7 @@ export const useSavedPage = ({
   const pageIdentifier = `${type}:${key ?? ''}`;
   const hasDismissedPrompt = dismissedPage === pageIdentifier;
   const hasRequestedPrompt = requestedPage === pageIdentifier;
-  const isPreparingExternalNavigation =
-    typeof globalParams[EXTERNAL_ENTRY_PARAM] === 'string';
+  const isPreparingExternalNavigation = typeof globalParams[EXTERNAL_ENTRY_PARAM] === 'string';
   const canPromptSave =
     isDirectView &&
     !isPreparingExternalNavigation &&
@@ -55,6 +55,15 @@ export const useSavedPage = ({
     !isError &&
     !isSaved &&
     canSave;
+  const shouldBlockExternalNavigation =
+    isDirectView &&
+    !suppressSavePrompt &&
+    !isLoading &&
+    !isError &&
+    !isSaved &&
+    canSave &&
+    (!hasDismissedPrompt || hasRequestedPrompt);
+  useExternalNavigationGuard(shouldBlockExternalNavigation);
   const savePromptMode: 'initial' | 'navigation' | undefined = !canPromptSave
     ? undefined
     : hasRequestedPrompt
@@ -78,22 +87,22 @@ export const useSavedPage = ({
     });
   }, [canPromptSave, navigation, pageIdentifier]);
 
-  const closeSavePrompt = useCallback((resumeNavigation: boolean) => {
-    setDismissedPage(pageIdentifier);
-    setRequestedPage(undefined);
+  const closeSavePrompt = useCallback(
+    (resumeNavigation: boolean) => {
+      setDismissedPage(pageIdentifier);
+      setRequestedPage(undefined);
 
-    const action = pendingNavigationAction.current;
-    pendingNavigationAction.current = undefined;
-    if (!action || !resumeNavigation) return;
+      const action = pendingNavigationAction.current;
+      pendingNavigationAction.current = undefined;
+      if (!action || !resumeNavigation) return;
 
-    allowNavigation.current = true;
-    navigation.dispatch(action);
-  }, [navigation, pageIdentifier]);
-
-  const continueWithoutSaving = useCallback(
-    () => closeSavePrompt(true),
-    [closeSavePrompt],
+      allowNavigation.current = true;
+      navigation.dispatch(action);
+    },
+    [navigation, pageIdentifier],
   );
+
+  const continueWithoutSaving = useCallback(() => closeSavePrompt(true), [closeSavePrompt]);
   const completeSavePrompt = useCallback(() => closeSavePrompt(true), [closeSavePrompt]);
   const cancelSavePrompt = useCallback(() => closeSavePrompt(false), [closeSavePrompt]);
 

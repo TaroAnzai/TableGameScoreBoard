@@ -10,6 +10,7 @@ import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { GroupKeyStorageError, isGroupKeyStorageError } from '@/src/errors/GroupKeyStorageError';
+import { useExternalNavigationGuard } from '@/src/hooks/useExternalNavigationGuard';
 import { useCreateGroup } from '@/src/hooks/useGroups';
 import { appStorage } from '@/src/storage/appStorage';
 import {
@@ -28,6 +29,7 @@ const GroupCreatePage = () => {
   const { token } = useLocalSearchParams<{ token?: string | string[] }>();
   const invitationToken = Array.isArray(token) ? token[0] : token;
   const [pageState, setPageState] = useState<PageState>('creating');
+  useExternalNavigationGuard(pageState === 'creating');
   const [errorMessage, setErrorMessage] = useState('');
   const [canRetry, setCanRetry] = useState(false);
   const isSubmitting = useRef(false);

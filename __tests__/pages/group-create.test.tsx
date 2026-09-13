@@ -4,6 +4,7 @@ import React from 'react';
 import GroupCreatePage from '@/app/group/create';
 import { postApiV2GroupsRequestLinkStatusbatch } from '@/src/api/generated/mahjongApi';
 import { ApiError } from '@/src/api/apiError';
+import { isExternalNavigationBlocked } from '@/src/utils/externalNavigationGuard';
 import {
   clearGroupCreationAttempts,
   getOrStartGroupCreationAttempt,
@@ -22,6 +23,10 @@ const mockAddListener = jest.fn(
 );
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    const React = jest.requireActual('react');
+    React.useEffect(effect, [effect]);
+  },
   router: { replace: (...args: unknown[]) => mockReplace(...args) },
   useLocalSearchParams: () => mockParams(),
   useNavigation: () => ({ addListener: mockAddListener }),
@@ -56,6 +61,7 @@ describe('招待グループ作成ページ', () => {
     expect(screen.getByText('グループを登録しています')).toBeTruthy();
     expect(screen.getByText('登録が完了するまで、この画面のままお待ちください。')).toBeTruthy();
     expect(screen.getByLabelText('グループを登録しています')).toBeTruthy();
+    expect(isExternalNavigationBlocked()).toBe(true);
 
     await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledWith({ token: 'valid-token' }));
     expect(mockReplace).toHaveBeenCalledWith('/group/owner-key');

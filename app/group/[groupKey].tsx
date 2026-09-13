@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Text } from '@/components/ui/text';
 import { getUserFacingApiError } from '@/src/api/apiErrorPresentation';
 import { Player, TournamentV2 } from '@/src/api/generated/mahjongApi.schemas';
+import { useExternalNavigationGuard } from '@/src/hooks/useExternalNavigationGuard';
 import { useGetGroupDashboard, useUpdateGroup } from '@/src/hooks/useGroups';
 import { useCreatePlayer, useDeletePlayer, useGetPlayer } from '@/src/hooks/usePlayers';
 import { useSavedLinks } from '@/src/hooks/useSavedLinks';
@@ -90,6 +91,8 @@ const GroupPage = () => {
     ? groupErrorPresentation
     : getUserFacingApiError(playersError);
   const isGroupNotFound = isErrorGroup && groupErrorPresentation.category === 'notFound';
+
+  useExternalNavigationGuard(isGroupRegistered === false);
 
   useEffect(() => {
     let isMounted = true;

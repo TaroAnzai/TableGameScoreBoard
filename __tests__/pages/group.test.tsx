@@ -3,6 +3,7 @@ import React from 'react';
 
 import GroupPage from '@/app/group/[groupKey]';
 import { ApiError } from '@/src/api/apiError';
+import { isExternalNavigationBlocked } from '@/src/utils/externalNavigationGuard';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -47,6 +48,10 @@ type NavigationEvent = {
 };
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    const React = jest.requireActual('react');
+    React.useEffect(effect, [effect]);
+  },
   router: {
     back: () => mockBack(),
     push: (...args: unknown[]) => mockPush(...args),
@@ -512,6 +517,7 @@ describe('グループ詳細ページ', () => {
     mockGetGroupKeys.mockResolvedValue([]);
     await render(<GroupPage />);
     expect(await screen.findByText('アプリに登録')).toBeTruthy();
+    expect(isExternalNavigationBlocked()).toBe(true);
 
     const listener = mockAddListener.mock.calls.find(([event]) => event === 'beforeRemove')?.[1];
     const navigationEvent: NavigationEvent = {
@@ -632,10 +638,7 @@ describe('グループ詳細ページ', () => {
     await render(<GroupPage />);
 
     expect(await screen.findByText('アプリに登録')).toBeTruthy();
-    expect(consoleError).toHaveBeenCalledWith(
-      'Error checking whether group is registered:',
-      error,
-    );
+    expect(consoleError).toHaveBeenCalledWith('Error checking whether group is registered:', error);
     consoleError.mockRestore();
   });
 

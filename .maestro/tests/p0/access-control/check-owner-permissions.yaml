@@ -7,7 +7,14 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: ${output.fixture.groupName}
     timeout: 30000
+- tapOn: '大会一覧'
 - assertNotVisible: '大会削除'
+
+- stopApp
+- runFlow:
+    file: ../../../flows/common/launch-app-check.yaml
+    env:
+      APP_ID: ${APP_ID}
 
 - openLink:
     link: ${output.fixture.groupOwnerLink}
@@ -15,4 +22,5 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: ${output.fixture.groupName}
     timeout: 30000
+- tapOn: '大会一覧'
 - assertVisible: '大会削除'

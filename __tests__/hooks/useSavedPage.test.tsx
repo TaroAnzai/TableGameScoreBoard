@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react-native';
 
 import { useSavedPage } from '@/src/hooks/useSavedPage';
+import { isExternalNavigationBlocked } from '@/src/utils/externalNavigationGuard';
 
 const mockSave = jest.fn();
 const mockRemove = jest.fn();
@@ -27,6 +28,10 @@ jest.mock('@/src/hooks/useSavedLinks', () => ({
 }));
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    const React = jest.requireActual('react');
+    React.useEffect(effect, [effect]);
+  },
   useGlobalSearchParams: () => mockGlobalParams,
   useNavigation: () => ({
     addListener: mockAddListener,
@@ -89,6 +94,7 @@ describe('useSavedPage', () => {
       result.current.continueWithoutSaving();
     });
     expect(result.current.shouldPromptSave).toBe(false);
+    expect(isExternalNavigationBlocked()).toBe(false);
 
     await act(async () => {
       beforeRemove({ preventDefault, data: { action } });
@@ -98,12 +104,14 @@ describe('useSavedPage', () => {
     expect(result.current.shouldPromptSave).toBe(true);
     expect(result.current.savePromptMode).toBe('navigation');
     expect(mockDispatch).not.toHaveBeenCalled();
+    expect(isExternalNavigationBlocked()).toBe(true);
 
     await act(async () => {
       result.current.continueWithoutSaving();
     });
 
     expect(mockDispatch).toHaveBeenCalledWith(action);
+    expect(isExternalNavigationBlocked()).toBe(false);
   });
 
   it('キャンセル時は保留中の遷移を破棄して画面に留まる', async () => {
@@ -141,6 +149,16 @@ describe('useSavedPage', () => {
 
     expect(result.current.shouldPromptSave).toBe(true);
     expect(result.current.isSaved).toBe(false);
+    expect(isExternalNavigationBlocked()).toBe(true);
+  });
+
+  it('未保存ページのunmount後は外部遷移を許可する', async () => {
+    const rendered = await renderHook(() =>
+      useSavedPage({ type: 'table', key: 'table-key', name: '卓名', isDirectView: true }),
+    );
+    expect(isExternalNavigationBlocked()).toBe(true);
+    await rendered.unmount();
+    expect(isExternalNavigationBlocked()).toBe(false);
   });
 
   it.each([

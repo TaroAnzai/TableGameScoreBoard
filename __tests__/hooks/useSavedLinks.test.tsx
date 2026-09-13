@@ -13,6 +13,10 @@ const mockNavigation = {
 };
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    const React = jest.requireActual('react');
+    React.useEffect(effect, [effect]);
+  },
   useGlobalSearchParams: () => ({}),
   useNavigation: () => mockNavigation,
 }));
@@ -111,7 +115,10 @@ describe('useSavedLinks', () => {
 
   it('同じ type と key の保存はキャッシュ内の項目を置換し、重複させない', async () => {
     const existing = createLink();
-    const updated = createLink({ name: '更新後の大会名', lastOpenedAt: '2026-08-20T01:00:00.000Z' });
+    const updated = createLink({
+      name: '更新後の大会名',
+      lastOpenedAt: '2026-08-20T01:00:00.000Z',
+    });
     mockSavedLinkStorage.upsertSavedLink.mockResolvedValue(updated);
     const { result, queryClient, unmount } = await renderSavedLinksHook([existing]);
 

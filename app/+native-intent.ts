@@ -1,9 +1,12 @@
 import { EXTERNAL_ENTRY_PARAM } from '@/src/utils/externalNavigation';
+import { isExternalNavigationBlocked } from '@/src/utils/externalNavigationGuard';
 
 let externalEntrySequence = 0;
 
 export const redirectSystemPath = ({ path, initial }: { path: string; initial: boolean }) => {
   try {
+    if (!initial && isExternalNavigationBlocked()) return null;
+
     const url = new URL(path, 'https://anzai-home.com');
     const isAppScheme = url.protocol === 'mahjongapp:' || url.protocol === 'mahjongapp-dev:';
     const pathParts = isAppScheme ? [url.hostname, url.pathname] : [url.pathname];
