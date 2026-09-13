@@ -14,7 +14,7 @@ tags:
 - openLink:
     link: ${APP_SCHEME}://mahjong/tournament/not-a-valid-share-key
 - extendedWaitUntil:
-    visible: '大会が見つかりませんでした'
+    visible: '大会が見つかりませんでした.*'
     timeout: 30000
 - tapOn: '戻る'
 - assertVisible: '登録グループ一覧'
@@ -22,7 +22,7 @@ tags:
 - openLink:
     link: ${APP_SCHEME}://mahjong/table/not-a-valid-share-key
 - extendedWaitUntil:
-    visible: '記録表が見つかりませんでした'
+    visible: '記録表が見つかりませんでした.*'
     timeout: 30000
 - tapOn: '戻る'
 - assertVisible: '登録グループ一覧'
@@ -30,7 +30,7 @@ tags:
 - openLink:
     link: ${APP_SCHEME}://mahjong/route-that-does-not-exist
 - extendedWaitUntil:
-    visible: 'リンクを開けませんでした'
+    visible: 'リンクを開けませんでした.*'
     timeout: 30000
 - tapOn: 'ホームに戻る'
 - assertVisible: '登録グループ一覧'

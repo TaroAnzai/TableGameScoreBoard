@@ -67,4 +67,4 @@ onFlowComplete:
 - openLink:
     link: ${output.fixture.invalidFormatLink}
 - runFlow: ../../flows/common/dismiss-save-page-prompt.yaml
-- assertVisible: '卓が見つかりませんでした'
+- assertVisible: '記録表が見つかりませんでした。削除されたか、URLが正しくない可能性があります。'
