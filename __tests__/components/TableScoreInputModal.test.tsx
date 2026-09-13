@@ -4,11 +4,27 @@ import React from 'react';
 import TableScoreInputModal from '@/components/TableScoreInputModal';
 
 const mockAlertDialog = jest.fn();
+const mockInputFocusByTestId: Record<string, jest.Mock> = {};
 let mockOnOpenChange: ((open: boolean) => void) | undefined;
 
 jest.mock('@/components/common/AlertDialogProvider', () => ({
   useAlertDialog: () => ({ alertDialog: mockAlertDialog }),
 }));
+
+jest.mock('@/components/ui/input', () => {
+  const React = jest.requireActual('react');
+  const { TextInput } = jest.requireActual('react-native');
+  return {
+    Input: React.forwardRef(
+      ({ testID, ...props }: { testID?: string }, ref: React.Ref<unknown>) => {
+        const focus = jest.fn();
+        if (testID) mockInputFocusByTestId[testID] = focus;
+        React.useImperativeHandle(ref, () => ({ focus }));
+        return <TextInput testID={testID} {...props} />;
+      },
+    ),
+  };
+});
 
 jest.mock('@/components/ui/dialog', () => {
   const { Text, View } = jest.requireActual('react-native');
@@ -53,6 +69,7 @@ const renderModal = async (
 describe('TableScoreInputModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.keys(mockInputFocusByTestId).forEach((testID) => delete mockInputFocusByTestId[testID]);
     mockOnOpenChange = undefined;
   });
   it('全員未入力では保存できない', async () => {
@@ -86,6 +103,36 @@ describe('TableScoreInputModal', () => {
     fireEvent.changeText(ui.getByTestId('score-input-1'), '1.5');
     expect(ui.getByTestId('score-input-1').props.value).toBe('');
     expect(ui.getByRole('button', { name: '確定' })).toBeDisabled();
+  });
+
+  it('入力途中の負号は保持するが確定できない', async () => {
+    const ui = await renderModal({ tableType: 'CHIP' });
+    await fireEvent.changeText(ui.getByTestId('score-input-1'), '-');
+    expect(ui.getByTestId('score-input-1').props.value).toBe('-');
+    expect(ui.getByRole('button', { name: '確定' })).toBeDisabled();
+  });
+
+  it('次へで次のプレイヤーへ移動し、最後は完了で送信してフォーカスを戻さない', async () => {
+    const ui = await renderModal();
+    const firstInput = ui.getByTestId('score-input-1');
+    const lastInput = ui.getByTestId('score-input-4');
+
+    await fireEvent(firstInput, 'submitEditing');
+    expect(mockInputFocusByTestId['score-input-2']).toHaveBeenCalledTimes(1);
+
+    await fireEvent(lastInput, 'submitEditing');
+    expect(mockInputFocusByTestId['score-input-1']).not.toHaveBeenCalled();
+    expect(firstInput.props.returnKeyType).toBe('next');
+    expect(firstInput.props.submitBehavior).toBe('submit');
+    expect(lastInput.props.returnKeyType).toBe('done');
+    expect(lastInput.props.submitBehavior).toBe('blurAndSubmit');
+  });
+
+  it('既存値をフォーカス時に全選択して置き換えやすくする', async () => {
+    const ui = await renderModal({
+      game: { id: 9, table_id: 1, game_index: 0, scores: [{ player_id: 1, score: 250 }] },
+    });
+    expect(ui.getByTestId('score-input-1').props.selectTextOnFocus).toBe(true);
   });
 
   it('保存中は入力・確定・キャンセルを無効化する', async () => {

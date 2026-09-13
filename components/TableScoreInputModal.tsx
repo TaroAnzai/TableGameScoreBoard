@@ -1,6 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, type LayoutChangeEvent, useWindowDimensions, View } from 'react-native';
+import {
+  ActivityIndicator,
+  type LayoutChangeEvent,
+  Platform,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { useAlertDialog } from '@/components/common/AlertDialogProvider';
@@ -54,6 +61,8 @@ const TableScoreInputModal = ({
   );
   const [scores, setScores] = useState<Record<number, string>>(() => initialScores);
   const [headerHeight, setHeaderHeight] = useState<number>(mahjong.tableHeaderHeight);
+  const inputRefs = useRef<Record<number, TextInput | null>>({});
+  const scoreScrollRef = useRef<React.ElementRef<typeof ScrollView>>(null);
 
   const total = useMemo(
     () =>
@@ -101,7 +110,9 @@ const TableScoreInputModal = ({
     setScores((current) => ({ ...current, [playerId]: value }));
   };
 
-  const canConfirm = formattedScores.length > 0 && (tableType !== 'NORMAL' || total === 0);
+  const hasIncompleteScore = Object.values(scores).some((score) => score === '-');
+  const canConfirm =
+    !hasIncompleteScore && formattedScores.length > 0 && (tableType !== 'NORMAL' || total === 0);
   const title =
     tableType === 'CHIP' ? t('Common.chip') : t('scoreBoard.gameLabel', { index: gameIndex + 1 });
   const { width } = useWindowDimensions();
@@ -144,7 +155,13 @@ const TableScoreInputModal = ({
               </Text>
             </View>
           </View>
-          <ScrollView horizontal className="min-w-0 flex-1 " showsHorizontalScrollIndicator>
+          <ScrollView
+            ref={scoreScrollRef}
+            horizontal
+            className="min-w-0 flex-1"
+            showsHorizontalScrollIndicator
+            keyboardShouldPersistTaps="handled"
+          >
             <View>
               {/* Header */}
               <View
@@ -168,26 +185,48 @@ const TableScoreInputModal = ({
 
               {/* Input */}
               <View className="flex-row">
-                {inputPlayers.map((player) => (
-                  <View
-                    key={player.id}
-                    style={{ minHeight: componentSize.inputHeight, width: mahjong.scoreCellWidth }}
-                    className="border-r border-outline bg-surface"
-                  >
-                    <Input
-                      testID={`score-input-${player.id}`}
-                      accessibilityLabel={t('scoreBoard.scoreInputLabel', {
-                        playerName: player.name,
-                      })}
-                      value={scores[player.id] ?? ''}
-                      editable={!isSaving}
-                      onChangeText={(value) => handleScoreChange(player.id, value)}
-                      keyboardType="numeric"
-                      selectTextOnFocus
-                      className="h-auto min-h-12 w-full rounded-none border-0 bg-surface py-3 text-right text-base font-bold text-on-surface"
-                    />
-                  </View>
-                ))}
+                {inputPlayers.map((player, index) => {
+                  const isLastInput = index === inputPlayers.length - 1;
+                  return (
+                    <View
+                      key={player.id}
+                      style={{
+                        minHeight: componentSize.inputHeight,
+                        width: mahjong.scoreCellWidth,
+                      }}
+                      className="border-r border-outline bg-surface"
+                    >
+                      <Input
+                        ref={(input) => {
+                          inputRefs.current[player.id] = input;
+                        }}
+                        testID={`score-input-${player.id}`}
+                        accessibilityLabel={t('scoreBoard.scoreInputLabel', {
+                          playerName: player.name,
+                        })}
+                        value={scores[player.id] ?? ''}
+                        editable={!isSaving}
+                        onChangeText={(value) => handleScoreChange(player.id, value)}
+                        onFocus={() => {
+                          scoreScrollRef.current?.scrollTo({
+                            x: index * mahjong.scoreCellWidth,
+                            animated: true,
+                          });
+                        }}
+                        onSubmitEditing={() => {
+                          if (!isLastInput) {
+                            inputRefs.current[inputPlayers[index + 1].id]?.focus();
+                          }
+                        }}
+                        keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
+                        returnKeyType={isLastInput ? 'done' : 'next'}
+                        submitBehavior={isLastInput ? 'blurAndSubmit' : 'submit'}
+                        selectTextOnFocus
+                        className="h-auto min-h-12 w-full rounded-none border-0 bg-surface py-3 text-right text-base font-bold text-on-surface"
+                      />
+                    </View>
+                  );
+                })}
               </View>
             </View>
           </ScrollView>
