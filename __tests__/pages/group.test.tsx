@@ -624,6 +624,21 @@ describe('グループ詳細ページ', () => {
     consoleError.mockRestore();
   });
 
+  it('端末の登録状態を読み込めない場合も未処理拒否にせず登録操作を提供する', async () => {
+    const error = new Error('storage unavailable');
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockGetGroupKeys.mockRejectedValueOnce(error);
+
+    await render(<GroupPage />);
+
+    expect(await screen.findByText('アプリに登録')).toBeTruthy();
+    expect(consoleError).toHaveBeenCalledWith(
+      'Error checking whether group is registered:',
+      error,
+    );
+    consoleError.mockRestore();
+  });
+
   it('未登録グループの保存をキャンセルする', async () => {
     mockGetGroupKeys.mockResolvedValue([]);
     await render(<GroupPage />);

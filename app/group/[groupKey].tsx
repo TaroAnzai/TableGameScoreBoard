@@ -94,11 +94,21 @@ const GroupPage = () => {
   useEffect(() => {
     let isMounted = true;
 
-    appStorage.getGroupKeys().then((groupKeys) => {
-      if (isMounted) {
-        setIsGroupRegistered(groupKeys.includes(groupKey));
-      }
-    });
+    void appStorage
+      .getGroupKeys()
+      .then((groupKeys) => {
+        if (isMounted) {
+          setIsGroupRegistered(groupKeys.includes(groupKey));
+        }
+      })
+      .catch((error) => {
+        console.error('Error checking whether group is registered:', error);
+        if (isMounted) {
+          // addGroupKey is idempotent, so keep the explicit registration action
+          // available when the current local state cannot be determined.
+          setIsGroupRegistered(false);
+        }
+      });
 
     return () => {
       isMounted = false;
