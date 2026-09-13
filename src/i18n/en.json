@@ -36,7 +36,7 @@
     "unknown": "The operation could not be completed. Try again."
   },
   "welcomPage": {
-    "pageTitle": "Table Game Scoreboard",
+    "pageTitle": "Mahjong Scoreboard",
     "CreateGroup": "Create new group",
     "RegisteredGroups": "Registered groups",
     "CreateNewGroup": "Create new group",
@@ -110,6 +110,7 @@
     "buttonDeletePlayer": "Delete Member",
     "buttonCreateTournament": "Create Tournament",
     "buttonSelectTournament": "Select Tournament",
+    "buttonDeleteTournament": "Delete Tournament",
     "buttonSaveToBrowser": "Register in App",
     "buttonRemoveFromBrowser": "Remove from App",
     "buttonStats": "Stats",
@@ -118,7 +119,7 @@
     "tabMemberList": "Member List",
 
     "sectionMemberList": "Member List",
-    "memberInstruction": "Register participants in the group. Members can be shared across multiple tournaments and added later. Results are aggregated by participant in Stats.",
+    "memberInstruction": "Register members in the group. Members can be used across multiple tournaments and added later. Results are aggregated by member in Stats.",
     "tournamentInstruction": "Multiple tables can be added to a tournament. After creating it, select the participating members from those registered in the group.",
     "sectionMemberListEmpty": "Add a member using the + button.",
     "sectionMemberListEmptyView": "No members have been added.",
@@ -167,11 +168,11 @@
     "loading": "Loading...",
 
     "rate": "Rate",
-    "tableName": "Table{{index}}",
+    "tableName": "Table {{index}}",
 
     "buttonAddPlayer": "Add Participant",
     "buttonDeletePlayer": "Remove Participant",
-    "buttonCreateTable": "Create Table Score Sheet",
+    "buttonCreateTable": "Create Score Sheet",
     "creatingTable": "Creating score sheet...",
     "buttonDeleteTournament": "Delete Tournament",
 
@@ -187,8 +188,8 @@
     "alertNoPlayersToAdd": "There are no members available to add. If the group has no members, register them on the group page and try again.",
     "alertNoPlayersToDelete": "This tournament has no participants available to remove.",
 
-    "alertDeletePlayerTitle": "Delete Participant",
-    "alertDeletePlayerErrorTitle": "Error Deleting Participant",
+    "alertDeletePlayerTitle": "Remove Participant",
+    "alertDeletePlayerErrorTitle": "Unable to Remove Participant",
     "alertDeletePlayerDescription": "Are you sure you want to remove {{playerName}}?"
   },
   "tablePage": {
@@ -196,20 +197,20 @@
     "errorTableNotFound": "The score sheet could not be found. It may have been deleted, or the URL may be incorrect.",
     "scoreSheetTitle": "{{tableName}} Score Sheet",
 
-    "buttonAddPlayer": "Add Player",
-    "buttonDeletePlayer": "Remove Player",
+    "buttonAddPlayer": "Add Participant",
+    "buttonDeletePlayer": "Remove Participant",
     "buttonDeleteGame": "Delete Game Data",
-    "buttonDeleteTable": "Delete Table",
+    "buttonDeleteTable": "Delete Score Sheet",
 
-    "modalAddPlayerTitle": "Select Players",
-    "modalDeletePlayerTitle": "Select a Player to Remove",
+    "modalAddPlayerTitle": "Select Participants",
+    "modalDeletePlayerTitle": "Select a Participant to Remove",
     "modalDeleteGameTitle": "Select a Game to Delete",
     "noPlayersToAdd": "No participants are available to add. Add participants to the tournament and try again.",
     "noPlayersToDelete": "This score sheet has no participants available to remove.",
     "noGamesToDelete": "This score sheet has no games available to delete.",
 
-    "alertDeleteTableTitle": "Delete Table",
-    "alertDeleteTableDescription": "Are you sure you want to delete this table?",
+    "alertDeleteTableTitle": "Delete Score Sheet",
+    "alertDeleteTableDescription": "Are you sure you want to delete this score sheet?",
 
     "alertDeleteGameTitle": "Delete Game",
     "alertDeleteGameDescription": "Are you sure you want to delete this game?",
@@ -218,14 +219,14 @@
   },
   "scoreBoard": {
     "gameTitle": "Game",
-    "gameLabel": "Game{{index}}",
+    "gameLabel": "Game {{index}}",
     "scoreInputLabel": "Score for {{playerName}}",
     "inputTitle": "Enter scores for {{game}}",
     "totalLabel": "Total",
     "totalMustBeZero": "The total for a standard table must be zero",
     "tapToInput": "Tap to enter scores",
     "editRowLabel": "Edit scores for {{game}}",
-    "horizontalScrollHint": "Scroll horizontally to see every player's score",
+    "horizontalScrollHint": "Scroll horizontally to see every participant's score",
     "saving": "Saving…"
   },
   "titleBar": {
@@ -286,17 +287,17 @@
     "horizontalScrollHint": "← Scroll horizontally →",
     "openPlayerDetails": "View details for {{playerName}}",
     "thName": "Name",
-    "thGamesPlayed": "Games Played",
-    "thGamesPlayedWithUnit": "Events (count)",
+    "thGamesPlayed": "Tournaments Joined",
+    "thGamesPlayedWithUnit": "Tournament Count",
     "thTotalPoints": "Total Points",
     "thTotalPointsWithUnit": "Total (points)",
     "thBalance": "Balance",
-    "thBalanceWithUnit": "Balance (incl. chips/adjustments)",
+    "thBalanceWithUnit": "Balance (incl. chips/converted points)",
     "statsNameMap": {
       "tournament_count": "Tournaments Joined",
       "game_count": "Number of Games",
-      "total_score": "Total Score (without chips/adjustments)",
-      "total_balance": "Balance (including chips/adjustments)",
+      "total_score": "Total Score (excluding chips/converted points)",
+      "total_balance": "Balance (including chips/converted points)",
       "average_rank": "Average Rank",
       "rank1_rate": "1st Place Rate",
       "rank1_count": "1st Place Count",
@@ -345,7 +346,7 @@
     "message": "Message",
     "send": "Send",
     "sending": "Sending...",
-    "success": "Your message has been sent. We will reply within 24 hours.",
+    "success": "Your message has been sent. We usually reply within 24 hours.",
     "error": "Unable to send your inquiry. Check your input and try again."
   },
   "groupCreatePage": {
@@ -368,9 +369,9 @@
     "selectDate": "Select start date",
     "clearDate": "Clear start date",
     "invalidDateTitle": "Invalid date",
-    "invalidDateDescription": "Enter an existing start date in YYYY-MM-DD format."
+    "invalidDateDescription": "Enter a valid start date in YYYY-MM-DD format."
   },
-  "shareModal": { "sendByOther": "Send by Other" },
+  "shareModal": { "sendByOther": "Share another way" },
   "dialogPreview": {
     "title": "Edit profile",
     "description": "Change your profile information",
@@ -389,34 +390,34 @@
       "deleteErrorTitle": "Error deleting game"
     },
     "player": {
-      "createSuccess": "Player created successfully",
-      "deleteSuccess": "Player deleted successfully",
-      "createErrorTitle": "Error creating player",
-      "deleteErrorTitle": "Error deleting player"
+      "createSuccess": "Member created successfully",
+      "deleteSuccess": "Member deleted successfully",
+      "createErrorTitle": "Error creating member",
+      "deleteErrorTitle": "Error deleting member"
     },
     "table": {
-      "createSuccess": "Table created successfully",
-      "updateSuccess": "Table updated successfully",
-      "deleteSuccess": "Table deleted successfully",
-      "addPlayersSuccess": "Players added to table successfully",
-      "removePlayersSuccess": "Players removed from table successfully",
-      "createErrorTitle": "Error creating table",
-      "updateErrorTitle": "Error updating table",
-      "deleteErrorTitle": "Error deleting table",
-      "addPlayersErrorTitle": "Error adding players to table",
-      "removePlayersErrorTitle": "Error removing players from table"
+      "createSuccess": "Score sheet created successfully",
+      "updateSuccess": "Score sheet updated successfully",
+      "deleteSuccess": "Score sheet deleted successfully",
+      "addPlayersSuccess": "Participants added to score sheet successfully",
+      "removePlayersSuccess": "Participants removed from score sheet successfully",
+      "createErrorTitle": "Error creating score sheet",
+      "updateErrorTitle": "Error updating score sheet",
+      "deleteErrorTitle": "Error deleting score sheet",
+      "addPlayersErrorTitle": "Error adding participants to score sheet",
+      "removePlayersErrorTitle": "Error removing participants from score sheet"
     },
     "tournament": {
       "createSuccess": "Tournament created successfully",
       "updateSuccess": "Tournament updated successfully",
       "deleteSuccess": "Tournament deleted successfully",
-      "addPlayerSuccess": "Player added successfully",
-      "deletePlayerSuccess": "Player deleted successfully",
+      "addPlayerSuccess": "Participant added successfully",
+      "deletePlayerSuccess": "Participant removed successfully",
       "createErrorTitle": "Error creating tournament",
       "updateErrorTitle": "Error updating tournament",
       "deleteErrorTitle": "Error deleting tournament",
-      "addPlayerErrorTitle": "Error adding player to tournament",
-      "deletePlayerErrorTitle": "Error deleting player from tournament"
+      "addPlayerErrorTitle": "Error adding participant to tournament",
+      "deletePlayerErrorTitle": "Unable to remove participant from tournament"
     }
   },
   "hooks": {
@@ -424,7 +425,7 @@
       "emailSentTitle": "Group creation email sent",
       "emailSentDescription": "We have sent a link to create the group to the email address you provided.",
       "emailSentBodyLink": "Please click the link in the email to complete the group registration.",
-      "emailSentBodyExpire": "⚠️ The link is valid for 30 minutes after issuance. (until {{expire_at}})",
+      "emailSentBodyExpire": "⚠️ The link is valid for 30 minutes after it is sent. (until {{expire_at}})",
       "emailSentBodyNote": "The link will expire after that time, so please complete the process as soon as possible.",
       "pendingGroupSaveErrorTitle": "Could not save the request on this device",
       "pendingGroupSaveErrorDescription": "The email was sent. Do not resend it; retry saving the request instead.",
@@ -450,7 +451,7 @@
     "noScoreData": "No score data available",
     "columnParticipant": "Participant",
     "columnTotal": "Total",
-    "columnConvertedTotal": "Converted"
+    "columnConvertedTotal": "Converted Points"
   },
   "notFound": {
     "title": "Unable to open link",
